@@ -46,6 +46,12 @@ $(function() {
 	 	 $(".toolbarPanel").hide();
 	 	 $("#metricPanel").show();
 	 });
+	 
+	 $('li.explain').twipsy({
+		title: 'data-tooltip',
+		placement: "right",
+		delayIn: 800
+	});
 
 	// TOOLBAR - METRICS   
  	$( "#slider-supp" ).slider({

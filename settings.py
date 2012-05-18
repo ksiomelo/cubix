@@ -120,7 +120,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
-ROOT_URLCONF = 'cubix_service.urls' # WHEN DEPLOYING CHANGE TO "urls" !!
+ROOT_URLCONF = 'cubix.urls' # WHEN DEPLOYING CHANGE TO "urls" !!
 
 TEMPLATE_DIRS = (
     PROJECT_PATH + '/templates/'
