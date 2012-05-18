@@ -1,0 +1,38 @@
+
+
+{% extends "shared/base.html" %}
+
+
+
+
+{% block content %}
+
+
+    <div class="row">
+    <div class="span12">
+	<form class="well form-search" action="search">
+	    	{% csrf_token %}   
+	  <label for="search_prefix" class="control-label">Prefix</label><br/>
+	 <textarea id="search_prefix" class="input-xxlarge search-query" rows="6" name="search_prefix" > {{ "PREFIX :<http://www.cubist_project.eu/HWU#>
+PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl:<http://www.w3.org/2002/07/owl#>
+PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>" }}</textarea>
+   <br/>
+     <label>SPARQL query</label><br/>
+    <textarea class="input-xxlarge search-query" rows="6" name="search_query" > {{ "select distinct ?o1 ?a1  where { 
+  ?x1 rdf:type :Tissue ; rdfs:label ?o1 .
+  ?x1 :has_theiler_stage :theiler_stage_07 .
+  ?x2 rdf:type :Gene ;    rdfs:label ?a1 .
+  ?ta rdf:type :Textual_Annotation ; :in_tissue ?x1 ; :has_involved_gene ?x2 . 
+}" }}</textarea>
+    <br/>
+    <button type="submit" class="btn">Search</button>
+    </form>
+	</div>
+    </div>
+
+
+
+
+{% endblock content %}

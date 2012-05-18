@@ -1,0 +1,50 @@
+body { font: 12px Tahoma, Geneva, sans-serif; }
+
+/* panel */
+.panel, .panelcollapsed 
+{
+	margin: 5px;
+	padding: 0px 0px 5px;
+	border-top: 1px solid #999;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+}
+
+/* panel heading */
+.panel h2, .panelcollapsed h2 
+{
+	font-size: 14px;
+	font-weight: bold;
+	margin: 0px;
+	padding: 4px;
+	background: #f6f6f6 url(../images/arrow-up.gif) no-repeat 50% 50%;
+	border-bottom: 1px solid #999;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-top: 1px solid #FFF;
+	border-right: 1px solid #FFF;
+	border-left: 1px solid #FFF;
+	color: #1C94C4;
+	line-height: 20px;
+	
+}
+
+/* panel heading on rollover */
+.panel h2:hover, .panelcollapsed h2:hover { border: 1px solid #fbcb09; background: #fdf5ce url(../images/jquery/ui-bg_glass_100_fdf5ce_1x400.png) 50% 50% repeat-x; font-weight: bold; color: #c77405; }
+
+/* heading of a collapsed panel */
+.panelcollapsed h2 
+{
+	background: #f6f6f6 url(../images/arrow-dn.gif) no-repeat 50% 50%;
+	border-color: #CCC;
+}
+
+/* panel content - do not set borders or paddings */
+.panelcontent 
+{ 
+	background: #f5f5f5; 
+	overflow: hidden;
+}
+
+/* collapsed panel content */
+.panelcollapsed .panelcontent { display: none; }

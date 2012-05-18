@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CUBIX  {% block title %}{% endblock %}</title>
+    <meta name="description" content="">
+    <meta name="author" content="Cassio Melo">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+	<script type="text/javascript">
+		var STATIC_URL = '{{STATIC_URL}}';
+	</script>
+
+    <!-- Le styles -->
+    <link type="text/css" href="{{STATIC_URL}}styles/bootstrap1.css" rel="stylesheet" />
+    
+    <style type="text/css">
+     body {
+        padding-top: 60px;
+      }
+    </style>
+    <link type="text/css" href="{{STATIC_URL}}styles/bootstrap-responsive.min.css" rel="stylesheet" />
+
+    <!-- Le fav and touch icons 
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+    -->
+    
+    
+    {% block js %}{% endblock %}
+    
+  </head>
+
+  <body>
+
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="container-fluid">
+          <a class="brand" href="#">Cubix</a>
+
+          <ul class="nav">
+            <li><a href="../lattice" class="home">Home</a></li>
+            <li><a href="#" id="context">Context</a></li>
+            <li class="active"><a href="#contact">Analysis</a></li>
+            <li><a href="../../semantics">Semantics</a></li>
+          </ul>
+          <p class="pull-right">Logged in as <span style="color:#EEE">{{user.username}}</span> | <a href="/logout">logout</a></p>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="container" >
+     
+     {% block sidebarcontainer %}{% endblock %}
+     
+     
+     
+        {% block content %}{% endblock %}
+
+        <footer>
+          <p>&copy; Cassio Melo 2011</p>
+
+        </footer>
+      
+      
+      {% block colleft %}{% endblock %}
+      
+      
+    </div>
+    
+    
+     {% block endbody %}{% endblock %}
+    
+   
+
+<script type="text/javascript">
+  var uvOptions = {};
+  (function() {
+    var uv = document.createElement('script'); uv.type = 'text/javascript'; uv.async = true;
+    uv.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'widget.uservoice.com/7xGTOqSMjKWU0INM4jYnYA.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(uv, s);
+  })();
+</script>
+
+  </body>
+  
+</html>

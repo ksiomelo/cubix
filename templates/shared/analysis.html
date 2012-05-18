@@ -1,0 +1,224 @@
+{% extends "shared/base.html" %}
+
+
+{% block sidebarcontainer %}
+
+<!-- NO SIDEBAR
+<div class="sidebar">
+        <div class="well" style="padding: 0">
+			-->
+			{% block sidebar %}{% endblock sidebar %}
+			<!--
+        </div>
+      </div>
+     -->
+
+{% endblock sidebarcontainer %}
+
+
+{% block colleft %}
+	
+	<!-- toolbar -->
+
+		<div id="visPanel" class="toolbarPanel">
+			<h1>Visualization</h1>
+			<a href="#" id="hideVisPanel">&laquo; Hide Panel</a><br/>
+			
+				<label for="select-vis"style="text-align: left;">Visualisation:</label>
+				<select id="select-vis" name="select_vis[]" style="width: 160px">
+								<option value="lattice" selected="selected" class="explain" data-tooltip="A Hasse diagram with dynamic arrangement">Force-Directed Lattice</option>
+								<option class="explain" value="static-lattice" data-tooltip="A static Hasse diagram">Static Lattice</option>
+								<option class="explain" value="tree" data-tooltip="A concept in a tree has only one parent and no edges crossings">Tree</option>
+								<option value="treemap" class="explain" data-tooltip="A treemap subdivides area into rectangles each of them is sized according to some metric">Treemap</option>
+								<option value="sunburst" class="explain" data-tooltip="A radial tree-like layout where the root node is at the center, with leaves on the circumference">Sunburst</option>
+								<option value="icicle" class="explain" data-tooltip="Similar to sunburst but not radial">Icicle</option>
+				</select>
+				
+				
+				<label for="select-size"style="text-align: left;">Size:</label>
+				<select id="select-size" name="select_size[]" style="width: 160px">
+								<option value="1">Default</option>
+								<option value="2" selected="selected">Support</option>
+								<option value="3" >Stability</option>
+				</select>
+				
+				<label for="select-label" style="text-align: left;">Label:</label>
+				<select id="select-label" name="select_label[]" style="width: 160px">
+								<option value="2">Multi-label</option>
+								<option value="1">Repetitive</option>
+								<option value="3">Support</option>
+				</select>
+				
+			<input type="checkbox" name="highlight" value="path" checked="checked" /> Highlight path
+		</div>
+		
+		
+		<div id="highlightPanel" class="toolbarPanel">
+			<h1>Highlight</h1>
+			<div>
+				<p>
+					<label for="support" style="text-align: left; width:90px"> Support:</label>
+					<input type="text" id="support" style="width: 75px; border:0; color:#f6931f; font-weight:bold; background-color: transparent;" />
+					<div id="slider-supp" class="slider support"></div>
+				</p>
+				<p>
+					<label for="stability" style="text-align: left; ">Stability:</label>
+					<input type="text" id="stability" style="width: 30px; color:#f6931f; font-weight:bold; background-color: transparent;" />
+					<div id="slider-stab" class="slider stability"></div>
+				</p>
+				<p>
+					<label for="confidence" style="text-align: left; ">Confidence:</label>
+					<input type="text" id="confidence" style="width: 30px; color:#f6931f; font-weight:bold; background-color: transparent;" />
+					<div id="slider-conf" class="slider confidence"></div>
+				</p>
+			</div>
+		</div>
+		
+		
+		<div id="metricPanel" class="toolbarPanel">
+			<h1>Metrics</h1>
+			<div style="display: inline">
+				<input type="checkbox" checked="true" style="margin-right: 10px" id="calc-stab" />
+				<span>Stability</span>
+			</div>
+			<br/>
+			<div style="display: inline">
+				<input type="checkbox" checked="true" style="margin-right: 10px" />
+				<span>Support</span>
+			</div>
+			<br/>
+			<div style="display: inline">
+				<input type="checkbox" checked="true" style="margin-right: 10px" />
+				<span>Confidence</span>
+			</div>
+			<br/>
+			<div style="display: inline">
+				<input type="checkbox" checked="true" style="margin-right: 10px" />
+				<span>Similarity</span>
+			</div>
+		</div>
+		
+		<div id="toolbar">
+				<ul>
+					<li class="visButton">
+						<img src="{{STATIC_URL}}images/connections.jpg"/>
+					</li>
+					<li class="highlightButton">
+						<img src="{{STATIC_URL}}images/lookup.jpg"/>
+					</li>
+					<li class="metricButton">
+						<img src="{{STATIC_URL}}images/bar-chart.jpg"/>
+					</li>
+				</ul>
+		</div>
+
+		<!-- end of toolbar -->
+
+		<div id="colleft">
+			<div id="panel">
+					<h1>Selection</h1>
+					<a href="#" id="hidePanel">&laquo; Hide Panel</a><br/>
+					<a href="#" class="clear-sel">Clear</a> |
+					<a href="#" class="compare" data-controls-modal="modal-from-dom" data-backdrop="true" data-keyboard="true">Compare</a> |
+					<a href="#" class="filter-search">Filter</a>
+					<ul id="selection_list">
+					</ul>
+				</div>
+		</div>
+		<div id="showPanel">
+				<span id="sel-count" style="font-size:10px; color: red">(0)</span><br/>
+				<span style="font-size:26px; color: #606060; font-weight: bold">&raquo;</span>
+		</div>
+		
+		
+		
+		
+		<div id="entityContainer">
+			<div id="entityPanel">
+					<h1>Entities</h1>
+					<a href="#" id="hideEntPanel" style="margin-bottom: 8px;">&laquo; Hide Panel</a><br/>
+					
+					<ul class="tabs" data-tabs="tabs">
+			            <li class="active"><a href="#attrTab">Attributes</a></li>
+			            <li><a href="#objTab">Objects</a></li>
+		            </ul>
+					<div id="my-tab-content" class="tab-content">
+			            <div class="active tab-pane" id="attrTab">
+			            	<input type="checkbox" id="selAllAttr" /> All |
+							<a href="#" class="filter-attrs">Filter</a> (all | any)
+							<ul id="attr_list" class="entityList">
+							</ul>
+			            </div>
+			            <div class="tab-pane" id="objTab">
+			            	<input type="checkbox" id="selAllObj" /> All |
+							<a href="#" class="filter-objs">Filter</a> (all | any)
+							<ul id="obj_list" class="entityList">
+							</ul>
+			            </div>
+			        </div>
+					
+					
+					
+				</div>
+		</div>
+		<div id="showEntitiesPanel">
+				<span style="font-size:10px; color: red">A (<span id="attr-count">0</span>)</span><br/>
+				<span style="font-size:10px; color: red">O (<span id="obj-count">0</span>)</span><br/>
+				<span style="font-size:26px; color: #606060; font-weight: bold">&raquo;</span>
+		</div>
+
+{% endblock colleft %}
+
+
+{% block endbody %}
+
+	<div id="filtersPanel">
+			<div id="thepanel">
+				<a href="#" id="hideFiltersPanel">&laquo; Collapse</a> 
+				
+				
+				| <a href="#" class="distribution-view active">Distribution</a>
+				| <a href="#" class="graph-view">Graph</a>
+				
+				| <a href="#" class="reset-filters">Reset</a>
+				
+				|  <input type="radio" name="filter-type" value="drill-down" checked="checked"/>
+				<span class="explain" data-tooltip="Filter acts eliminating data progressively">Progressive</span> 
+					<input type="radio" name="filter-type" value="selective" /> 
+				<span class="explain" data-tooltip="Filter keeps only selected data">Selective</span>
+					
+					
+				
+				<div id="filters_container" class="filters_container"></div>
+				<div id="graph_container" class="filters_container" style="display:none">abc</div>
+				
+				
+			</div>
+	</div>
+	<div id="showFiltersPanel">
+		<span>Filters &raquo;</span>
+	</div>
+	
+	
+	
+	<div id="modal-from-dom" class="modal hide fade" style="width: 640px">
+            <div class="modal-header">
+              <a href="#" class="close">&times;</a>
+              <h3>Concepts Similarity Matrix</h3>
+            </div>
+            <div class="modal-body">
+<!--
+              <p>One fine body…</p>
+             -->
+              <div id="compare-chart"></div>
+            </div>
+            <div class="modal-footer">
+              <a href="#" class="btn primary compare">Compare</a>
+              <!--
+              <a href="#" class="btn secondary">Secondary</a>
+              -->
+            </div>
+          </div>
+
+
+{% endblock endbody %}

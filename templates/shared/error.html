@@ -1,0 +1,17 @@
+{% extends "shared/base.html" %}
+
+
+
+
+{% block content %}
+
+
+<div data-alert="alert" class="alert-message block-message error fade in" style="width: 560px;">
+            <p><strong>{{ error_msg }}</strong></p>
+            <div class="alert-actions">
+              Load a new file in the context link in the header <a href="javascript:window.history.back();" class="btn small">Or return</a>
+            </div>
+</div>
+
+
+{% endblock content %}

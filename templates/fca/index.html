@@ -1,0 +1,170 @@
+{% extends "shared/analysis.html" %}
+
+{% block js %}
+<link type="text/css" href="{{STATIC_URL}}styles/lattice.css" rel="stylesheet" />
+<!-- Collapsible panel -->
+<link type="text/css" href="{{STATIC_URL}}styles/collapsible_panel.css" rel="stylesheet" />
+<script type="text/javascript" src="{{STATIC_URL}}scripts/collapsible_panel.js"></script>
+<!-- D3 -->
+<script type="text/javascript" src="{{STATIC_URL}}scripts/d3.v2.min.js"></script>
+<!--
+<script type="text/javascript" src="{{STATIC_URL}}scripts/d3.layout.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/d3.geom.js"></script>
+-->
+<!-- jquery slider -->
+<link type="text/css" href="{{STATIC_URL}}styles/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery-1.6.2.min.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery-ui-1.8.16.custom.min.js"></script>
+<!-- bootstrap popovers -->
+<script type="text/javascript" src="{{STATIC_URL}}scripts/bootstrap-twipsy.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/bootstrap-popover.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/bootstrap-modal.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/bootstrap-tabs.js"></script>
+<!-- highcharts -->
+<script type="text/javascript" src="{{STATIC_URL}}scripts/highcharts.js"></script>
+<!-- treeview (facets)
+<link type="text/css" href="{{STATIC_URL}}styles/jquery.treeview.css" rel="stylesheet" />
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery.treeview.js"></script>
+-->
+<!-- dynatree (facets) -->
+<link type="text/css" href="{{STATIC_URL}}styles/ui.dynatree.css" rel="stylesheet" />
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery.dynatree.min.js"></script>
+<!-- dropdown -->
+<link type="text/css" href="{{STATIC_URL}}styles/jquery.multiSelect.css" rel="stylesheet" />
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery.bgiframe.min.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery.multiSelect.js"></script>
+<!-- autosuggest -->
+<!--
+<link type="text/css" href="{{STATIC_URL}}styles/autoSuggest.css" rel="stylesheet" />
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery.autoSuggest.minified.js"></script>
+-->
+<link type="text/css" href="{{STATIC_URL}}styles/token-input-facebook.css" rel="stylesheet" />
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery.tokeninput.js"></script>
+<!-- CUBIX  -->
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.utils.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.visualisation.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.layout.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.filters.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.facets.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.transform.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.lattice.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.dashboard.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.static-lattice2.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.context.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.compare.js"></script>
+
+{% endblock js %}
+
+{% block sidebar %}
+
+
+{% endblock sidebar %}
+
+{% block content %}
+<div id="open-file" style="display:none">
+	<form enctype="multipart/form-data" method="post" action="/fca/load_cxt/" id="load_cxt_form">
+	   {% csrf_token %}   
+	   {{ cxt_form.as_p }}
+	     <input type="submit" value="Upload" />
+	    <a href="#" class="cancel-upload">Cancel</a>
+	   <!--
+	    <a href="#" onclick="document.load_cxt_form.submit()">Load cxt</a> -->
+	</form>
+</div>
+
+
+<div id="hoverbox" class="tooltip" style="opacity: 0; display:none;">
+	<div>
+		<span>Attributes</span>
+		<ul class="hb_attr_list"/>
+	</div>
+	<div>
+		<span>Objects</span>
+		<ul class="hb_obj_list"/>
+	</div>
+</div>
+<div style="overflow: hidden; width: 100%; padding-bottom: 10px">
+	<div style="float: left;">
+		<!--
+		<label for="layout_type">Layout:</label>
+		-->
+		<input type="text" id="layout_type" style="border:0; color:#f6931f; font-weight:bold; width: 70px; float:left" />
+		<div id="slider-layout" style="width: 150px; margin: 8px 40px 8px 20px; float: left"></div>
+	</div>
+	<div style="margin-left: 20px; float: left;">
+		<input type="text" id="search" style="width: 300px;" class="search"/>
+		<input type="button" class="filter-search" value="Filter"/>
+	</div>
+	
+	<div style="margin-left: 20px; float: left;">
+		<a href="#" class="lattice-json-link">Lattice.json</a>
+		<a href="#" class="ar-json-link">Association Rules.json</a>
+	</div>
+
+</div>
+
+
+
+<div class="row">
+	<div class="span11"><div id="chart" style="height: 640px;"></div></div>
+	<div class="span7" style="overflow-y: auto;">
+	
+		<div style="float:left">
+			
+			<label for="control_1">X: </label>
+			<select id="control_1" name="control_1[]" multiple="multiple" size="5" style="width: 120px; font-size: 10px;">
+			</select>
+		</div>
+			
+		<div style="float:left; margin-left: 8px;">
+			<span>Y: </span>
+			<select id="control_2" name="control_2[]" multiple="multiple" size="5" style="width: 120px; font-size: 10px;">
+			</select>
+		</div>
+		
+		<div style="float:left; margin: 8px 0 0 8px;">
+			<a href="#" class="draw-chart-1a">OK</a>
+		</div>
+		
+		<div id="box1a-chart" style="float:left; width: 100%; height: 80%"></div>
+	
+	</div>
+</div>
+
+
+	
+	
+
+<script type="text/javascript">
+	// load lattice
+
+	var mouseOverHoverBox = false;
+
+	var _data_nodes = [];
+	var _data_links = [];
+
+	var data;
+
+	var cnode;
+	var clink;
+	var ulabel;
+	var llabel;
+
+	var hoverbox; 
+	
+	{% if djson != null %}
+
+var json = {{ djson|safe }};
+
+$(function(){
+	loadData(json);	
+});
+
+
+{% else %}	
+$(function(){ // TODO perfomance evitar 
+d3.json("/api/v1/lattice/sample", loadData);
+});
+{% endif %}
+</script>
+{% endblock content %}

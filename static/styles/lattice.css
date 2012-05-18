@@ -1,0 +1,482 @@
+/*
+ *  Global
+ */
+
+
+
+
+
+.slider {
+	width: 180px; 
+}
+
+
+
+
+.nodetext { pointer-events: none; font: 10px sans-serif; }
+
+/*
+ * Layouts
+ */
+
+#chart {
+	width: 100%;
+	height: 640px;
+}
+
+/*
+ * Lattice
+ */
+
+
+/*
+ * sunburst
+ */
+path.sb {
+  stroke: #fff;
+  fill-rule: evenodd;
+}
+/*
+ * treemap
+ */
+.cell {
+  border: solid 1px white;
+  font: 10px sans-serif;
+  line-height: 12px;
+  overflow: hidden;
+  position: absolute;
+  text-indent: 2px;
+}
+
+/*
+ * Tree
+ */
+
+.node circle {
+  cursor: pointer;
+  fill: #aaaaff;
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+path.treelink {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+
+/*
+ * Edges
+ */
+
+
+
+line.link {
+        stroke: #999;
+        stroke-opacity: .6;
+        stroke-width: 4px;
+}
+line.highlighted {
+	stroke: #FF0000;
+}
+
+
+line.selected{
+	opacity: 1;
+}
+
+line.hidden{
+	opacity: 0.3;
+}
+
+
+/*
+ * Nodes
+ */
+
+circle.node {
+  cursor: pointer;
+  fill: #aaaaff;
+  stroke: #fff;
+  stroke-width: 3px;
+}
+
+circle.selected {
+	fill: #ff0000;
+	opacity: 1;
+}
+
+circle.hidden {
+	fill: #aaaaff;
+	opacity: 0.3;
+}
+
+
+
+/*
+ * Labels
+ */
+
+text.label {
+  font: 12px sans-serif;
+  pointer-events: none;
+}
+
+text.intent {
+  fill: #DD3333;
+}
+
+text.extent {
+ /* stroke: #fff;
+  stroke-width: 1px;
+  stroke-opacity: ,8;*/
+  fill: #000;
+}
+
+
+text.hoverbox_content {
+ /* stroke: #fff;
+  stroke-width: 1px;
+  stroke-opacity: ,8;*/
+  font: 14px sans-serif;
+  color: #CCC;
+}
+
+rect.hoverbox {
+	width: 200;
+	height: 120;
+	fill: #ccc;
+	stroke: #fff;
+    stroke-width: 3px;
+}
+
+rect.hidden {
+	display: none;
+}
+
+
+div.tooltip {
+  position: absolute;
+  width: 200px;
+  height: 120px;
+  overflow-y:auto;
+  padding: 8px;
+  font: 10px sans-serif;
+  background: #F5F5F5;
+  border: solid 1px #ccc;
+  border-radius: 8px;
+  z-index: 999;
+}
+
+div.tooltip div {
+	display: block;
+    float: left;
+    width: 50%;
+   
+}
+
+div.tooltip div span {
+	margin: 0 0 0 15px;
+	font-weight: bold;
+	text-align: center;
+}
+
+div.tooltip div ul{
+	 margin: 0 0 10px 15px;
+	 list-style: none outside none;
+}
+
+a.facetSel {
+	color: orange;
+	font-size: 1.2em;
+}
+
+
+
+
+/*
+ * search sidebar
+ */
+#colleft   { height: 80%; overflow-y:auto; width:0px; margin-bottom:40px; position:fixed; right: 0; top: 60px; overflow:hidden; background:#333; padding: 8px; opacity:0}
+#colleft h1 {color: #606060;}
+#showPanel { border-radius: 12px 0 0 0; position:fixed; z-index:2; right:0; top: 90px; width:40px; height:40px; cursor:pointer; padding:10px 0 10px 10px; background: #333; }
+/*#showPanel div {color: #606060; display:block; height:30px; padding:10px 0 10px 10px; width:20px; background: #333;} */
+
+#selection_list {
+	height: 80%;
+    list-style: none outside none;
+    margin: 8px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 5px;
+    width: 90%;
+	
+}
+#selection_list li {
+	border-bottom: 1px solid #444444;
+	padding: 4px;	
+}
+
+#selection_list li span{
+	color: #c0c0c0;
+}
+
+/*
+ * toolbar 
+ */
+
+
+
+.toolbarPanel {
+	overflow-y: auto;
+	width: 200px;
+	position: fixed;
+	left: 45px;
+	top: 80px;
+	overflow: hidden;
+	background: #333;
+	padding: 4px 14px 14px;
+	display: none
+}
+
+
+.toolbarPanel label {
+	display: block;
+    text-align: left;
+}
+
+.toolbarPanel h1 {
+	color: #606060;
+	font-size: 20px;
+    margin-bottom: 5px;
+}
+
+#visPanel {
+
+}
+
+#metricPanel {
+	top: 160px;
+}
+
+#highlightPanel {
+	top: 120px;
+}
+
+
+
+#toolbar {
+	border-radius: 0 12px 12px 0;
+	position: fixed;
+	z-index: 2;
+	left: 0;
+	top: 80px;
+	width: 40px;
+	/*height: 60px;*/
+	cursor: pointer;
+	padding: 0;
+	background: #333;
+}
+
+#toolbar ul {
+	list-style:none;
+	margin:0;
+}
+
+#toolbar ul li {
+ 	border-bottom: 1px solid #FFFFFF;
+    height: 32px;
+    margin: 0;
+    padding: 4px;
+    text-align: center;
+}
+
+
+
+/*
+ * entities sidebar
+ */
+#entityContainer   { height: 80%; overflow-y:auto; width:0px; margin-bottom:40px; position:fixed; right: 0; top: 60px; overflow:hidden; background:#333; padding: 8px; opacity:0}
+#entityContainer h1 {color: #606060;}
+#showEntitiesPanel { border-radius: 0 0 0 12px; position:fixed; z-index:2; right:0; top: 160px; width:40px; height:60px; cursor:pointer; padding:10px 0 10px 10px; background: #333; }
+/*#showPanel div {color: #606060; display:block; height:30px; padding:10px 0 10px 10px; width:20px; background: #333;} */
+
+ul.entityList {
+	/*height: 80%;*/
+	height: 300px;
+    list-style: none outside none;
+    margin: 8px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 5px;
+    width: 90%;
+	
+}
+ul.entityList li {
+	border-bottom: 1px solid #444444;
+	padding: 4px;	
+}
+
+ul.entityList li span{
+	color: #c0c0c0;
+}
+
+
+
+/*
+ * filters 
+ */
+
+#filtersPanel   { color: #a0a0a0; height: 1px; overflow:hidden; width:100%; margin: 0; position:fixed; bottom: 0; left: 0; background:#333; padding: 8px; opacity: 0;}
+#showFiltersPanel { padding:10px 0 10px 10px; position:fixed; z-index:2; left:0px; bottom: 0px;  width:100%; cursor:pointer; background: #333;}
+#showFiltersPanel span{color: #f0f0f0;  font-size:16px; }
+
+#filtersPanel div.filters_container {
+	width: 100%; height: 200px; 
+	margin: 4px auto 0; 
+	 overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+     border-top: 1px solid #404040;
+}
+div.chartFilter {
+	display: inline-block;
+	z-index: 9999;
+	border-right: 1px solid #404040;
+}
+
+div.chartFilter span {
+	color: #a0a0a0;
+	display: block;
+	text-align: center;
+    font-size: 14px;
+}
+
+div.chartFilter div {
+	width: 270px;
+	height: 180px;
+	overflow-y: auto;
+}
+
+
+chartLegend {
+	color: white;
+}
+
+a.selected {
+  background-color:#1F75CC;
+  color:white;
+  z-index:100;
+}
+
+
+#filtersPanel a.active {
+	background-color: black;
+    color: white;
+    padding: 0 10px;
+    text-decoration: none;
+}
+
+/*
+ *  histogram
+ */
+.graphBar {
+  fill: steelblue;
+  stroke: white;
+}
+
+/*
+ * CONTOUR
+ */
+svg.contour {
+  border: solid 1px #aaa;
+}
+path.contour {
+  stroke: red;
+  stroke-width: 2px;
+  fill: none;
+}
+rect.contour {
+  fill: lightsteelblue;
+  stroke: #eee;
+  stroke-width: 2px;
+}
+
+
+/*
+ * QUILTS
+ */
+svg.quilts {
+  border: solid 1px #aaa;
+}
+path.quilts {
+  stroke: red;
+  stroke-width: 2px;
+  fill: none;
+}
+rect.quilts {
+  fill: lightsteelblue;
+  stroke: #555;
+  stroke-width: 2px;
+}
+
+.porra {
+  fill: #000000;
+  stroke-width: 4px;
+  stroke: #990000;
+  
+}
+
+/*
+ * SPLOOM
+ * 
+ */
+svg {
+  font: 10px sans-serif;
+}
+
+.axis {
+  shape-rendering: crispEdges;
+}
+
+.axis line {
+  stroke: #ddd;
+  stroke-width: .5px;
+}
+
+.axis path {
+  display: none;
+}
+
+rect.extent {
+  fill: #000;
+  fill-opacity: .125;
+  stroke: #fff;
+}
+
+rect.frame {
+  fill: #fff;
+  fill-opacity: .7;
+  stroke: #aaa;
+}
+
+circle.spl {
+  fill: #ccc;
+  fill-opacity: .5;
+}
+
+.splcell text {
+  pointer-events: none;
+}
+
+.Clerical {
+  fill: #800;
+}
+
+.Managerial {
+  fill: #080;
+}
+
+.Professional {
+  fill: #008;
+}
