@@ -11,6 +11,6 @@
 <value>cubix.settings</value>
 </pydev_variables_property>
 <pydev_pathproperty name="org.python.pydev.PROJECT_SOURCE_PATH">
-<path>/cubix-stable-1_0</path>
+<path>/cubix</path>
 </pydev_pathproperty>
 </pydev_project>
