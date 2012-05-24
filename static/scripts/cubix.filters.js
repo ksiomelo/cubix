@@ -271,7 +271,9 @@ function createChart(attrTitle, renderTo, theSeries){
 			}
 		},
 		legend : {
-			itemWidth : 100,
+			itemWidth : 80,
+			style: {width: "100px" },
+			
 			layout: "vertical",
 			backgroundColor: "#666",
 			align: 'right',
