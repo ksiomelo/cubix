@@ -203,9 +203,10 @@ class JSONSerializer():
         """Called to handle a list"""
         self.start_array()
 
-        for value in l:
+        #for value in l:
+        for idx, value in enumerate(l) :
             self.handle_object(value)
-            if l.index(value) != len(l) -1:
+            if idx != len(l) -1:
                 self.stream.write(u', ')
 
         self.end_array()

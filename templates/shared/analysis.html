@@ -32,6 +32,8 @@
 								<option value="treemap" class="explain" data-tooltip="A treemap subdivides area into rectangles each of them is sized according to some metric">Treemap</option>
 								<option value="sunburst" class="explain" data-tooltip="A radial tree-like layout where the root node is at the center, with leaves on the circumference">Sunburst</option>
 								<option value="icicle" class="explain" data-tooltip="Similar to sunburst but not radial">Icicle</option>
+								<option value="matrixview" class="explain" data-tooltip="Concept interdependence">Matrix View</option>
+ 								<option value="scatterplot" class="explain" data-tooltip="Association rules distribution">Scatter plot</option>
 				</select>
 				
 				
@@ -48,8 +50,10 @@
 								<option value="1">Repetitive</option>
 								<option value="3">Support</option>
 				</select>
-				
+			
+			<div style="margin-top: 10px;">
 			<input type="checkbox" name="highlight" value="path" checked="checked" /> Highlight path
+			</div>
 		</div>
 		
 		
@@ -220,5 +224,6 @@
             </div>
           </div>
 
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.dashboard.onload.js"></script>
 
 {% endblock endbody %}

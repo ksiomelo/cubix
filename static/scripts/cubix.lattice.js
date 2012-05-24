@@ -6,7 +6,7 @@
 var SEPARATOR = "-";
 
 // layout
-var DEFAULT_WIDTH = 640; //960
+var DEFAULT_WIDTH = 570; //960
 var DEFAULT_HEIGHT = 500; // 600
 
 
@@ -48,25 +48,25 @@ var _data_attributes, _data_objects;
 /*
  * Init Lattice
  */
+
+var context;
+var lattice_id;
+
 function loadData(json){
 	
 	data = json;
 	
+	lattice_id = data.id;
 	// copy of initial parameters.. mainly used for reset
 	_data_nodes = data.nodes.slice(0);
 	_data_links = data.links.slice(0);
 	_data_attributes = HashClone(data.attributes); // TODO deep copy??
 	_data_objects = data.objects.slice(0);
 	
-	context.attributes=data.context.attributes;
-	context.objects=data.context.objects;
-	context.attributeNames=data.context.attributes;
-	context.rel=data.context.rel;
-	
-	//createHorizontalBarChart("box1a-chart", ["preying"], ["bird"])
-	//var eagle = context.intersection("preying", "bird");
+	context = new Context(data.context.objects,data.context.attributes,data.context.rel,data.context.attributes)
 	
 	
+	// load autosuggest for attributes
 	$("input.search").tokenInput(getAttributeValuesPairs(),{
               propertyToSearch: "name",
               preventDuplicates: false,
@@ -79,6 +79,7 @@ function loadData(json){
 	
 	
 	hoverbox = d3.select("#hoverbox");
+	A_rules_box = d3.select("#A_rules_box");
 	
 	checkLatticeConstraints();
 	
@@ -102,8 +103,8 @@ function loadData(json){
 	// Dashboard
 	loadDashboard();
 	
-	  $('a.lattice-json-link').attr("href", "/api/v1/lattice/?id="+data.id);
-	  $('a.ar-json-link').attr("href", "/api/v1/association_rules/?lattice_id="+data.id);
+	$('a.lattice-json-link').attr("href", "/api/v1/lattice/?id="+lattice_id);
+	$('a.ar-json-link').attr("href", "/api/v1/association_rules/?lattice_id="+lattice_id);
 	
 	$('text[text-anchor="end"]').remove();
 	
@@ -362,10 +363,15 @@ function getNodeSize(d){
 
 function changeNodeSize(type){
 	size_type = type;
-	
-	vis.selectAll("circle").attr("r", function(d) {
-		return getNodeSize(d);
-	});
+	if (currentVis=='treemap') {
+	console.log("changin");
+	tm_updateTree(getTree0);
+	}
+	else { 
+		vis.selectAll("circle").attr("r", function(d) {
+			return getNodeSize(d);
+		});
+	}
 	
 }
 
@@ -389,7 +395,7 @@ function changeNodeVisibility(criteria, minValue, maxValue, toShow){
 
 // clear 'hidden' styles (used e.g. for clear previous selections)
 function showNodes() {
-	vis.selectAll(".hidden").classed("hidden", false);
+	vis.selectAll(".opaque").classed("opaque", false);
 }
 
 
@@ -402,21 +408,21 @@ function hideNodes(nodelist){
 		//anode.style("opacity", DEFAULT_OPACITY);
 		//anode.style("fill", DEFAULT_FILL_COLOR);
 		anode.classed("selected", false);
-		anode.classed("hidden", true);
+		anode.classed("opaque", true);
 		
 		
 		getIncomingEdges(anode, function(){
 			//d3.select(this).style("opacity", DEFAULT_OPACITY);
 			var thisInEdge = d3.select(this);
 			thisInEdge.classed("selected",false);
-			thisInEdge.classed("hidden",true);
+			thisInEdge.classed("opaque",true);
 			
 		});
 		getOutgoingEdges(anode, function(){
 			//d3.select(this).style("opacity", DEFAULT_OPACITY);
 			//d3.select(this).classed("hidden");
 			var thisOutEdge = d3.select(this);
-			thisOutEdge.classed("hidden",false);
+			thisOutEdge.classed("opaque",false);
 			thisOutEdge.classed("selected",true);
 		});
 	}
@@ -428,19 +434,19 @@ function highlightNodes(nodelist, color) {
 		//anode.style("opacity", 1); // TODO preferir trocar classes css
 		//anode.style("fill", SELECTED_FILL_COLOR);
 		anode.classed("selected", true);
-		anode.classed("hidden", false);
+		anode.classed("opaque", false);
 		
 		
 		 getIncomingEdges(anode, function(){
 			 //d3.select(this).style("opacity", 1);
 			var thisInEdge = d3.select(this);
-			thisInEdge.classed("hidden",false);
+			thisInEdge.classed("opaque",false);
 			thisInEdge.classed("selected",true);
 		 });
 		 getOutgoingEdges(anode, function(){
 			// d3.select(this).style("opacity", 1);
 			var thisOutEdge = d3.select(this);
-			thisOutEdge.classed("hidden",false);
+			thisOutEdge.classed("opaque",false);
 			thisOutEdge.classed("selected",true);
 		 });
 	};
@@ -499,6 +505,10 @@ function nodeMouseOver(d){
     //var ul = $('ul.hb_attr_list');
 	wrapperElementsInList($('ul.hb_attr_list'), d.intent)
 	wrapperElementsInList($('ul.hb_obj_list'), d.extent)
+	
+	
+	// Dashboard
+	updateDistributionChart(d);
 	
 }
 

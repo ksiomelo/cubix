@@ -2,8 +2,11 @@
  *  Global
  */
 
-
-
+div.alert {
+	position: fixed;
+	top:45px;
+	z-index: 1000;
+}
 
 
 .slider {
@@ -20,8 +23,39 @@
  */
 
 #chart {
-	width: 100%;
-	height: 640px;
+	/*width: 100%;*/
+	height: 500px;
+}
+
+#bounds {
+    margin: 2px 15px 4px 0;
+    background-color:#F8F8F8;
+    border-radius:4px;
+    border:1px solid #EFEFEF;
+    overflow:auto;
+    float:left;
+}
+
+#bounds label {
+    float:left;
+    cursor: pointer;
+    margin-bottom:0;
+}
+
+#bounds label span {
+    text-align:center;
+    padding:3px 10px;
+    display:block;
+}
+
+#bounds label input {
+    position:absolute;
+    top:-20px;
+}
+
+#bounds input:checked + span {
+    background-color:#6B6B6B;
+    color:#F7F7F7;
 }
 
 /*
@@ -46,6 +80,15 @@ path.sb {
   overflow: hidden;
   position: absolute;
   text-indent: 2px;
+}
+
+
+/*
+ * Matrix
+ */
+line.matrix_view_separator
+{
+stroke: #999;
 }
 
 /*
@@ -106,7 +149,7 @@ circle.selected {
 	opacity: 1;
 }
 
-circle.hidden {
+circle.opaque {
 	fill: #aaaaff;
 	opacity: 0.3;
 }
@@ -120,6 +163,10 @@ circle.hidden {
 text.label {
   font: 12px sans-serif;
   pointer-events: none;
+}
+
+text.highlighted {
+  fill: #DD3333;
 }
 
 text.intent {
@@ -236,13 +283,16 @@ a.facetSel {
 	overflow: hidden;
 	background: #333;
 	padding: 4px 14px 14px;
-	display: none
+	display: none;
+	color: #BBB;
 }
 
 
 .toolbarPanel label {
 	display: block;
     text-align: left;
+    color: #BBB;
+    padding: 10px 0 4px;
 }
 
 .toolbarPanel h1 {

@@ -1,19 +1,21 @@
-var context = new function(){
+
+function Context(objs, attrs, rels, attrNames) {
+//var context = new function(){
 	
 	// data.attributes      ["age"] = [["<= 30", 3][">30", 4]]
 	
 	
-	var attributeNames = [];
-	var attributes = [];
-	var objects = [];
-	var rel = new Array(); //rel[row][column] 
+	this.attributeNames = attrNames;
+	this.attributes = attrs;
+	this.objects = objs;
+	this.rel = rels;//new Array(); //rel[row][column] 
 	
 	var upArrow = null;
 	
 	var upArrowUpdate = false;
 	
 	 this.getEntitiesCount = function () {
-	 	return objects.length;
+	 	return this.objects.length;
 	 };
 	 
 	 
@@ -87,6 +89,40 @@ var context = new function(){
 		};
 		
 		return ret;
+		
+	}
+	this.getObjectIndex = function (obj) {
+		for (var j=0; j < this.objects.length; j++) {
+				if (this.objects[j] == obj) return j;
+		}
+		return -1;
+	}
+	
+	this.getSubcontextForExtent = function (objsList) {
+		
+		var objs = [];
+		var attrs = [];
+		var rels = [];
+		
+		for (var i=0; i < objsList.length; i++) {
+			
+			objs.push(objsList[i]);
+			rels[i] = new Array();
+			
+			var j = this.getObjectIndex(objsList[i]);
+			
+			for (var k=0; k < this.rel[j].length; k++) {
+				if (this.rel[j][k]) {
+					var attrIdx = attrs.indexOf(this.attributes[k]);
+					if (attrIdx < 0)
+						attrs.push(this.attributes[k]);
+					attrIdx = attrs.indexOf(this.attributes[k]);
+					rels[i][attrIdx] = true;
+				}
+			}
+		}
+		
+		return new Context(objs, attrs,rels, attrs);
 		
 	}
 

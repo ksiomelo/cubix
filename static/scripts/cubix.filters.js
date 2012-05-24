@@ -138,10 +138,12 @@ function resetFilters(){
 	// close slices
 	for (var i=0; i < visualFilters.length; i++) {
 	  var thechart = visualFilters[i];
-	  var segments = thechart.series[0].segments[0];
-	  for (var j=0; j < segments.length; j++) {
-		segments[j].sliced = false;
-	  };
+	  
+	  // var segments = thechart.series[0].segments[0];
+	  // for (var j=0; j < segments.length; j++) {
+		// segments[j].sliced = false;
+	  // };
+	  
 	  thechart.series[0].redraw();
 	  //thechart.redraw();
 	};

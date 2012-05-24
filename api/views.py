@@ -85,9 +85,6 @@ def mine_association_rules(request):
     #dependencies = miner.find_exact_dependencies()
     dependencies = miner.find_approximate_dependencies(lattice, 0.1, 0.25)
 
-#    abse = simplejson.dumps(dependencies,cls=utils.SetEncoder)#,cls=PythonObjectEncoder
-#    return HttpResponse(abse, mimetype=u"application/json")
-
     jsonSerializer = utils.JSONSerializer()
     return HttpResponse(jsonSerializer.serialize(dependencies, use_natural_keys=True), mimetype='application/json')
 

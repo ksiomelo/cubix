@@ -29,6 +29,8 @@ function changeVis(visType){
     else if (visType == 'icicle')  initIcicle();
 	else if (visType == 'treemap')  treemap();
 	else if (visType == 'tree')  initTree();
+	else if (visType == 'matrixview') init_matrix_view();
+	else if (visType == 'scatterplot') init_scatter_plot();
 	
 	currentVis = visType;
 }
@@ -697,3 +699,333 @@ function cell() {
       .style("width", function(d) { return d.dx - 1 + "px"; })
       .style("height", function(d) { return d.dy - 1 + "px"; });
 }
+
+
+
+
+
+
+
+
+
+
+/*
+*
+* Matrix View
+*
+*/
+
+function init_matrix_view(){
+
+//initializing environement
+
+var m = [20, 120, 20, 120]; // margins
+var matrix=[];
+var n=0;
+var attr_list=[];
+
+
+for (a in data.attributes) {
+for(i=0;i<data.attributes[a].length;i++){
+if ( (data.attributes[a])[i][0]=="yes") attr_list.push( a.toString());
+else
+if ( (data.attributes[a])[i][0]=="no") continue;
+else
+attr_list.push( a.toString()+"-"+(data.attributes[a])[i][0]);
+}
+}
+n=attr_list.length;
+
+//get association rules
+
+
+
+//initialize matrix
+
+for (var i=0;i<myobject.length;i++){
+matrix[i]=[];
+matrix[i]=d3.range(n).map(function(j){return {x:i, y:j, z:0}});
+}
+
+//fill matrix
+
+for (var i=0;i<myobject.length;i++){
+
+for (var k=0;k<n;k++) {
+
+for (var j=0;j<myobject[i].premise.length;j++)
+if (attr_list[k] ==myobject[i].premise[j]){
+matrix[i][k].z=1;
+matrix[i][k].confidence=myobject[i].confidence;
+matrix[i][k].premise_supp=myobject[i].premise_supp;
+matrix[i][k].conclusion_supp=myobject[i].conclusion_supp;
+matrix[i][k].premise=myobject[i].premise;
+matrix[i][k].conclusion=myobject[i].conclusion;
+
+
+}
+for (var j=0;j<myobject[i].conclusion.length;j++)
+if (attr_list[k] ==myobject[i].conclusion[j]){
+matrix[i][k].z=2;
+matrix[i][k].confidence=myobject[i].confidence;
+matrix[i][k].premise_supp=myobject[i].premise_supp;
+matrix[i][k].conclusion_supp=myobject[i].conclusion_supp;
+matrix[i][k].premise=myobject[i].premise;
+matrix[i][k].conclusion=myobject[i].conclusion;
+}
+
+}
+}
+
+var x = d3.scale.ordinal().rangeBand([0, w]),
+    z = d3.scale.linear().domain([0, 4]).clamp(true),
+    c = d3.scale.category10().domain(d3.range(10));
+
+//Adjusting margins
+
+var ml=0;
+for (i in data.attributes) ml=Math.max(ml,i.length);
+m[0]=ml*12;
+ml=0;
+for (var i=0;i<myobject.length;i++) {ml=Math.max(ml,(myobject[i].premise.toString().length))}
+
+m[1]=10+10*Math.log(myobject.length)/Math.LN10;
+
+vis = d3.select("#chart").append("svg:svg")
+.attr("width", w + m[1] + m[3])
+.attr("height", h + m[0] + m[2])
+.append("svg:g")
+.attr("transform","translate("+m[1]+","+m[0]+")");
+
+vis.append("rect")
+      .attr("class", "background")
+      .attr("width", width)
+      .attr("height", height);
+  
+  var row = vis.selectAll(".row")
+      .data(matrix)
+    .enter().append("g")
+      .attr("class", "row")
+      .attr("transform", function(d, i) {return "translate(0," + d[0].x*h/myobject.length + ")"; })
+      .each(row);
+
+
+  row.append("line")
+      .attr("x2", w)
+      .attr("class","matrix_view_separator");
+
+
+  row.append("text")
+      .attr("x",0)
+      .attr("dy", "1em")
+      .attr("text-anchor", "end")
+      .attr("class","label")
+      .text(function(d, i) {return "R"+i.toString() /* myobject[i].premise.toString(); */});
+
+   var column = vis.selectAll(".column")
+      .data(matrix.transpose())
+    .enter().append("g")
+      .attr("class", "column")
+      .attr("transform", function(d, i) { return "translate(" + d[i].y*w/n + ")rotate(-90)"; });
+
+  column.append("line")
+      .attr("x1", -w)
+      .attr("class","matrix_view_separator");
+
+  column.append("text")
+   .attr("class","label")
+      .attr("x", 0)
+      .attr("dy", "1em")
+      .attr("text-anchor", "start")
+      .text(function(d, i) { return attr_list[i]; });
+
+  function row(row) {
+  
+    var cell = d3.select(this).selectAll(".cell")
+        .data(row.filter(function(d) { return d.z; }))
+      .enter().append("rect")
+        .attr("class", "cell")
+        .attr("x", function(d) {return d.y*w/n; })
+        .attr("width", w/n)
+        .attr("height", h/myobject.length)
+        .style("fill-opacity", function(d) { return d.confidence; })
+        .style("fill", function(d) {return c(d.z); });
+        //.on("mouseover", Matrix_View_MouseOver)
+        //.on("mouseout", Matrix_View_MouseOut);
+     
+  }
+
+}
+
+/*
+*
+* Scatter Plot
+*
+*/
+
+function init_scatter_plot(){
+
+//initializing environement
+
+var m = [20, 120, 20, 120]; // margins
+var matrix=[];
+var n=0;
+var attr_list=[];
+
+
+for (a in data.attributes) {
+for(i=0;i<data.attributes[a].length;i++){
+if ( (data.attributes[a])[i][0]=="yes") attr_list.push( a.toString());
+else
+if ( (data.attributes[a])[i][0]=="no") continue;
+else
+attr_list.push( a.toString()+"-"+(data.attributes[a])[i][0]);
+}
+}
+n=attr_list.length;
+
+//get association rules
+
+var myjson_text='[{"confidence":0.75,"conclusion_supp":6,"premise_supp":8,"premise":[],"conclusion":["US-citizen"]},{"confidence":0.375,"conclusion_supp":3,"premise_supp":8,"premise":[],"conclusion":["age-30to<40"]},{"confidence":0.375,"conclusion_supp":3,"premise_supp":8,"premise":[],"conclusion":["employment-Managerial"]},{"confidence":0.25,"conclusion_supp":2,"premise_supp":8,"premise":[],"conclusion":["employment-Clerical"]},{"confidence":0.5,"conclusion_supp":4,"premise_supp":8,"premise":[],"conclusion":["sex-Female"]},{"confidence":0.5,"conclusion_supp":3,"premise_supp":6,"premise":["US-citizen"],"conclusion":["education-Bachelors"]},{"confidence":0.5,"conclusion_supp":3,"premise_supp":6,"premise":["US-citizen"],"conclusion":["age->=50"]},{"confidence":0.6666666666666666,"conclusion_supp":4,"premise_supp":6,"premise":["US-citizen"],"conclusion":["sex-Male"]},{"confidence":0.6666666666666666,"conclusion_supp":2,"premise_supp":3,"premise":["age-30to<40"],"conclusion":["US-citizen","sex-Male"]},{"confidence":0.3333333333333333,"conclusion_supp":1,"premise_supp":3,"premise":["age-30to<40"],"conclusion":["employment-Managerial","education-Masters","sex-Female"]},{"confidence":0.6666666666666666,"conclusion_supp":2,"premise_supp":3,"premise":["employment-Managerial"],"conclusion":["sex-Female"]},{"confidence":0.6666666666666666,"conclusion_supp":2,"premise_supp":3,"premise":["employment-Managerial"],"conclusion":["US-citizen","age->=50"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["employment-Clerical"],"conclusion":["education-Bachelors","US-citizen","sex-Male","age-30to<40"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["employment-Clerical"],"conclusion":["age-40to<50","sex-Female"]},{"confidence":0.5,"conclusion_supp":2,"premise_supp":4,"premise":["sex-Female"],"conclusion":["US-citizen","education-Bachelors"]},{"confidence":0.5,"conclusion_supp":2,"premise_supp":4,"premise":["sex-Female"],"conclusion":["employment-Managerial"]},{"confidence":0.25,"conclusion_supp":1,"premise_supp":4,"premise":["sex-Female"],"conclusion":["employment-Clerical","age-40to<50"]},{"confidence":0.3333333333333333,"conclusion_supp":1,"premise_supp":3,"premise":["US-citizen","education-Bachelors"],"conclusion":["sex-Male","employment-Clerical","age-30to<40"]},{"confidence":0.6666666666666666,"conclusion_supp":2,"premise_supp":3,"premise":["US-citizen","education-Bachelors"],"conclusion":["sex-Female"]},{"confidence":0.6666666666666666,"conclusion_supp":2,"premise_supp":3,"premise":["US-citizen","age->=50"],"conclusion":["employment-Managerial"]},{"confidence":0.6666666666666666,"conclusion_supp":2,"premise_supp":3,"premise":["US-citizen","age->=50"],"conclusion":["sex-Male"]},{"confidence":0.5,"conclusion_supp":2,"premise_supp":4,"premise":["US-citizen","sex-Male"],"conclusion":["age-30to<40"]},{"confidence":0.5,"conclusion_supp":2,"premise_supp":4,"premise":["US-citizen","sex-Male"],"conclusion":["employment-Unskilled"]},{"confidence":0.5,"conclusion_supp":2,"premise_supp":4,"premise":["US-citizen","sex-Male"],"conclusion":["age->=50"]},{"confidence":0.5,"conclusion_supp":2,"premise_supp":4,"premise":["US-citizen","sex-Male"],"conclusion":["education-HS-grad"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Male","age-30to<40"],"conclusion":["education-Bachelors","employment-Clerical"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Male","age-30to<40"],"conclusion":["education-HS-grad","employment-Unskilled"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["sex-Female","employment-Managerial"],"conclusion":["education-Bachelors","US-citizen","age->=50"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["sex-Female","employment-Managerial"],"conclusion":["age-30to<40","education-Masters"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","employment-Managerial"],"conclusion":["education-Bachelors","sex-Female"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","employment-Managerial"],"conclusion":["education-HS-grad","sex-Male"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Female","education-Bachelors"],"conclusion":["age->=50","employment-Managerial"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Female","education-Bachelors"],"conclusion":["employment-Professional","age-<30"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["sex-Female","employment-Managerial"],"conclusion":["education-Bachelors","US-citizen","age->=50"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["sex-Female","employment-Managerial"],"conclusion":["age-30to<40","education-Masters"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Female","education-Bachelors"],"conclusion":["age->=50","employment-Managerial"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Female","education-Bachelors"],"conclusion":["employment-Professional","age-<30"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","employment-Managerial"],"conclusion":["education-Bachelors","sex-Female"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","employment-Managerial"],"conclusion":["education-HS-grad","sex-Male"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","sex-Male"],"conclusion":["employment-Unskilled","education-11th"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","sex-Male"],"conclusion":["education-HS-grad","employment-Managerial"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Male","age-30to<40"],"conclusion":["education-Bachelors","employment-Clerical"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Male","age-30to<40"],"conclusion":["education-HS-grad","employment-Unskilled"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Male","employment-Unskilled"],"conclusion":["education-HS-grad","age-30to<40"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Male","employment-Unskilled"],"conclusion":["education-11th","age->=50"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","sex-Male"],"conclusion":["employment-Unskilled","education-11th"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","sex-Male"],"conclusion":["education-HS-grad","employment-Managerial"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["education-HS-grad","US-citizen","sex-Male"],"conclusion":["employment-Unskilled","age-30to<40"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["education-HS-grad","US-citizen","sex-Male"],"conclusion":["age->=50","employment-Managerial"]}]';
+var myobject=eval('('+myjson_text+')');
+
+//initialize scatter plot
+
+var size = 150,
+        padding = 19.5,
+        n = myobject.length;
+
+//Position scales
+var traits=['confidence','conclusion_supp','premise_supp','lift'];
+
+var x = {}, y = {};
+myobject.forEach(function(trait){trait['lift']=trait['confidence']/trait['conclusion_supp'];});
+
+var Ololobject = {'traits':traits};
+
+Ololobject['values'] = myobject;
+
+  Ololobject.traits.forEach(function(trait) {
+    var value = function(d) { return d[trait]; },
+        domain = [d3.min(Ololobject.values, value), d3.max(Ololobject.values, value)],
+        range = [padding / 2, size - padding / 2];
+    x[trait] = d3.scale.linear()
+    .domain(domain)
+    .range(range);
+
+    y[trait] = d3.scale.linear()
+    .domain(domain)
+    .range(range.slice().reverse());
+  });
+
+  // Axes.
+  var axis = d3.svg.axis()
+      .ticks(5)
+      .tickSize(size * traits.length);
+
+  // Brush.
+  var brush = d3.svg.brush()
+  
+      .on("brushstart", brushstart)
+      .on("brush", brush)
+      .on("brushend", brushend);
+  // Root panel.
+  var svg = d3.select("#chart").append("svg")
+      .attr("width", size * traits.length + padding)
+      .attr("height", size * traits.length + padding);
+
+  // X-axis.
+  svg.selectAll("g.x.axis")
+      .data(Ololobject.traits)
+    .enter().append("g")
+      .attr("class", "x axis")
+      .attr("transform", function(d, i) { return "translate(" + i * size + ",0)"; })
+      .each(function(d) { d3.select(this).call(axis.scale(x[d]).orient("bottom")); });
+
+  // Y-axis.
+  svg.selectAll("g.y.axis")
+      .data(Ololobject.traits)
+    .enter().append("g")
+      .attr("class", "y axis")
+      .attr("transform", function(d, i) { return "translate(0," + i * size + ")"; })
+      .each(function(d) { d3.select(this).call(axis.scale(y[d]).orient("right")); });
+
+  // Cell and plot.
+  var cell = svg.selectAll("g.cell")
+      .data(cross(Ololobject.traits, Ololobject.traits))
+    .enter().append("g")
+      .attr("class", "cell")
+      .attr("transform", function(d) { return "translate(" + d.i * size + "," + d.j * size + ")"; })
+      .each(plot);
+
+  // Titles for the diagonal.
+  cell.filter(function(d) { return d.i == d.j; }).append("text")
+      .attr("x", padding)
+      .attr("y", padding)
+      .attr("dy", ".71em")
+      .text(function(d) { return d.x; });
+
+  function plot(p) {
+    var cell = d3.select(this);
+
+    // Plot frame.
+    cell.append("rect")
+        .attr("class", "frame")
+        .attr("x", padding / 2)
+        .attr("y", padding / 2)
+        .attr("width", size - padding)
+        .attr("height", size - padding);
+
+    // Plot dot
+    cell.selectAll("circle")
+        .data(Ololobject.values)
+      .enter().append("circle")
+        .attr("class", function(d) { return 1; })
+        .attr("cx", function(d) { return x[p.x](d[p.x]); })
+        .attr("cy", function(d) { return y[p.y](d[p.y]); })
+        .attr("r",function(d){return 3;})
+        .on("mouseover", Matrix_View_MouseOver)
+        .on("mouseout", Matrix_View_MouseOut);
+
+    // Plot brush.
+    cell.call(brush.x(x[p.x]).y(y[p.y]));
+  d3.selectAll("rect.background").data([]).exit().remove();
+  }
+
+  // Clear the previously-active brush, if any.
+  function brushstart(p) {
+    if (brush.data !== p) {
+      cell.call(brush.clear());
+      brush.x(x[p.x]).y(y[p.y]).data = p;
+    }
+ // d3.select("g.brush").select(".extent").style("display", "block");
+  }
+
+  // Highlight the selected circles.
+  function brush(p) {
+    var e = brush.extent();
+    svg.selectAll("circle").attr("class", function(d) {
+      return e[0][0] <= d[p.x] && d[p.x] <= e[1][0]
+          && e[0][1] <= d[p.y] && d[p.y] <= e[1][1]
+          ? 1 : "spl";
+    });
+  }
+
+  // If the brush is empty, select all circles.
+  function brushend() {
+    if (brush.empty()) svg.selectAll("circle").attr("class", function(d) {
+      return 1;
+    });
+    d3.select("g.brush").style("pointer-events","all").selectAll(".resize").style("display", "none");
+        d3.select("g.brush").select(".extent").style("display", "none");
+        d3.select("body").style("cursor", null);
+    d3.selectAll("rect.background").data([]).exit().remove();
+  }
+
+  function cross(a, b) {
+    var c = [], n = a.length, m = b.length, i, j;
+    for (i = -1; ++i < n;) for (j = -1; ++j < m;) c.push({x: a[i], i: i, y: b[j], j: j});
+    return c;
+  }
+  
+ }

@@ -17,13 +17,16 @@ urlpatterns = patterns('api.views',
 urlpatterns += patterns('fca.views',
     (r'^fca/$', 'index'),
     (r'^fca/load_cxt/$', 'load_cxt'),
+    (r'^fca/show$', 'load_cxt'),
     #(r'^fca/compute/(?P<metric>\w+)/$', 'compute_metric'),
 )
 
 # SEMANTICS
 urlpatterns += patterns('semantics.views',
     (r'^semantics/$', 'index'),
-    #(r'^semantics/search/$', 'search'),
+    (r'^semantics/search$', 'search'),
+    (r'^semantics/context$', 'sparql2context'),
+    #(r'^semantics/search/(?P<format>\w+)$','search'),
 )
 
 ## ADMIN

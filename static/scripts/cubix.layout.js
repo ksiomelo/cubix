@@ -8,24 +8,46 @@
 var selectedConcepts = [];
 
 // This is for when user click outside toolbar, that hides it
+
+
 $(document).mouseup(function (e)
 		{
-		    /*var container = $(".toolbarPanel");
-		
-		    if (container.has(e.target).length === 0)
-		    {
-		        container.hide();
-		    }*/
+		    
 		   if (!$(e.target).closest('.toolbarPanel').length) {
         		$(".toolbarPanel").hide(); //toggleDiv(openDiv);
     		}
-
 
 });
 
 
 
+
+
+
 $(function() {
+	
+	/* 
+	 * Scroll lattice
+	 */
+	var scroller_object = $( "#chart" );
+	
+	 $(window).scroll(function() {
+        if( document.documentElement.scrollTop >= 102 || window.pageYOffset >= 102 )
+			{
+				if( $.browser.msie && $.browser.version == "6.0" )
+				{
+					scroller_object.css( "top", ( document.documentElement.scrollTop + 55 ) + "px" );
+				}
+				else
+				{
+					scroller_object.css( { position: "fixed", top: "55px" } );
+				}
+			}
+			else if( document.documentElement.scrollTop < 102 || window.pageYOffset < 102 )
+			{
+				scroller_object.css( { position: "absolute", top: "128px" } );
+			}
+    });
  	
  	/*
  	 * TOOLBAR
@@ -47,11 +69,32 @@ $(function() {
 	 	 $("#metricPanel").show();
 	 });
 	 
-	 $('li.explain').twipsy({
+	 $('li.explain').tooltip({
 		title: 'data-tooltip',
 		placement: "right",
-		delayIn: 800
+		delay: 800
 	});
+	
+	// Lattice / AR toggle
+	$("input:radio[name='toggle']").change(function(){
+		if($(this).val() == "rules") {
+			 //$("#dashboard_lattice").animate({width:"0px", opacity:0}, 400 );
+			 //$("#dashboard_ar").show("normal").animate({width:"40px", opacity:1}, 200);
+			 
+			 $('#dashboard_lattice').hide();
+			 $('#toolbar').hide();
+			 $('#dashboard_ar').show();
+			 d3.select("#chart").html("");
+			 fetchAssociationRules(initARView);
+			
+		} else { // lattice
+			 $('#dashboard_ar').hide();
+			 $('#toolbar').show();
+			 $('#dashboard_lattice').show();
+			changeVis('lattice'); // TODO back to the previous selected vis
+		}
+	});
+	
 
 	// TOOLBAR - METRICS   
  	$( "#slider-supp" ).slider({
@@ -102,18 +145,18 @@ $(function() {
 		changeVis($(this).attr('value'));
 	});
 	
-	$('option.explain').twipsy({
+	$('option.explain').tooltip({
 		title: 'data-tooltip',
 		placement: "right",
-		delayIn: 600
+		delay: 600
 	});
 	
-	$('span.explain').twipsy({
+	$('span.explain').tooltip({
 		live: true,
 		title: 'data-tooltip',
-		placement: "above",
+		placement: "top",
 		offset: 10,
-		delayIn: 600
+		delay: 600
 	});
 	
 	$( "input[name='highlight_path']" ).change( function(){
@@ -190,7 +233,7 @@ $(function() {
 	 */
 	
 		$( "#slider-layout" ).slider({
-			value:1,
+			value:3,
 			min: 1,
 			max: 3,
 			step: 1,
@@ -212,7 +255,7 @@ $(function() {
 			}
 		});
 		
-		$( "#layout_type" ).val( "Viewer");	
+		$( "#layout_type" ).val( "Dashboard");	
 		
 		
 		// drawing
@@ -318,9 +361,8 @@ $(function() {
         	alert("oi4")
         	changeOptionsChart(".draw-chart-1a", $(this).val());
     	});
-		 
-		// ADD		 
-		 
+    	
+    	createDistributionChart();
 		 
 		
 		
@@ -336,7 +378,7 @@ $(function() {
 		 });
 		
 		$('#context').popover({
-			placement: "below",
+			placement: "bottom",
 			html: "true",
 			trigger: "manual",
 			title: function() { return "Open cxt file";},
@@ -355,6 +397,7 @@ $(function() {
 		  $('a.compare').click(function(){
 		  	plotCompare();
 	     });
+	    
         
 		
 		

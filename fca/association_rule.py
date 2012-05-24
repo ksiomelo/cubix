@@ -14,8 +14,8 @@ class AssociationRule(models.Model):
     
     def to_dict(self, is_list=False):
         ar = {}
-        ar["premise"] = self.premise
-        ar["conclusion"] = self.conclusion
+        ar["premise"] = list(self.premise)
+        ar["conclusion"] = list(self.conclusion)
         ar["premise_supp"] = self.premise_supp
         ar["conclusion_supp"] = self.conclusion_supp
         ar["confidence"] = self.confidence

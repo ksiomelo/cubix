@@ -184,6 +184,7 @@ body {
   background-color: #ffffff;
   margin: 0;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  /*font: 12px Tahoma,Geneva,sans-serif;*/
   font-size: 13px;
   font-weight: normal;
   line-height: 18px;
@@ -1311,7 +1312,7 @@ table .headerSortUp.purple, table .headerSortDown.purple {
  * ---------------------------------------------------------------------------- */
 .topbar {
   height: 40px;
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
