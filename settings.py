@@ -140,7 +140,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 
-ROOT_URLCONF = 'cubix.urls' # WHEN DEPLOYING CHANGE TO "urls" !!
+ROOT_URLCONF = 'urls' # WHEN DEPLOYING CHANGE TO "urls" !!
+
 
 TEMPLATE_DIRS = (
     PROJECT_PATH + '/public/templates/'
