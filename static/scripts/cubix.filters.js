@@ -239,6 +239,7 @@ function loadFilters(){
 	  //var attribute = data.attributes[rawAttrs[i]];
 	  
 	  	var serie = [{
+	  		showInLegend: true,
 	  		animation: true,
 			type: 'pie',
 			name: rawAttrs[i],
@@ -262,6 +263,9 @@ function createChart(attrTitle, renderTo, theSeries){
 			plotShadow: false
 			//style : { overflow: "auto"}
 		},
+		credits: {
+        	enabled: false
+    	},
 		title: {
 			text: ''//attrTitle
 		},
@@ -271,14 +275,19 @@ function createChart(attrTitle, renderTo, theSeries){
 			}
 		},
 		legend : {
-			itemWidth : 80,
+			/*itemWidth : 80,
 			style: {width: "100px" },
 			
 			layout: "vertical",
 			backgroundColor: "#666",
 			align: 'right',
         	verticalAlign: 'middle',
-        	itemStyle: { color: '#fff'}
+        	itemStyle: { color: '#fff'}*/
+        	
+	        	//backgroundColor:  '#666',
+	        	layout: 'vertical',
+		        align: 'right',
+		        verticalAlign: 'top',
 		},
 		plotOptions: {
 			pie: {

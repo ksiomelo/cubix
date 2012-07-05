@@ -24,7 +24,7 @@ function changeVis(visType){
 	d3.select("#chart").html("");
 	
 	if (visType == 'lattice')  initLattice();
-	else if (visType == 'static-lattice')  initThisLattice();//initStaticLattice2();
+	else if (visType == 'static-lattice')  initStaticLattice();//initStaticLattice2();
     else if (visType == 'sunburst')  initSunburst();
     else if (visType == 'icicle')  initIcicle();
 	else if (visType == 'treemap')  treemap();
@@ -44,7 +44,7 @@ function updateVis(){
 	else if (currentVis == 'static-lattice')  updateStaticLattice();
     else if (currentVis == 'sunburst')  updateSunburst();
     else if (currentVis == 'icicle')  updateIcicle();
-	else if (currentVis == 'treemap')  treemap();
+	else if (currentVis == 'treemap')  tm_updateTree(getTree0);//treemap();
 	else if (currentVis == 'tree')  updateTree(getTree0());
 }
 
@@ -56,6 +56,14 @@ function updateVis(){
 /*
  * Static Lattice
  */
+
+
+function initStaticLattice(){
+	//calcInitialPlacement();
+	new MinIntersect().run();
+}
+
+
 
 function initStaticLattice2(){
 	vis = d3.select("#chart").append("svg:svg")
@@ -112,41 +120,6 @@ function initStaticLattice2(){
 }
 
 
-
-
-
-
-
-
-
-
-var foci = [{x: 150, y: 150}, {x: 350, y: 250}, {x: 700, y: 400},{x: 150, y: 150}, {x: 350, y: 250}, {x: 700, y: 400},{x: 150, y: 150}, {x: 350, y: 250}, {x: 700, y: 400},{x: 150, y: 150}, {x: 350, y: 250}, {x: 700, y: 400},{x: 150, y: 150}, {x: 350, y: 250}, {x: 700, y: 400},{x: 150, y: 150}, {x: 350, y: 250}, {x: 700, y: 400},{x: 150, y: 150}, {x: 350, y: 250}, {x: 700, y: 400},{x: 150, y: 150}, {x: 350, y: 250}, {x: 700, y: 400},{x: 150, y: 150}, {x: 350, y: 250}, {x: 700, y: 400},{x: 150, y: 150}, {x: 350, y: 250}, {x: 700, y: 400},{x: 150, y: 150}, {x: 350, y: 250}, {x: 700, y: 400},{x: 150, y: 150}, {x: 350, y: 250}];
-
-function initStaticLattice(){
-	force = d3.layout.force()
-        .gravity(0)
-        .charge(0)
-        .distance(100)
-        .on("tick", tickStatic)
-        .size([w, h]);
-        
-   	vis = d3.select("#chart").append("svg:svg")
-	.attr("width", "100%")
-    .attr("height", "100%")
-    .attr("viewBox", "0 0 "+w+" "+h);
-   // .attr("width", w);
-	
-	
-	updateStaticLattice();
-	
-	
-}
-
-
-function updateStaticLattice(){
-	updateLattice();
-	
-}
 
 
 function tickStatic(e) {
@@ -638,68 +611,146 @@ function clickCollapse(d) {
  * Tree map
  */
 
+var treemap, tm_root;
+
 function treemap(){
-	var w = 960,
-    h = 500,
-    color = d3.scale.category20c();
 
-	var treemap = d3.layout.treemap()
-	    .size([w, h])
-	    .sticky(true)
-	    .value(function(d) { return 1;/*d.size;*/ });
-	    
-	d3.select("#chart").html("");
-	
-	var div = d3.select("#chart").append("div")
-	    .style("position", "relative")
-	    .style("width", w + "px")
-	    .style("height", h + "px");
-	   
-	
-	//d3.json("../data/flare.json", function(json) {
-		var json = getTree0();
-		
-	  div.data([json]).selectAll("div")
-	      .data(treemap.nodes)
-	    .enter().append("div")
-	      .attr("class", "cell")
-	      .style("background", function(d) { return d.children ? color(d.name) : null; })
-	      .call(cell)
-	      .text(function(d) { return d.children ? null : d.name; });
-	
-	  
-	  // d3.select("#size").on("click", function() {
-	    // div.selectAll("div")
-	        // .data(treemap.value(function(d) { return d.size; }))
-	      // .transition()
-	        // .duration(1500)
-	        // .call(cell);
-// 	
-	    // d3.select("#size").classed("active", true);
-	    // d3.select("#count").classed("active", false);
-	  // });
-// 	
-	  // d3.select("#count").on("click", function() {
-	    // div.selectAll("div")
-	        // .data(treemap.value(function(d) { return 1; }))
-	      // .transition()
-	        // .duration(1500)
-	        // .call(cell);
-// 	
-	    // d3.select("#size").classed("active", false);
-	    // d3.select("#count").classed("active", true);
-	  // });
-	
+/* New code */
+console.log("initilizing treemap");
+
+m = [20, 120, 20, 120]; // margins
+    h = DEFAULT_WIDTH - m[1] - m[3];
+    w = DEFAULT_HEIGHT - m[0] - m[2];
+    duration = 500;
+treemap = d3.layout.treemap()
+   .size([h, w])
+   .sticky(true)
+.value( function(d){
+if (size_type==SIZE_SUPPORT)
+   return d.support;
+   else {
+   if (size_type==SIZE_STABILITY)
+   return d.stability;
+   else
+   return 1;
+   }
+   }
+
+   );
+
+ vis = d3.select("#chart").append("svg:svg")
+    .attr("width", w + m[1] + m[3])
+    .attr("height", h + m[0] + m[2])
+  .append("svg:g");
+   // .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+  tm_root = getTree0();//json;
+  tm_root.x0 = 0;
+  tm_root.y0 = 0;
+
+
+ function collapse(d) {
+if(d.children) {
+d._children = d.children;
+d._children.forEach(collapse);
+d.children = null;
+}
 }
 
-function cell() {
-  this
-      .style("left", function(d) { return d.x + "px"; })
-      .style("top", function(d) { return d.y + "px"; })
-      .style("width", function(d) { return d.dx - 1 + "px"; })
-      .style("height", function(d) { return d.dy - 1 + "px"; });
-}
+  tm_updateTree(tm_root);
 
+}
+function tm_updateTree(source) {
+
+  console.log("updating");
+
+  color = d3.scale.category20c();
+  // Compute the new tree layout.
+  var nodes = treemap.nodes(tm_root);//.reverse();
+  // Normalize for fixed-depth.
+  // Update the nodes…
+  var node = vis.selectAll("g.node")
+ /*function(d) { return 1 /*d.id;*/ /*|| (d.id = ++treei); } */
+      .data(nodes, function(){
+
+   if (size_type==SIZE_SUPPORT)
+   return d.support;
+   else {
+   if (size_type==SIZE_STABILITY)
+   return d.stability;
+   else
+   return 1;
+   }}
+   );
+
+  // Enter any new nodes at the parent's previous position.
+  var nodeEnter = node.enter().append("svg:g")
+      .attr("class", "node")
+      .attr("transform", function(d) { return "translate(" + tm_root.y0 + "," + tm_root.x0 + ")"; })
+      .on("click", clickCollapse);
+
+  nodeEnter.append("svg:rect")
+      .attr("x", function(d){return d.x; /*+3*d.depth*/})//1e-6)
+      .attr("y", function(d){return d.y; /*+15*d.depth*/})
+      .attr("width", function(d){return Math.max(0,d.dx /*-6*d.depth*/)})
+      .attr("height", function(d){return Math.max(0,d.dy /*-17*d.depth*/)})
+      .style("fill",function(d){return color(d.depth)})
+      .style("stroke","white")
+      .style("opacity",1/*0.5*/)
+      .on("mouseover", nodeMouseOver)
+.on("mouseout", nodeMouseOut);
+     
+  nodeEnter.append("svg:text")
+   .attr("class", "intent")
+      .attr("x", function(d) { return d.x; /*+7*d.depth*/})
+      .attr("y", function(d) { return d.y+30; /*+15*(d.depth+1)-2*/})
+  // .attr("dy", "-1.5em")
+  // .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+      .text(get_upper_label)//function(d) { return d.name; })
+      .style("fill-opacity", 1e-6);
+  
+  nodeEnter.append("svg:text")
+   .attr("class", "extent")
+      .attr("x", function(d) { return d.x; /*+7*d.depth +50*/})
+      .attr("y", function(d) { return d.y +15;/**(d.depth+1)-2*/})
+  // .attr("dy", "1.5em")
+  // .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+      .text(get_lower_label)//function(d) { return d.name; })
+      .style("fill-opacity", 1e-6);
+
+  // Transition nodes to their new position.
+
+  var nodeUpdate = node.transition()
+      .duration(duration)
+      .attr("transform", function(d) { return "translate(" + d.y0 + "," + d.x0 + ")"; });
+
+ // nodeUpdate.select("circle") // TODO eliminate this
+   // .attr("r", 4.5)
+      //.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+
+  nodeUpdate.selectAll("text")
+      .style("fill-opacity", 1);
+
+  // Transition exiting nodes to the parent's new position.
+  var nodeExit = node.exit().transition()
+      .duration(duration)
+      .style("fill-opacity",1)
+      .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
+      .remove();
+
+ // nodeExit.select("circle")
+  // .attr("r", 1e-6);
+
+  nodeExit.selectAll("text")
+      .style("fill-opacity", 1e-6);
+/*
+// Stash the old positions for transition.
+nodes.forEach(function(d) {
+d.x0 = d.x;
+d.y0 = d.y;
+});
+*/
+}
 
 
 

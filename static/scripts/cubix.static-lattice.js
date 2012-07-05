@@ -1,82 +1,99 @@
-var context = new function(){
+
+/* Add up some methods to the context
+ * 
+ */
+
+Context.prototype.upArrow = null;
+Context.prototype.upArrowUpdate = false;
+// 	
+	// var upArrowUpdate = false;
 	
-	var attributes = [];
-	var objects = [];
-	var rel = new Array();
 	
-	var upArrow = null;
-	
-	var upArrowUpdate = false;
-	
-	 this.getEntitiesCount = function () {
+Context.prototype.getEntitiesCount = function () {
 	 	return objects.length;
-	 };
-	 
-	 this.hasUpArrow = function (row, col) {
-	 	
-	 	//getUpArrow().getRelationAt(row, col);
-	 	
-	 	if (null == upArrow) {
-            upArrow = this.createRelation(attributes.length, objects.length); // TODO ATTR E OBJETOS? NAO O CONTRATIO?
-            upArrowUpdate = true;
-        }
-        if (upArrowUpdate) {
-            calcUpArrow();
-        }
-        //return upArrow;
-        
-        return upArrow
-        
-	 	
-	 };
-	 
-	 this.calcUpArrow = function() {
-        depthSearchArrowCalculator.calcUpArrow(upArrow);
-        upArrowUpdate = false;
-    };
-     
-    this.computeEntitiesOrder = function() { // para attr
-    	// calc attr order
-        return this.calcAttributesOrder(rel);
-    };
-    
-    this.calcAttributesOrder = function (relation) {
-        var size = this.attributes.length;//relation.getColCount();
-
-        ret = this.createRelation(size, size);
-        for (var i = 0; i < size; i++) {
-            for (var j = 0; j < size; j++) {
-                //ret.setRelationAt(i, j, isAttributeSubsetOf(relation, i, j));
-                ret[i][j] = this.isAttributeSubsetOf(relation,i,j);
-            }
-        }
-        return ret;
-    };
-
-    this.isAttributeSubsetOf = function(relation, attr1, attr2) {
-        for (var k = relation.length; --k >= 0;) { // for rel.getRowCount()
-            if (relation[k, attr1] && !relation[k, attr2]) {
-                return false;
-            }
-        }
-        return true;
-    };
-    
-    
-    this.createRelation = function (rows,cols) {
-    	var newRel = new Array();
-    	for (var i=0; i < rows; i++) {
-		  
-		  var cols = new Array();
-		  for (var j=0; j < cols; j++) {
-			cols[j] = null;
-		  };
-		  newRel[i] = cols;
-		};
-		return newRel;
-    }
-    
 }
+	 
+Context.prototype.hasUpArrow = function (row, col) {
+ 	
+ 	//getUpArrow().getRelationAt(row, col);
+ 	
+ 	if (null == this.upArrow) {
+        upArrow = this.createRelation(attributes.length, objects.length); // TODO ATTR E OBJETOS? NAO O CONTRATIO?
+        upArrowUpdate = true;
+    }
+    if (upArrowUpdate) {
+        calcUpArrow();
+    }
+    //return upArrow;
+    
+    return upArrow
+ 	
+ };
+ 
+ Context.prototype.calcUpArrow = function() {
+    depthSearchArrowCalculator.calcUpArrow(upArrow);
+    upArrowUpdate = false;
+};
+ 
+Context.prototype.computeEntitiesOrder = function() { // para attr
+	// calc attr order
+    return this.calcAttributesOrder(rel);
+};
+
+Context.prototype.calcAttributesOrder = function (relation) {
+    var size = this.attributes.length;//relation.getColCount();
+
+    ret = this.createRelation(size, size);
+    for (var i = 0; i < size; i++) {
+        for (var j = 0; j < size; j++) {
+            //ret.setRelationAt(i, j, isAttributeSubsetOf(relation, i, j));
+            ret[i][j] = this.isAttributeSubsetOf(relation,i,j);
+        }
+    }
+    return ret;
+};
+
+Context.prototype.isAttributeSubsetOf = function(relation, attr1, attr2) {
+    for (var k = relation.length; --k >= 0;) { // for rel.getRowCount()
+        if (relation[k, attr1] && !relation[k, attr2]) {
+            return false;
+        }
+    }
+    return true;
+};
+
+
+Context.prototype.createRelation = function (rows,cols) {
+	var newRel = new Array();
+	for (var i=0; i < rows; i++) {
+	  
+	  var cols = new Array();
+	  for (var j=0; j < cols; j++) {
+		cols[j] = null;
+	  };
+	  newRel[i] = cols;
+	};
+	return newRel;
+};
+
+
+
+
+
+//
+
+// var context = new function(){
+// 	
+	// var attributes = [];
+	// var objects = [];
+	// var rel = new Array();
+// 	
+	// var upArrow = null;
+// 	
+	// var upArrowUpdate = false;
+// 	
+// 	 
+// }
 
 
 var vectorsX = [];
@@ -85,6 +102,8 @@ var vectorsY = [];
 
 var base = 1.0;
 var stretch = 1.0;
+
+var order;
 
 function calcInitialPlacement() {
        // getDecompositionStrategy().setContext(lattice.getContext());
@@ -101,17 +120,20 @@ function computeDiagram() {
         vectorsY = [];
         
         //BinaryRelation order = getDecompositionStrategy().computeEntitiesOrder();
-        var order = context.computeEntitiesOrder();
+       order = context.computeEntitiesOrder();
         
-        computeChainDecomposition(order);
+       computeChainDecomposition(order);
         
-        calcConceptsPlacement();
+       // calcConceptsPlacement();
         
 }
 
 function computeChainDecomposition(order) {
         
         var reducibles = findReducibleEntities(order);
+        
+        /*
+        
         var edges = calcOrderGraphOfIrreducibleEntities(order, reducibles);
         
         var SIZE = order.getRowCount();
@@ -215,6 +237,7 @@ function computeChainDecomposition(order) {
         }
         
         assignChainNumbersForEntities(chains, order, reducibles, endsOfEdgesOfMatching, matching);
+        */
 }
 
 
@@ -234,9 +257,9 @@ function findReducibleEntities(order) {
         
         for (var v=0; v < size; v++) {
 
-            var isReducible = !getDecompositionStrategy().isEntityIrreducible(v);
+            var isReducible =  attr_isEntityIrreducible(v);///!getDecompositionStrategy().isEntityIrreducible(v);
             
-            for (var w = order.getSet(v).firstIn();
+            for (var w = order[v].shift();
                  w < v && w != -1;
                  w = order.getSet(v).nextIn(w)) {
                 isReducible = isReducible || order.getRelationAt(w, v);
@@ -251,7 +274,7 @@ function findReducibleEntities(order) {
 
 
 
-
+/*
 var depthSearchArrowCalculator = new function(){
 	var tempAttrSet;
 	var tempObjectSet;
@@ -334,14 +357,10 @@ var depthSearchArrowCalculator = new function(){
 	this.doCalcUpArrow = function (objects, attribs, depth) {
         var prohibitedSet = tempAttrSet;
         // here it plays this role
-        //*DBG*/ System.out.println("doUpCalcArrow:====================  "+depth);
-        //*DBG*/ System.out.println("prohibited "+nextClosure);
         var _currObjects = currObjects[depth];
         _currObjects = objects.slice(0);  //_currObjects.copy(objects); // TODO é isso mesmo??
-        //*DBG*/ System.out.println("objects:"+_currObjects);
         var _currAttribs = currAttribs[depth];
          _currAttribs = attribs.slice(0);// _currAttribs.copy(attribs);
-        //*DBG*/ System.out.println("attribs:"+_currAttribs);
         for (var j = _currAttribs.length(); --j >= 0;) {
             //objects, that lay outside from current extent
             //newExtent.clearSet();
@@ -364,19 +383,15 @@ var depthSearchArrowCalculator = new function(){
                 }
                 outAttribsDelta.copy(newIntent);
                 outAttribsDelta.andNot(outerSet);
-                //*DBG*/ System.out.println( j+" outAttribsDelta="+outAttribsDelta);
                 //now in outAttribsDelta attribs equal with current
                 prohibitedSet.or(outAttribsDelta);
 
                 newIntent.and(outerSet);
-                //*DBG*/ System.out.println( j+" less than "+newIntent);
-                //*DBG*/ System.out.println("out objects "+newExtent);
                 //now in newIntent attribs with greater extent width.r.t. current
                 if (!newExtent.isEmpty()) {
                     for (int i = newExtent.length(); --i >= 0;) {
                         if (newExtent.in(i)) {
                             Set tmp = rel.getSet(i);
-                            //*DBG*/ System.out.println(i+" :"+tmp);
                             if (newIntent.isSubsetOf(tmp)) {
                                 upArrow.getModifiableSet(i).or(outAttribsDelta);
                             }
@@ -388,6 +403,5 @@ var depthSearchArrowCalculator = new function(){
                 }
             }
         }
-        //*DBG*/ System.out.println("------------------------------------");
     }
-};
+};*/

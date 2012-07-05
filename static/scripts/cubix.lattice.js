@@ -50,6 +50,7 @@ var _data_attributes, _data_objects;
  */
 
 var context;
+var lattice;
 var lattice_id;
 
 function loadData(json){
@@ -64,7 +65,7 @@ function loadData(json){
 	_data_objects = data.objects.slice(0);
 	
 	context = new Context(data.context.objects,data.context.attributes,data.context.rel,data.context.attributes)
-	
+	lattice = new Lattice(data);
 	
 	// load autosuggest for attributes
 	$("input.search").tokenInput(getAttributeValuesPairs(),{
@@ -113,6 +114,7 @@ function loadData(json){
 	
 	
 }
+
 
 
 function initLattice(){

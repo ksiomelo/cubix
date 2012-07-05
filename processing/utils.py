@@ -349,7 +349,7 @@ class FCAUtils(object):
             if (not added_c.__contains__(cur)): # if it was not added
                 concept = {}
                 concept["id"] = lattice.index(cur)
-                concept["name"] = "A: [" + ",".join(cur.intent) + '] === ' + "O: [" + ",".join(cur.extent) + "]"
+                #concept["name"] = "A: [" + ",".join(cur.intent) + '] === ' + "O: [" + ",".join(cur.extent) + "]"
                 concept["intent"] = list(cur.intent)
                 concept["extent"] = list(cur.extent)
                 concept["parents_ids"] = map(lambda x: lattice.index(x), lattice.parents(cur))
@@ -367,7 +367,7 @@ class FCAUtils(object):
                 if (not added_c.__contains__(child)): # if it was not added
                     concept = {}
                     concept["id"] = lattice.index(child)
-                    concept["name"] = "A: [" + ",".join(child.intent) + '] === ' + "O: [" + ",".join(child.extent) + "]"
+                    #concept["name"] = "A: [" + ",".join(child.intent) + '] === ' + "O: [" + ",".join(child.extent) + "]"
                     concept["intent"] = list(child.intent)
                     concept["extent"] = list(child.extent)
                     concept["parents_ids"] = map(lambda x: lattice.index(x), lattice.parents(child))
@@ -384,8 +384,8 @@ class FCAUtils(object):
                     
                     
                 link = {}
-                link["source"] = p_index
-                link["target"] = child_index
+                link["source"] = child_index
+                link["target"] = p_index 
                 link["value"] = 1
                 
                 links.append(link)

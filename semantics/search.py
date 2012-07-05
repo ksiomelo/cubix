@@ -61,7 +61,7 @@ class Semantic(object):
     
     @staticmethod
     def search_sparqlwrapper(prefix, query):
-        sparql = SPARQLWrapper("http://127.0.0.1:8080/openrdf-sesame/repositories/wine")
+        sparql = SPARQLWrapper("http://127.0.0.1:8080/openrdf-sesame/repositories/test")
         #sparql = SPARQLWrapper("http://dbpedia.org/sparql")
         
         sparql.setQuery(prefix + """ """ + query)
@@ -83,7 +83,7 @@ class Semantic(object):
         tempRel = dict([])
         
         queryString = "SELECT ?subj ?prop ?obj WHERE { ?o1 a ?class . ?subj a ?o1 .  ?subj ?prop ?obj. }"
-        sparql = SPARQLWrapper2("http://127.0.0.1:8080/openrdf-sesame/repositories/wine")
+        sparql = SPARQLWrapper2("http://127.0.0.1:8080/openrdf-sesame/repositories/test")
         # add a default graph, though that can also be in the query string
         #sparql.addDefaultGraph("http://www.example.com/data.rdf")
         sparql.setQuery(queryString)

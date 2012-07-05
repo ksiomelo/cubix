@@ -140,8 +140,8 @@ function initARView(){
 	
 	vis.append("rect")
 	      .attr("class", "background")
-	      .attr("width", width)
-	      .attr("height", height);
+	      .attr("width", w)
+	      .attr("height", h);
 	  
   var row = vis.selectAll(".row")
       .data(matrix)
