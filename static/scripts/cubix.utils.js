@@ -11,10 +11,117 @@ function flatten(root) {
   return nodes;
 }
 
+/*
+ * Clearing redundancy
+ */
 
+function unique_set (in_Array,is_rule_array)
+{
+	function compare_splines(spl1,spl2)
+	{
+		//true if equals
+		result=true;
+		if (spl1.length!==spl2.length) {return false;}
+		else
+		{
+			for (k=0;k<spl1.length;k++){ 
+				//console.log(spl1[k],spl2[k]);
+				if (!compare_objects(spl1[k],spl2[k])) result=false;}
+		}
+		return result;
+	}
+is_rule_array || (is_rule_array = false);
+arr=[];
+if (is_rule_array)
+{
+	for (i=0;i<in_Array.length;i++)
+	{
+		flag=true;
+		for (j=0;j<arr.length;j++)
+		{
+			if (compare_splines(arr[j],in_Array[i])) flag=false;
+		}
+		if (flag) arr.push(in_Array[i]);
+	}	
+}
+else
+{ for (i=0;i<in_Array.length;i++)
+	{
+		flag=true;
+		for (j=0;j<arr.length;j++)
+		{
+			if (compare_objects(arr[j],in_Array[i])) flag=false;
+		}
+		if (flag) arr.push(in_Array[i]);
+	}
+}
 
+return arr;
+}
 
+/*
+ * Comparing objects
+ */
 
+var compare_objects = function (x, y){
+  if ( x === y ) return true;
+    // if both x and y are null or undefined and exactly the same
+
+  if ( ! ( x instanceof Object ) || ! ( y instanceof Object ) ) return false;
+    // if they are not strictly equal, they both need to be Objects
+
+  if ( x.constructor !== y.constructor ) return false;
+    // they must have the exact same prototype chain, the closest we can do is
+    // test there constructor.
+
+  for ( var p in x ) {
+    if ( ! x.hasOwnProperty( p ) ) continue;
+      // other properties were tested using x.constructor === y.constructor
+
+    if ( ! y.hasOwnProperty( p ) ) return false;
+      // allows to compare x[ p ] and y[ p ] when set to undefined
+
+    if ( x[ p ] === y[ p ] ) continue;
+      // if they have the same strict value or identity then they are equal
+
+    if ( typeof( x[ p ] ) !== "object" ) return false;
+      // Numbers, Strings, Functions, Booleans must be strictly equal
+
+    if ( ! Object.equals( x[ p ],  y[ p ] ) ) return false;
+      // Objects and Arrays must be tested recursively
+  }
+
+  for ( p in y ) {
+    if ( y.hasOwnProperty( p ) && ! x.hasOwnProperty( p ) ) return false;
+      // allows x[ p ] to be set to undefined
+  }
+  return true;
+};
+
+/*
+ * Comparing association rules:: we can't use compare objects because rules have subarrays: premise & conclusion 
+ */
+
+function compare_a_rules(rule1,rule2)
+{
+	          	tmp1=Object();
+          		tmp2=Object();
+          		
+          		tmp1.prem=clone(rule1.premise);
+          		tmp1.conc=clone(rule1.conclusion);
+          		tmp2.prem=clone(rule2.premise);
+          		tmp2.conc=clone(rule2.conclusion);          		
+          		
+          		sub_sets_equal = compare_objects(tmp1.prem,tmp2.prem) && compare_objects(tmp1.conc,tmp2.conc);
+          		
+          		tmp1=clone(rule1);
+          		tmp2=clone(rule2);
+          		tmp1.premise=1;
+          		tmp1.conclusion=1;
+          		tmp2.premise=1;
+          		tmp2.conclusion=1;	
+	return compare_objects(tmp1,tmp2) && sub_sets_equal;
+}
 
 /*
  * Matrix Utils
@@ -53,6 +160,27 @@ Array.prototype.transpose = function() {
   return t;
 };
 
+/*
+ * Object cloning
+ */
+
+function clone(o) {
+	if(!o || "object" !== typeof o)  {
+		return o;
+	}
+	var c = "function" === typeof o.pop ? [] : {};
+	var p, v;
+	for(p in o) {
+		if(o.hasOwnProperty(p)) {
+			v = o[p];
+			if(v && "object" === typeof v) {
+				c[p] = clone(v);
+			}
+		else c[p] = v;
+		}
+	}
+	return c;
+}
 
 /*
  * Colection Utils
@@ -159,12 +287,6 @@ function getKeys(h){
 	var keys = [];
 	for (var k in h) keys.push(k);
 	return keys;
-}
-
-function ArrayFill(array, value){
-	for (var i=0; i < array.length; i++) {
-	  array[i] = value;
-	};
 }
 
 

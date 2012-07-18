@@ -64,6 +64,10 @@ function loadData(json){
 	_data_attributes = HashClone(data.attributes); // TODO deep copy??
 	_data_objects = data.objects.slice(0);
 	
+		// association rules objects
+	data.a_rules_concerned_attributes=clone(data.attributes);
+	_data_a_rules_concerned_attributes=clone(data.attributes);
+	
 	context = new Context(data.context.objects,data.context.attributes,data.context.rel,data.context.attributes)
 	lattice = new Lattice(data);
 	

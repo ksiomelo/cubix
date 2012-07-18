@@ -2,6 +2,7 @@
  * Visualisations
  */
 var currentVis = 'lattice';
+var previousVis = 'lattice';
 
 var w = 960,
     h = 500;
@@ -19,19 +20,24 @@ function redrawVis(){
 	changeVis(currentVis);
 }
 
+
 function changeVis(visType){
+	prevIndex=-1;
+	//$("#rules_container").css("display","none");
+  	
+  	d3.select("#chart").html("");
+
+	if (visType == 'lattice') initLattice();
+	else if (visType == 'static-lattice') initThisLattice();//initStaticLattice2();
+    else if (visType == 'sunburst') initSunburst();
+    else if (visType == 'icicle') initIcicle();
+	else if (visType == 'treemap') treemap();
+	else if (visType == 'tree') initTree();
 	
-	d3.select("#chart").html("");
-	
-	if (visType == 'lattice')  initLattice();
-	else if (visType == 'static-lattice')  initStaticLattice();//initStaticLattice2();
-    else if (visType == 'sunburst')  initSunburst();
-    else if (visType == 'icicle')  initIcicle();
-	else if (visType == 'treemap')  treemap();
-	else if (visType == 'tree')  initTree();
-	else if (visType == 'matrixview') init_matrix_view();
-	else if (visType == 'scatterplot') init_scatter_plot();
-	
+	else if (visType == 'matrixview') { initARView(); createRulesList();}
+	else if (visType == 'radiagram') { initDiagonalARView(); createRulesList();}
+	else if (visType == 'gg_ar_plot') { init_gg_plot(); createRulesList(); }
+
 	currentVis = visType;
 }
 

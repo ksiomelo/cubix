@@ -1,7 +1,8 @@
 Highcharts.theme = { colors: ['#4572A7'] };// prevent errors in default theme
 var highchartsOptions = Highcharts.getOptions(); 
 
-
+//Radial view rules list
+var prevIndex=-1;
 
 function removeWatermarks(){
 	$('text[text-anchor="end"]').remove();
@@ -12,6 +13,9 @@ function loadDashboard(){
 	multiSelectOptionsForAttributes("#control_2");
 	
 	$("#control_1, #control_2").multiSelect(); // this line must be placed after the items to the option are loaded
+	
+	
+	updateDistributionChart(lattice.topConcept); // shows the distribution chart for the top node initially
 	
 }
 function multiSelectOptionsForAttributes(multiSelectControlId){
@@ -214,11 +218,130 @@ function updateDistributionChart(d){
 			
 			distributionChart.series[0].setData(sumData);
 			distributionChart.xAxis[0].setCategories(subcontext.attributeNames);
-			distributionChart.redraw();
+			//distributionChart.redraw();
 	
 }
 
+/*
+* SCATTERPLOT CHART
+*/
 
+
+function createScatterPlotChart() {
+	distributionChart = new Highcharts.Chart({
+		chart : {
+			renderTo : "sc_pl_div",
+			type : 'area',
+			margin : [50, 50, 100, 80]
+		},
+		title : {
+			text : "Association Rules Distribution"
+		}
+	});
+
+	distributionChart.container.innerHTML = "";
+	init_scatter_plot(distributionChart.container);
+}
+
+/*
+ * Rules list for radial view
+ */
+
+function createRulesList() {
+	a1 = [];
+	a2 = [];
+	for( i = 0; i < association_rules.length; i++) {
+		a1.push(association_rules[i].id);
+		a2.push(association_rules[i].confidence);
+	}
+	chart = new Highcharts.Chart({
+
+		chart : {
+			renderTo : 'rules_render_area',
+			type : 'bar',
+			events : {
+				'click' : function(event) {
+					if(prevIndex !== -1) {
+
+						for( t = 0; t < this.series[0].data.length; t++) {
+							if(this.series[0].data[t].category == prevIndex) {
+								this.series[0].data[t].update({
+									color : '#4572A7'
+								}, true, false);
+								break;
+							}
+						}
+						d3.select("#chart").select("svg").selectAll("path").style("opacity", 0.99);
+						prevIndex = -1;
+					}
+				}
+			}
+		},
+		title : {
+			text : 'Generated rules'
+		},
+		legend : {
+			enabled : null
+		},
+		xAxis : {
+			categories : a1,
+			title : {
+				text : null
+			}
+		},
+		yAxis : {
+			min : 0,
+			title : {
+				text : null,
+				align : 'high'
+			},
+			labels : {
+				overflow : 'justify'
+			}
+		},
+		tooltip : {
+			formatter : function() {
+				return '' + this.series.name + ': ' + this.y;
+			}
+		},
+		plotOptions : {
+			bar : {
+				dataLabels : {
+					enabled : true
+				},
+				events : {
+					'click' : function(event) {
+
+						if(prevIndex !== -1) {
+
+							for( t = 0; t < this.data.length; t++) {
+								if(this.data[t].category == prevIndex) {
+									this.data[t].update({
+										color : '#4572A7'
+									}, true, false);
+									break;
+								}
+							}
+						}
+						event.point.update({
+							color : '#f00'
+						}, true, false)
+						d3.select("#chart").select("svg").selectAll("path").style("opacity", function(d) {
+							return d[4].id == event.point.category ? 0.99 : 0.1;
+						});
+						prevIndex = event.point.category;
+					}
+				}
+			}
+		},
+
+		series : [{
+			name : 'Confidence',
+			data : a2
+		}]
+	});
+
+}
 
 
 function updateDashboard(){

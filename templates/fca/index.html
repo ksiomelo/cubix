@@ -126,10 +126,13 @@
 
 
 
-<div class="row">
+<div class="span12">
 	<div id="chart" class="span6"></div>
+	<!--
+	<div class="span6" style="">&nbsp;</div>
+	-->
 	
-	<div id="columns">
+	<div id="columns" class="span6">
 		<ul id="dashboard_lattice" class="column">
             <!--
             <li class="widget color-green" id="intro">
@@ -224,24 +227,21 @@
         </ul>
 		
 		<ul id="dashboard_ar" class="column" style="display: none">
-            <li class="widget color-green" id="intro">
+			
+			
+            <li class="widget color-silver" id="intro">
                 <div class="widget-head">
-                    <h3>Association Rules</h3>
+                    <h3>Association rules distribution</h3>
                 </div>
-                <div class="widget-content">
-                    <p>Hello, welcome to the <strong>Cubix</strong> demonstration. The tutorial which details how this interface was created can be found on.</p>
-                    <p>This demo and its accompanying tutorial were made by <a href="http://james.padolsey.com">Cassio Melo</a>.</p>
-                <p>NOTE: You'll notice that you cannot move, edit, remove or collapse this particular widget - the script which this is running on allows for per-widget settings and this widget has been set not to allow closing, editing, collapsing or moving.</p>
+                <div class="widget-content" id="sc_pl_div">
+                    
                 </div>
             </li>
-             <li class="widget color-green">  
-                <div class="widget-head">
-                    <h3>Chart</h3>
+             <li class="widget color-silver" id="rules_container">
+                <div class="widget-head" >
+                    <h3>Generated rules</h3>
                 </div>
-                <div class="widget-content">
-                    <ul>
-                        <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aliquam magna sem, fringilla in, commodo a, rutrum ut, massa. Donec id nibh eu dui auctor tempor. Morbi laoreet eleifend dolor. Suspendisse pede odio, accumsan vitae, auctor non, suscipit at, ipsum. Cras varius sapien vel lectus.</li>  
-                    </ul>
+                <div class="widget-content" id="rules_render_area">
                 </div>
             </li>
         </ul>

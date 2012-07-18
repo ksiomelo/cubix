@@ -6,7 +6,7 @@ var filter = new function() { // hashmap do filter (with excluded nodes from ori
     this.history = [];
     
     this.addFilter = function (filterType, attr, value, excludedNodes) {
-    	
+			
 			var removedEntities = eliminateEntities(); // eliminate objs attsr
 			
 			updateVisualFilters(); // this must be called AFTER add/remove entities
@@ -17,6 +17,44 @@ var filter = new function() { // hashmap do filter (with excluded nodes from ori
 	        obj.value = value;
 	        obj.excludedNodes = excludedNodes;
 	        obj.remObjs = removedEntities[0];
+	        
+	        //2 modes - one with generated a_rules and one without
+	        if (association_rules!==undefined)
+	        {
+	        	
+	        	// Here remove rules from global variable
+	        	association_rules=full_association_rules;
+	        	obj.removedRules=[];	
+				arrjs=[];
+					for (j=0;j<association_rules.length;j++)
+					{
+						
+						flag=true;
+						
+						for (k=0;k<association_rules[j].premise.length;k++)
+						{
+							if (association_rules[j].premise[k]==obj.attr+'-'+obj.value) { flag=false;} //break;}
+						}
+						for (k=0;k<association_rules[j].conclusion.length;k++)
+						{
+							if (association_rules[j].conclusion[k]==obj.attr+'-'+obj.value) { flag=false;} // break;}
+						}
+						
+						//If attr=value is not in premise/conclusion => remove rule
+						
+						if (flag) {obj.removedRules.push(association_rules[j]); arrjs.push(j);}					 
+					}
+	        	
+	        	for (t=0;t<arrjs.length;t++){association_rules.splice(arrjs[t]-t,1);}
+	        	
+	        	full_association_rules=association_rules;
+	        	
+	        	
+	        	createScatterPlotChart();
+	        	
+	        }
+	        
+	        //obj.remRules =[];
 	        obj.remAttrsVals = removedEntities[1];
 	        //obj.excludedEdges = excludedEdges;
 		   
@@ -31,11 +69,60 @@ var filter = new function() { // hashmap do filter (with excluded nodes from ori
     };
     
     this.removeFilterAt = function (idx) {
+    	//if there are any reset rules
+    	
+    	if (this.history[idx].removedRules) {
+    		/* Here we should distribute rules over filters*/
+    		if (idx!==(this.history.length-1)) {
+    		for (j=0;j<this.history[idx].removedRules.length;j++)
+    		{
+    			console.log("going through rule",j);
+    			attributed=false;
+	    		for (i=idx+1;(i<this.history.length && (!attributed));i++)
+	    		{
+    				console.log("going through filter",i);
+	    			console.log(this.history[idx].removedRules[j].premise,this.history[idx].removedRules[j].conclusion);
+	    			for (k=0;k<this.history[idx].removedRules[j].premise.length;k++)
+	    			{
+	    				if (this.history[idx].removedRules[j].premise[k]==this.history[i].attr+'-'+this.history[i].value) 
+	    					{
+	    					association_rules.push(this.history[idx].removedRules[j]);	   
+	    					attributed=true;
+	    					break;
+	    					};
+	    			}
+	    			if (!attributed) for (k=0;k<this.history[idx].removedRules[j].conclusion.length;k++)
+	    			{
+	    				if (this.history[idx].removedRules[j].conclusion[k]==this.history[i].attr+'-'+this.history[i].value) 
+	    					{
+	    					association_rules.push(this.history[idx].removedRules[j]);
+	    					attributed=true;
+	    					break;
+	    					};
+	    			}
+	    	
+	    		//if (!attributed) {full_association_rules.push(this.history[idx].removedRules[j]);}		
+	    		if (!attributed) {this.history[i].removedRules.push(this.history[idx].removedRules[j]);}		
+	    		}
+    		}
+    		//full_association_rules=full_association_rules.concat(this.history[idx].removedRules);
+    		
+    		 
+    		 		
+    		
+    	} else {
+    	association_rules=association_rules.concat(this.history[idx].removedRules);
+    	}
+    	
+    	full_association_rules=association_rules;
+    	createScatterPlotChart();
+    	}
     	
     	addEntities(this.history[idx].remObjs, this.history[idx].remAttrsVals); // re add entities
     	updateVisualFilters(); // this must be called AFTER add/remove entities
     	
 		ArrayRemove(this.history,idx);
+	
     };
     
     this.indexOfAttr = function (attr) {
@@ -102,6 +189,7 @@ function removeFilter(aname, avalue){
     	
     	for (var i=0; (i < filter.history.length) && (remainingNodes.length > 0); i++) { //idxFilter+1 nao funciona (ex. mammal, preying, -preying)
 		  remainingNodes = ArraySubtract(remainingNodes, filter.history[i].excludedNodes);
+		  
 		};
     	
     	 
@@ -133,6 +221,13 @@ function resetFilters(){
 	
 	$("#showFiltersPanel").html("<span>Filters &raquo;</span>");
 	
+	if (association_rules){
+		for (i=0;i<filter.history.length;i++)
+		{
+			association_rules=association_rules.concat(filter.history[i].removedRules);
+		}
+	} 
+	full_association_rules=association_rules;
 	filter.clear();
 	
 	// close slices
@@ -161,6 +256,7 @@ function resetFilters(){
 	
 	
 	updateVis();
+	createScatterPlotChart();
 }
 
 
@@ -175,7 +271,7 @@ function keepLinks(){
 
 
 
-function clickFilterValue(){ //boolean aatributes
+function clickFilterValue(){ //boolean atributes
   //alert(this.series.name + '|'+this.name +'|'+ this.y +'|'+ this.sliced+' | was last selected');
     
     var svalue = this.name;
@@ -239,7 +335,6 @@ function loadFilters(){
 	  //var attribute = data.attributes[rawAttrs[i]];
 	  
 	  	var serie = [{
-	  		showInLegend: true,
 	  		animation: true,
 			type: 'pie',
 			name: rawAttrs[i],
@@ -263,9 +358,6 @@ function createChart(attrTitle, renderTo, theSeries){
 			plotShadow: false
 			//style : { overflow: "auto"}
 		},
-		credits: {
-        	enabled: false
-    	},
 		title: {
 			text: ''//attrTitle
 		},
@@ -275,19 +367,14 @@ function createChart(attrTitle, renderTo, theSeries){
 			}
 		},
 		legend : {
-			/*itemWidth : 80,
+			itemWidth : 80,
 			style: {width: "100px" },
 			
 			layout: "vertical",
 			backgroundColor: "#666",
 			align: 'right',
         	verticalAlign: 'middle',
-        	itemStyle: { color: '#fff'}*/
-        	
-	        	//backgroundColor:  '#666',
-	        	layout: 'vertical',
-		        align: 'right',
-		        verticalAlign: 'top',
+        	itemStyle: { color: '#fff'}
 		},
 		plotOptions: {
 			pie: {

@@ -1,4 +1,57 @@
 
+// visualisations options for lattice
+var latticeVisOpts = [
+	{ 
+		name: "FD Lattice",
+		val: "lattice",
+		tooltip: "A Hasse diagram with dynamic arrangement"
+	}, 
+	{ 
+		name: "Static Lattice",
+		val: "static-lattice",
+		tooltip: "A static Hasse diagram"
+	}, 
+	{ 
+		name: "Tree",
+		val: "tree",
+		tooltip: "A concept in a tree has only one parent and no edges crossings"
+	}, 
+	{ 
+		name: "Treemap",
+		val: "treemap",
+		tooltip: "A treemap subdivides area into rectangles each of them is sized according to some metric"
+	}, 
+	{ 
+		name: "Sunburst",
+		val: "sunburst",
+		tooltip: "A radial tree-like layout where the root node is at the center, with leaves on the circumference"
+	}, 
+	{ 
+		name: "iCicle",
+		val: "icicle",
+		tooltip: "Similar to sunburst but not radial"
+	}, 
+	
+];
+
+// visualisations for association rules
+var ARVisOpts = [
+	{ 
+		name: "Matrix",
+		val: "matrixview",
+		tooltip: "Association rules interdependence"
+	}, 
+	{ 
+		name: "Radial diagram",
+		val: "radiagram",
+		tooltip: "Association rules interdependence"
+	}, 
+	{ 
+		name: "Grouped circles",
+		val: "gg_ar_plot",
+		tooltip: "Grouped graph of association rules"
+	}, 
+];
 
 
 /*
@@ -8,18 +61,12 @@
 var selectedConcepts = [];
 
 // This is for when user click outside toolbar, that hides it
-
-
 $(document).mouseup(function (e)
-		{
-		    
-		   if (!$(e.target).closest('.toolbarPanel').length) {
-        		$(".toolbarPanel").hide(); //toggleDiv(openDiv);
-    		}
-
+	{
+	   if (!$(e.target).closest('.toolbarPanel').length) {
+		$(".toolbarPanel").hide(); //toggleDiv(openDiv);
+	}
 });
-
-
 
 
 
@@ -32,6 +79,14 @@ $(function() {
 	var scroller_object = $( "#chart" );
 	
 	 $(window).scroll(function() {
+	 	
+	 	// association rules
+	 	if (currentVis == "matrixview" || currentVis == "radiagram" || currentVis == "gg_ar_plot" ) {
+	 		scroller_object.css( { position: "absolute", top: "128px" } );
+	 		return;
+	 	}
+	 	
+	 	// lattice
         if( document.documentElement.scrollTop >= 102 || window.pageYOffset >= 102 )
 			{
 				if( $.browser.msie && $.browser.version == "6.0" )
@@ -75,26 +130,34 @@ $(function() {
 		delay: 800
 	});
 	
-	// Lattice / AR toggle
+		// Lattice / AR toggle
 	$("input:radio[name='toggle']").change(function(){
 		if($(this).val() == "rules") {
-			 //$("#dashboard_lattice").animate({width:"0px", opacity:0}, 400 );
-			 //$("#dashboard_ar").show("normal").animate({width:"40px", opacity:1}, 200);
-			 
-			 $('#dashboard_lattice').hide();
-			 $('#toolbar').hide();
-			 $('#dashboard_ar').show();
-			 d3.select("#chart").html("");
-			 fetchAssociationRules(initARView);
 			
+			$('#dashboard_lattice').hide();
+			
+			$('#dashboard_ar').show();
+			
+			d3.select("#chart").html("");
+			
+			fetchAssociationRules(initARView);
+			currentVis="matrixview";
+			buildOptionsForSelect(ARVisOpts, "select-vis", "matrixview");
+		
 		} else { // lattice
-			 $('#dashboard_ar').hide();
-			 $('#toolbar').show();
-			 $('#dashboard_lattice').show();
+			$('#dashboard_ar').hide();
+			$('#toolbar').show();
+			$('#dashboard_lattice').show();
 			changeVis('lattice'); // TODO back to the previous selected vis
+			buildOptionsForSelect(latticeVisOpts, "select-vis", "matrix");
 		}
+		
 	});
 	
+	
+	
+	// TOOLBAR - VISUALISATIONS
+	buildOptionsForSelect(latticeVisOpts, "select-vis", "lattice");
 
 	// TOOLBAR - METRICS   
  	$( "#slider-supp" ).slider({
@@ -189,10 +252,13 @@ $(function() {
 		$("input.search").tokenInput("clear"); // removes also string in search
 	});
 	
-	$("a.remove-filter").live("click",function(){
+	$("a.remove-filter").live("click",function(e){
 		var pid = this.parentNode.id.split('-');
 		if (pid.length > 1) removeFilter(pid[0],pid[1]);
 		else removeFilter(pid[0]);
+		
+		e.stopPropagation();
+		return false;
 	});
 	
 	// end search
@@ -317,7 +383,8 @@ $(function() {
 			 $("#showFiltersPanel").show("normal").animate({height:"20px", opacity:1}, 200);
 			 
 		 });
-		 $("#showFiltersPanel").click(function(){
+		 $("#showFiltersPanel").live("click",function(){
+
 			 $("#thepanel").animate({marginLeft:"0px"}, 400 );
 			 $("#filtersPanel").animate({height:"210px", opacity:1}, 400 );
 			// $("#filtersPanel").show();
@@ -403,53 +470,7 @@ $(function() {
 		
 });
 
-function inflateDiv(layoutType){
-	//var cnt = d3.select("#row1");
-	
-	if (layoutType == 1) $('#row1').slideUp('slow');
-	else if (layoutType == 2) {
-		$('#row1').slideDown('slow', function(){
-			//createHorizontalBarChart("box1a-chart"); // TODO remove ?
-			//getTimeLine();
-		});
-		
-	   // d3.select("svg")
-	      //.attr("viewBox", "0 0 600 600")
-	    //  .attr("height", "1280")
-	    //  .attr("preserveAspectRatio", "none"); 
-   }  else if (layoutType == 3) {
-   	 $("#column1").animate({width:"675px"}, 500 );
-   //	 $('#column1').show("slide", { direction: "left" }, 500);//slideLeft('slow');
-   }
-   
-}
 
-
-
-
-/*
- * Search suggestion
- */
-// function getAttributeValuesPairs(attr){ // eg output: ["mammal-yes", "size>30"]
-	// var ret = [];
-// 	
-	// var values = data.attributes[attr];
-	 // for (var j=0; j < values.length; j++) { 
-	  // ret.push(attr+'-'+values[j][0]);
-	 // };
-// 	
-// 	
-	// return ret;
-// }
-
-
-// <optgroup label="Gene">
-						// <option value="option_1">Bmp4</option>
-						// <option value="option_1">Gast</option>
-						// <option value="option_1">Lif</option>
-						// <option value="option_2">Cxcr4</option>
-						// <option value="option_2">Abo</option>
-					// </optgroup>
 
 
 
@@ -525,7 +546,29 @@ function selectionAdded(elem) {
 
 
 
+/*
+ * Visualisations
+ */
 
+// Dynamically populate visualisations for Lattice or Association Rules
+function buildOptionsForSelect(options, selectId, defaultVal) {
+    
+    var $select = $('#'+selectId);
+    $select.empty();
+    
+    var $option;
+
+	for (var i=0; i < options.length; i++) {
+	  
+	   $option = $('<option value="' + options[i].val + '" class="explain"  data-tooltip="'+options[i].tooltip+'">' + options[i].name + '</option>');
+        if (options[i].val == defaultVal) {
+            $option.attr('selected', 'selected');
+        }
+        $select.append($option);
+	  
+	};
+    
+}
 
 
 
