@@ -13,7 +13,6 @@
 <!-- bootstrap popovers -->
 <script type="text/javascript" src="{{STATIC_URL}}scripts/bootstrap-tooltip.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/bootstrap-popover.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}scripts/bootstrap-modal.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/bootstrap-tabs.js"></script>
 <!-- highcharts -->
 <script type="text/javascript" src="{{STATIC_URL}}scripts/highcharts.2.2.2.js"></script>
@@ -27,6 +26,7 @@
 <link type="text/css" href="{{STATIC_URL}}styles/token-input-facebook.css" rel="stylesheet" />
 <script type="text/javascript" src="{{STATIC_URL}}scripts/jquery.tokeninput.js"></script>
 <!-- CUBIX  -->
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.a.defaults.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.utils.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.visualisation.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.associationrules.js"></script>
@@ -38,7 +38,9 @@
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.dashboard.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.min-intersect.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.context.js"></script>
+
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.compare.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.metrics.js"></script>
 
 {% endblock js %}
 
@@ -110,7 +112,7 @@
 		<label for="layout_type">Layout:</label>
 		-->
 		<input type="text" id="layout_type" style="border:0; color:#f6931f; font-weight:bold; width: 70px; float:left" />
-		<div id="slider-layout" style="width: 150px; margin: 8px 40px 8px 20px; float: left"></div>
+		<div id="slider-layout" style="width: 100px; margin: 8px 40px 8px 20px; float: left"></div>
 	</div>
 	<div style="margin-left: 20px; float: left;">
 		<input type="text" id="search" style="width: 300px;" class="search"/>
@@ -157,7 +159,7 @@
 							<select id="control_1" name="control_1[]" multiple="multiple" size="5" style="width: 120px; font-size: 10px;">
 							</select>
 					</div><div>
-							<span>Y: </span>
+							<label for="control_2">Y: </label>
 							<select id="control_2" name="control_2[]" multiple="multiple" size="5" style="width: 120px; font-size: 10px;">
 							</select>
 					</div><div>
@@ -262,10 +264,10 @@
 
 	var mouseOverHoverBox = false;
 
-	var _data_nodes = [];
-	var _data_links = [];
+	//var _data_nodes = [];
+	//var _data_links = [];
 
-	var data;
+	//var data;
 
 	var cnode;
 	var clink;
@@ -276,18 +278,18 @@
 	
 	{% if djson != null %}
 
-var json = {{ djson|safe }};
+		var json = {{ djson|safe }};
+		
+		$(function(){
+			loadData(json);	
+		});
 
-$(function(){
-	loadData(json);	
-});
 
-
-{% else %}	
-$(function(){ // TODO perfomance evitar 
-d3.json("/api/v1/lattice/sample", loadData);
-});
-{% endif %}
+	{% else %}	
+		$(function(){ // TODO perfomance evitar 
+			d3.json("/api/v1/lattice/sample", loadData);
+		});
+	{% endif %}
 </script>
 {% endblock content %}
 

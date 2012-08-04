@@ -1,0 +1,73 @@
+
+
+{% extends "shared/base.html" %}
+
+{% block js %}
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery-1.7.2.min.js"></script>
+<script type="text/javascript">
+	$(function() {
+	
+		$('ul.nav > li.active').removeClass("active");
+		$('li#workspace').addClass("active"); 
+		
+	});
+</script>
+{% endblock js %}
+
+
+{% block content %}
+
+
+    <div class="row">
+    <div class="span8">
+		<h3>Workspaces:</h3>
+	    <ul>
+		{% if workspace_list %}
+			{% for workspace in workspace_list %}
+		        <li><a href="/{{ workspace.title_slug }}/select/">{{ workspace.title }}</a> - <a href="/{{ workspace.title_slug }}/delete/">Delete</a> </li>
+		        <ul>
+			    {% for data_source in workspace.contexts %}
+			        <li>{{ data_source.title }} - {{ data_source.filename }} - <a href="/workspace/delete/{{ data_source.id }}/">Delete</a>
+			        </li>
+			    {% endfor %}
+			    </ul>
+			{% endfor %}
+		    </ul>
+		{% else %}
+		    <p>No workspaces yet.</p>
+		{% endif %}
+	</div>
+	
+	
+	<div class="span4">
+
+		<form action="/workspace/" method="post">
+		{% csrf_token %}
+		<h3>New workspace</h3>
+		<p>{{ form.non_field_errors }}</p>
+		
+		<p>
+		<label>Title</label>
+		{{ form.title.errors }}
+		{{ form.title }}
+		</p>
+		
+		<p>
+		<label>Title slug</label>
+		{{ form.title_slug.errors }}
+		{{ form.title_slug }}
+		</p>
+		<p><input type="submit" value="New workspace" /></p>
+		</form>
+	</div>
+	
+	
+	
+	
+	
+    </div>
+
+
+
+
+{% endblock content %}

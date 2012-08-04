@@ -194,8 +194,8 @@ function removeFilter(aname, avalue){
     	
     	 
     	for (var i=0; i < remainingNodes.length; i++) {
-    		if (data.nodes.indexOf(remainingNodes[i]) < 0 ) // TODO review that - remove that
-		  		data.nodes.push(remainingNodes[i]);
+    		if (lattice.concepts.indexOf(remainingNodes[i]) < 0 ) // TODO review that - remove that
+		  		lattice.concepts.push(remainingNodes[i]);
 		};
     	
     	
@@ -244,10 +244,10 @@ function resetFilters(){
 	};
 	
 	// CLONE
-	data.nodes = _data_nodes.slice(0);
-	data.links = _data_links.slice(0);
-	data.attributes = HashClone(_data_attributes); // TODO necessary?
-	data.objects = _data_objects.slice(0);
+	lattice.concepts = _data_nodes.slice(0);
+	lattice.edges = _data_links.slice(0);
+	context.attributes = HashClone(_data_attributes); // TODO necessary?
+	context.objects = _data_objects.slice(0);
 	
 	
 	updateEntityList();
@@ -263,9 +263,9 @@ function resetFilters(){
 
 function keepLinks(){
 	
-	data.links = _data_links.filter(function(d) { 
-		//return (data.nodes.indexOf(d.source) < 0 || data.nodes.indexOf(d.target) < 0)
-		return (data.nodes.indexOf(d.source) >= 0 && data.nodes.indexOf(d.target) >= 0)
+	lattice.edges = _data_links.filter(function(d) { 
+		//return (lattice.concepts.indexOf(d.source) < 0 || lattice.concepts.indexOf(d.target) < 0)
+		return (lattice.concepts.indexOf(d.source) >= 0 && lattice.concepts.indexOf(d.target) >= 0)
 	});
 }
 
@@ -311,7 +311,7 @@ function clickFilterValue(){ //boolean atributes
 	    };
 	    
 	    
-	    data.nodes = ArraySubtract(data.nodes, removed);
+	    lattice.concepts = ArraySubtract(lattice.concepts, removed);
 	    
 	    keepLinks();
 	    
@@ -329,18 +329,18 @@ function clickFilterValue(){ //boolean atributes
 
 
 function loadFilters(){
-	var rawAttrs = getKeys(data.attributes);
+	var rawAttrs = getKeys(context.attributes);
 	
 	for (var i=0; i < rawAttrs.length; i++) {
-	  //var attribute = data.attributes[rawAttrs[i]];
+	  //var attribute = context.attributes[rawAttrs[i]];
 	  
 	  	var serie = [{
 	  		animation: true,
 			type: 'pie',
 			name: rawAttrs[i],
-			data: data.attributes[rawAttrs[i]]
+			data: context.attributes[rawAttrs[i]]
 		}];
-		//data.attributes[rawAttrs[i]]
+		//context.attributes[rawAttrs[i]]
 		var renderTo = $('<div class="chartFilter"><span> '+rawAttrs[i]+' </span><div id="chart_'+i+'" >').appendTo("#filters_container");
 		visualFilters.push(createChart(rawAttrs[i], "chart_"+i, serie));	
 	  
@@ -353,7 +353,7 @@ function createChart(attrTitle, renderTo, theSeries){
 		var chart = new Highcharts.Chart({
 		chart: {
 			renderTo: renderTo,//'container',
-			backgroundColor: "#333",
+			backgroundColor: 'rgba(50,50,50,0)',//"#333",
 			plotBorderWidth: null,
 			plotShadow: false
 			//style : { overflow: "auto"}
@@ -405,7 +405,7 @@ function updateVisualFilters(){
 	for (var i=0; i < visualFilters.length; i++) {
 	  var serie = visualFilters[i].series[0];
 	  
-	  if (!(serie.name in data.attributes)) { // if there's not this attribute
+	  if (!(serie.name in context.attributes)) { // if there's not this attribute
 	  	//visualFilters[i].options.chart.style.visibility = "visible";
 	  	//visualFilters[i].redraw();
 	  //	$("#highcharts-"+(i+1)).hide();
@@ -417,7 +417,7 @@ function updateVisualFilters(){
 	 // visualFilters[i].options.chart.style.visibility = "hidden";
 		document.getElementById("chart_"+i).style.opacity = 1;
 		
-	  serie.setData(data.attributes[serie.name], true);
+	  serie.setData(context.attributes[serie.name], true);
 	  
 	  
 	};
@@ -437,8 +437,8 @@ vis.selectAll('circle.selected').each(function(d){
 	selected.push(d);
 });
 
-		var removed = ArraySubtract(data.nodes, selected);
-		data.nodes = selected;//
+		var removed = ArraySubtract(lattice.concepts, selected);
+		lattice.concepts = selected;//
 		
 	    
 	    keepLinks();
@@ -471,22 +471,22 @@ function filterAttributes(){
 	
 	
 	var removed = [];
-	for (var i=0; i < data.nodes.length; i++) {
+	for (var i=0; i < lattice.concepts.length; i++) {
 		
-		 if (data.nodes[i].extent.length == 0) { // remove bottom concept
-	      	removed.push(data.nodes[i]);
+		 if (lattice.concepts[i].extent.length == 0) { // remove bottom concept
+	      	removed.push(lattice.concepts[i]);
 	      	continue;
 	      }
 		
 		
-		if (! ArrayContainsAll(data.nodes[i].intent, attrNames)) {
-			removed.push(data.nodes[i]);
+		if (! ArrayContainsAll(lattice.concepts[i].intent, attrNames)) {
+			removed.push(lattice.concepts[i]);
 		} 
-	 // data.nodes[i].extent.contains()
+	 // lattice.concepts[i].extent.contains()
 	};	
 	
 	
-	data.nodes = ArraySubtract(data.nodes, removed);
+	lattice.concepts = ArraySubtract(lattice.concepts, removed);
 	    
     keepLinks();
     
@@ -518,23 +518,23 @@ function filterObjects(){
 	});
 
 	var removed = [];
-	for (var i=0; i < data.nodes.length; i++) {
+	for (var i=0; i < lattice.concepts.length; i++) {
 		
 		
-		if (data.nodes[i].intent.length == 0) { // remove top concept
-	      	removed.push(data.nodes[i]);
+		if (lattice.concepts[i].intent.length == 0) { // remove top concept
+	      	removed.push(lattice.concepts[i]);
 	      	continue;
 	      }
 	      
 	      
-		if (! ArrayContainsAll(data.nodes[i].extent, objNames)) {
-			removed.push(data.nodes[i]);
+		if (! ArrayContainsAll(lattice.concepts[i].extent, objNames)) {
+			removed.push(lattice.concepts[i]);
 		} 
-	 // data.nodes[i].extent.contains()
+	 // lattice.concepts[i].extent.contains()
 	};	
 	
 	
-	data.nodes = ArraySubtract(data.nodes, removed);
+	lattice.concepts = ArraySubtract(lattice.concepts, removed);
 	    
     keepLinks();
     

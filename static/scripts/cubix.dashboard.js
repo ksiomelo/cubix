@@ -24,7 +24,7 @@ function multiSelectOptionsForAttributes(multiSelectControlId){
 	$el.empty(); // remove old options
 	$el.append($("<option></option>"));
 	
-	$.each(data.attributes, function(key,value) {
+	$.each(context.attributes, function(key,value) {
 	  
 	  var optGrp = $("<optgroup label='"+key+"'></optgroup>");
 	  $el.append(optGrp);
@@ -348,7 +348,7 @@ function updateDashboard(){
 	//	multiSelectOptionsForAttributes("#control_1");
 	//multiSelectOptionsForAttributes("#control_2");
 	
-	//chart.series[0].setData(data.attributes[serie.name], true);
+	//chart.series[0].setData(context.attributes[serie.name], true);
 }
 
 

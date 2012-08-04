@@ -1,5 +1,6 @@
 from django.db import models
 from djangotoolbox.fields import SetField
+from pymongo.objectid import ObjectId
 #from concept_lattice import ConceptLattice
 #from models import FormalAttribute, FormalObject
 #from lattice_edge import LatticeEdge
@@ -49,7 +50,7 @@ class Concept(models.Model):
     (['Earth', 'Mars', 'Mercury', 'Venus'], ['Near to the sun', 'Small size'])
 
     """
-    
+    concept_id = models.CharField(max_length=200, default=ObjectId)
     extent = SetField()
     intent = SetField()
     #meta = {}

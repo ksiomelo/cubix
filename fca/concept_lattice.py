@@ -83,7 +83,7 @@ class ConceptLattice(models.Model):
             attrvalue = attr.split('-')
             if (len(attrvalue) > 1):
                 attrname = attrvalue[0]
-                attrvalue = attrvalue[1]
+                attrvalue = attrvalue[1]#.join("-")
                 if (not (attrname in pairs)): 
                     pairs[attrname] = []
                 pairs[attrname].append(attrvalue)

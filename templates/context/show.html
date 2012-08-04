@@ -1,0 +1,27 @@
+
+
+{% extends "shared/base.html" %}
+
+{% block js %}
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery-1.7.2.min.js"></script>
+<script type="text/javascript">
+	$(function() {
+	
+		$('ul.nav > li.active').removeClass("active");
+		$('li#context').addClass("active"); 
+		
+	});
+</script>
+{% endblock js %}
+
+
+{% block content %}
+
+
+    <div class="row">
+		        <h3>{{ context.title }}</h3> - <a href="/context/delete/{{ context.id }}/">Delete</a> 
+		       
+	</div>
+	
+
+{% endblock content %}

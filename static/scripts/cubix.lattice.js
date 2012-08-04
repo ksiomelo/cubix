@@ -1,48 +1,11 @@
-/*
- * Constants
- */
-// context
-
-var SEPARATOR = "-";
-
-// layout
-var DEFAULT_WIDTH = 570; //960
-var DEFAULT_HEIGHT = 500; // 600
-
-
-// lattice
-var MAX_ENTITY_SIZE = 2; // max numer of attributes or objects
-
-
-// size
-var DEFAULT_NODE_RADIUS = 8;
-var NODE_MAX_SIZE = 16;
-var NODE_MIN_SIZE = 6;
-
-var SIZE_STABILITY = 2;
-var SIZE_SUPPORT = 2;
-var SIZE_DEFAULT = 1;
-
-// labels
-var LABEL_REPETITIVE = 1;
-var LABEL_MULTILABEL = 2;
-var LABEL_SUPPORT = 3;
-
-// colors
-var SELECTED_FILL_COLOR = "#FF0000";
-var DEFAULT_FILL_COLOR = "#aaaaff";
-var DEFAULT_OPACITY = 0.3;
 
 /*
  * Initial parameters
  */
 
-var size_type = SIZE_SUPPORT;
+ 
 var numberSelected = 0;
-var labeling_type = LABEL_MULTILABEL; //  multi
-
-var highlightPath = true;
-var _data_attributes, _data_objects;
+//var _data_attributes, _data_objects;
 
 
 /*
@@ -51,18 +14,9 @@ var _data_attributes, _data_objects;
 
 var context;
 var lattice;
-var lattice_id;
+//var lattice_id;
 
-function loadData(json){
-	
-	data = json;
-	
-	lattice_id = data.id;
-	// copy of initial parameters.. mainly used for reset
-	_data_nodes = data.nodes.slice(0);
-	_data_links = data.links.slice(0);
-	_data_attributes = HashClone(data.attributes); // TODO deep copy??
-	_data_objects = data.objects.slice(0);
+function loadData(data){
 	
 		// association rules objects
 	data.a_rules_concerned_attributes=clone(data.attributes);
@@ -70,6 +24,7 @@ function loadData(json){
 	
 	context = new Context(data.context.objects,data.context.attributes,data.context.rel,data.context.attributes)
 	lattice = new Lattice(data);
+	
 	
 	// load autosuggest for attributes
 	$("input.search").tokenInput(getAttributeValuesPairs(),{
@@ -113,11 +68,136 @@ function loadData(json){
 	
 	$('text[text-anchor="end"]').remove();
 	
-	
-	
-	
-	
 }
+
+
+function Lattice(data) {
+	
+	//lattice_id = data.id;
+	// copy of initial parameters.. mainly used for reset
+	// _data_nodes = lattice.concepts.slice(0);
+	// _data_links = lattice.edges.slice(0);
+	// _data_attributes = HashClone(data.attributes); // TODO deep copy??
+	//_data_objects = data.objects.slice(0);
+	
+	this.initial_concepts = data.nodes.slice(0);
+	// _data_nodes = lattice.concepts.slice(0);
+	// _data_links = lattice.edges.slice(0);
+	
+	this.concepts = data.nodes;
+	this.edges = data.links
+	
+	
+	
+	this.getConcept = function(tid){
+		for (var i=0; i < this.concepts.length; i++) {
+		  if (this.concepts[i].id == tid) 
+		  	return this.concepts[i];
+		};
+	};
+	
+	this.topConcept = this.getConcept(data.top_id);
+	this.bottomConcept = this.getConcept(data.bottom_id);
+	
+	
+	
+	 this.isEmpty = function () {
+	 	return false;
+	 };
+	 
+	 this.conceptsCount = function(){
+	 	return concepts.length;
+	 }
+	 
+	 /*
+	  * Concept operations // TODO ordem invertida!
+	  */
+	 this.getPredecessors = function(n){ // get predecessors for a node
+	 	var ret = new Array();
+	 	for (var i=0; i < n.children_ids.length; i++) {
+		   ret.push(this.concepts[n.children_ids[i]]);
+		 };
+	 	return ret;
+	 }
+	 this.getSucessors = function(n){ // get predecessors for a node
+	 	var ret = new Array();
+	 	for (var i=0; i < n.parents_ids.length; i++) {
+	 		var tid = n.parents_ids[i];
+	 		//if (tid >= this.concepts.length) // if they're not in the list 
+	 		//	ret.push(virtuals[tid]); 	 // they must be virtuals
+	 		//else
+		   		ret.push(this.concepts[tid]);
+		 };
+	 	return ret;
+	 }
+	 
+	 this.getSuccessorsEdges = function(n){ // get edges for that node
+	 	var ret = new Array();
+	 	for (var i=0; i < this.edges.length; i++) {
+		   if (this.edges[i].source.id == n.id)
+		   		ret.push(this.edges[i]);
+		 };
+	 	return ret;
+	 }
+	 this.getPredecessorsEdges = function(n){ // get edges for that node
+	 	var ret = new Array();
+	 	for (var i=0; i < this.edges.length; i++) {
+		   if (this.edges[i].target.id == n.id)
+		   		ret.push(this.edges[i]);
+		 };
+	 	return ret;
+	 }
+	 
+	 
+	 
+	 /*
+	  * Layout methods
+	  */
+	 this.getHeight = function(){
+	 	return this.bottomConcept.depth+1;
+	 };
+	 
+	 this.getEdgeLength = function(edge) {
+	 	//console.log("edge: "+edge.target.intent.join(",") + " ("+(lattice.getHeight() - edge.target.depth) +") - "+edge.source.intent.join(",")+" ("+ (lattice.getHeight() - edge.source.depth)+ ")");
+	 	return   (lattice.getHeight() - edge.target.depth) - (lattice.getHeight() - edge.source.depth);  //edge.target.depth - edge.source.depth;
+	 };
+	 
+	 this.doTopSort = function(block) {
+        var conceptsCount = this.conceptsCount();
+        var workArray = [conceptsCount];
+        for (var i = workArray.length; --i >= 0;) {
+            workArray[i] = this.getPredecessors(this.nodes[i]).length;
+        }
+
+        var tmp = this.topConcept;
+        var queueEnd = this.concepts.indexOf(tmp);
+        var currNo = 0;
+
+        while (tmp != this.bottomConcept) {
+            succ = this.getSuccessorsEdges(tmp);
+            
+            //block.assignTopSortNumberToElement(tmp, currNo++);
+            block[this.concepts.indexOf(tmp)] = tmp.depth;
+            
+            for (var i=0; i < succ.length; i++) {
+            	
+                tmp2 = this.concepts(succ[i].target); ///get end
+                if (0 == --workArray[this.concepts.indexOf(tmp2)]) {
+                	
+                    workArray[queueEnd] = this.concepts.indexOf(tmp2);
+                    queueEnd = this.concepts.indexOf(tmp2);
+                    
+                    //block.elementAction(tmp2, tmp);
+                }
+            }
+            tmp = this.concepts[(workArray[this.concepts.indexOf(tmp)])];
+        }
+        //block.assignTopSortNumberToElement(one, currNo);
+        block[this.concepts.indexOf(this.bottomConcept)] = this.bottomConcept.depth;
+    }
+}
+
+
 
 
 
@@ -138,7 +218,8 @@ function initLattice(){
 	vis = d3.select("#chart").append("svg:svg")
 	.attr("width", "100%")
     .attr("height", "100%")
-   // .attr("viewBox", "0 0 "+w+" "+h);
+    .attr("viewBox", "0 0 "+w+" "+h)
+    .attr("preserveAspectRatio", "xMidYMid");
 	
 	
 	updateLattice();
@@ -149,8 +230,8 @@ function updateLattice() {
 	   // var nodes = flatten(data),
        // links = d3.layout.tree().links(nodes);
 	
-	  var nodes = data.nodes,
-      links = data.links;
+	  var nodes = lattice.concepts,
+      links = lattice.edges;
 	
 	
 	  // Restart the force layout.
@@ -230,56 +311,6 @@ function updateLattice() {
 	  // Exit any old labels.
 	  llabel.exit().remove();
 	  
-	  
-	  
-	  
-// 	
-// 	
-// 	
-    // link = vis.selectAll("line.link")
-        // .data(json.links)
-        // .enter().append("svg:line")
-        // .attr("class", "link")
-        // .attr("x1", function(d) { return d.source.x; })
-        // .attr("y1", function(d) { return d.source.y; })
-        // .attr("x2", function(d) { return d.target.x; })
-        // .attr("y2", function(d) { return d.target.y; })
-        // .attr("source_id", function(d) { return d.source.id; })
-        // .attr("target_id", function(d) { return d.target.id; });
-//         
-// 
-	// node = vis.append("svg:g").selectAll("circle")
-		// .data(force.nodes())
-		// .enter().append("svg:circle")
-		// .attr("r", 8)
-		// .attr("intent", function(d) { return d.intent; })
-		// .attr("extent", function(d) { return d.extent; })
-		// .attr("id", function(d) { return  d.id; })
-		// .attr("children", function(d) { return d.children; })
-		// .call(force.drag)
-		// .on("click", nodeClick)
-		// .on("mouseover", nodeMouseOver)
-		// .on("mouseout", nodeMouseOut);
-// 	
-	// // node labels
-	// label = vis.append("svg:g").selectAll("g")
-		// .data(force.nodes())
-		// .enter().append("svg:g");
-// 		
-	// label.append("svg:text")
-		// .attr("x", 8)
-		// .attr("y", ".31em")
-		// .attr("class", "intent")
-		// .attr("id", function(d){ return "intent_"+d.id})
-		// .text(get_upper_label);
-// 		
-	// label.append("svg:text")
-		// .attr("x", 8)
-		// .attr("y", "2.2em")
-		// .attr("class", "extent")
-		// .attr("id", function(d){ return "extent_"+d.id})
-		// .text(get_lower_label); 
-		
 }
 
 
@@ -345,59 +376,6 @@ function filterNodes(query){
 }
 
 
-/*
- * Drawing options
- */
-	
-
-function getNodeSize(d){
-	// vis.selectAll("circle").attr("r", function(d) {
-		// var radius = d["support"]*max_size;
-		// return (radius < min_size) ? min_sizeo : radius;
-	// });
-	if (size_type == SIZE_SUPPORT) {
-		var radius = Math.round(d["support"]*(NODE_MAX_SIZE-NODE_MIN_SIZE)) + NODE_MIN_SIZE;
-		return radius;//(radius < NODE_MIN_SIZE) ? NODE_MIN_SIZE : radius;
-	} else if (size_type == SIZE_STABILITY) {
-		var radius = Math.round(d["stability"]*(NODE_MAX_SIZE-NODE_MIN_SIZE)) + NODE_MIN_SIZE;
-		return radius;//(radius < NODE_MIN_SIZE) ? NODE_MIN_SIZE : radius;
-	}
-	else return DEFAULT_NODE_RADIUS;
-	
-}
-
-
-function changeNodeSize(type){
-	size_type = type;
-	if (currentVis=='treemap') {
-	console.log("changin");
-	tm_updateTree(getTree0);
-	}
-	else { 
-		vis.selectAll("circle").attr("r", function(d) {
-			return getNodeSize(d);
-		});
-	}
-	
-}
-
-
-
-function changeNodeVisibility(criteria, minValue, maxValue, toShow){
-	vis.selectAll("circle").style("fill", function(d) {
-
-		if(maxValue == null || typeof(maxValue) == 'undefined') { // single slider
-			if((d[criteria])*100 >= minValue) {
-				
-				return "#ff0000";
-			}
-		} else {// range slider
-			if((d[criteria])*100 >= minValue && (d[criteria])*100 <= maxValue) {
-				return "#ff0000";
-			}
-		}
-	});
-}
 
 // clear 'hidden' styles (used e.g. for clear previous selections)
 function showNodes() {
@@ -495,7 +473,7 @@ function nodeMouseOver(d){
 	
 	
 	// show hoverbox
-	hoverbox.style("opacity", 0);
+	//hoverbox.style("opacity", 0);
 	hoverbox.style("display", "block");
 	hoverbox.transition()
 	  .delay(800)
@@ -504,8 +482,8 @@ function nodeMouseOver(d){
       
     
     hoverbox
-      .style("left", (d3.event.pageX + 0) + "px")
-      .style("top", (d3.event.pageY - 40) + "px");
+      .style("left", (d3.event.pageX + 20) + "px")
+      .style("top", (d3.event.pageY - 20) + "px");
       //.select("div.hb_obj_list").text("attributes: "+thenode.attr("intent"));
      
     //var ul = $('ul.hb_attr_list');
@@ -531,13 +509,20 @@ function nodeMouseOut(){
 	var thenode = d3.select(this);
 	thenode.style("stroke", "white");
 	
-	// hide hoverbox
-	hoverbox.transition()
-	  .delay(800)
-      .duration(200)
-      .style("opacity", 0);
+	setTimeout(function(){
+		if(!mouseOverHoverBox){
+			// hide hoverbox
+			hoverbox.transition()
+	  		.duration(200)
+	  		//.delay(1800)
+      		.style("opacity", 0);
+		};
+		
+	}, 1800);
+	
+	
     
-    hoverbox.style("display", "none");
+    //hoverbox.style("display", "none");
 }
 
 
@@ -586,7 +571,7 @@ function get_upper_label(d){
 function get_lower_label(d){
 	if (labeling_type == LABEL_REPETITIVE) return d.extent;
 	else if (labeling_type == LABEL_MULTILABEL) return d.lowerLabel; // multilabel
-	else if (labeling_type == LABEL_SUPPORT) return Math.round(100*d.support) + "% (" + Math.round(data.objects.length*d.support) + ")" ;// multilabel
+	else if (labeling_type == LABEL_SUPPORT) return Math.round(100*d.support) + "% (" + Math.round(context.objects.length*d.support) + ")" ;// multilabel
 	else return "lower"
 }
 
@@ -605,7 +590,7 @@ function labelize(){ // TODO work on data not on layout
 	
 	var labeling_type = 2;
 
-	var top_concept = vis.select('circle[id="'+ data.top_id +'"]');
+	var top_concept =vis.select('circle[id="'+ lattice.topConcept.id +'"]');
 	var nodelist = getOutgoingNodes(top_concept);
 	
 	// intent labels
@@ -629,7 +614,7 @@ function labelize(){ // TODO work on data not on layout
 	
 
 	// objects: bottom up
-	var bottom_concept = vis.select('circle[id="'+ data.bottom_id +'"]');
+	var bottom_concept = vis.select('circle[id="'+ lattice.bottomConcept.id +'"]');
 	nodelist = getIncomingNodes(bottom_concept);
 	
 	// extent labels
@@ -659,7 +644,7 @@ function labelize(){ // TODO work on data not on layout
 function checkLatticeConstraints(){
 	
 	// check labels
-	if (data.attributes > MAX_ENTITY_SIZE || data.objects > MAX_ENTITY_SIZE) {
+	if (context.attributes > MAX_ENTITY_SIZE || context.objects > MAX_ENTITY_SIZE) {
 		if (confirm("Labeling concepts in this lattice may be overwhelming, do you want to label them by percentage?"))
 		labeling_type = LABEL_SUPPORT;
 	}
@@ -727,7 +712,7 @@ function labelizeData(){
 
 function getTopMostConcepts(collection){
 	
-	if (!collection) collection = data.nodes;
+	if (!collection) collection = lattice.concepts;
 	
 	var ret = [];
 	
@@ -759,8 +744,8 @@ function getBottomMostConcepts(){
 	
 	var maxDepth = Number.MIN_VALUE;
 	
-	for (var i=0; i < data.nodes.length; i++) { 
-	  var cur = data.nodes[i];
+	for (var i=0; i < lattice.concepts.length; i++) { 
+	  var cur = lattice.concepts[i];
 	  
 	  
 	  if (cur.depth > maxDepth) {
@@ -935,8 +920,8 @@ function visitEdgesUp(n, mycallback) {
 function getIncomingEdgesData(n, eachCallback){
 	var inEdges = [];
 	
-	for (var i=0; i <data.links.length; i++) {
-	  var curLink = data.links[i]; 
+	for (var i=0; i <lattice.edges.length; i++) {
+	  var curLink = lattice.edges[i]; 
 	  if (curLink.target.id == n.id) { 
 	  	inEdges.push(curLink)
 	  	if (typeof(eachCallback)!='undefined') eachCallback(curLink);
@@ -990,9 +975,9 @@ function getOutgoingNodes(n){
 
 function getParentsData(nd){
 	var parents = [];
-	for (var i=0; i < data.nodes.length; i++) {
-	  if(nd.parents_ids.indexOf(data.nodes[i].id) >= 0){
-	  	parents.push(data.nodes[i]);
+	for (var i=0; i < lattice.concepts.length; i++) {
+	  if(nd.parents_ids.indexOf(lattice.concepts[i].id) >= 0){
+	  	parents.push(lattice.concepts[i]);
 	  }
 	};
 	return parents;
@@ -1000,9 +985,9 @@ function getParentsData(nd){
 
 function getChildrenData(nd){
 	var children = [];
-	for (var i=0; i < data.nodes.length; i++) {
-	  if(nd.children_ids.indexOf(data.nodes[i].id) >= 0){
-	  	children.push(data.nodes[i]);
+	for (var i=0; i < lattice.concepts.length; i++) {
+	  if(nd.children_ids.indexOf(lattice.concepts[i].id) >= 0){
+	  	children.push(lattice.concepts[i]);
 	  }
 	};
 	return children;
@@ -1010,7 +995,7 @@ function getChildrenData(nd){
 
 function areNeighbor(n1, n2){
 	  if((n1.parents_ids.indexOf(n2.id) >= 0 || n1.children_ids.indexOf(n2.id) >= 0) && 
-	  (data.nodes.indexOf(n1) >= 0 &&  data.nodes.indexOf(n2) >= 0 )){  // assures that they are visible (not filtered)
+	  (lattice.concepts.indexOf(n1) >= 0 &&  lattice.concepts.indexOf(n2) >= 0 )){  // assures that they are visible (not filtered)
 	   return true;
 	  }
 	return false;
@@ -1018,7 +1003,7 @@ function areNeighbor(n1, n2){
 
 function hasChild(n1, n2){
 	  if((n1.children_ids.indexOf(n2.id) >= 0) && 
-	  (data.nodes.indexOf(n1) >= 0 &&  data.nodes.indexOf(n2) >= 0 )){  // assures that they are visible (not filtered)
+	  (lattice.concepts.indexOf(n1) >= 0 &&  lattice.concepts.indexOf(n2) >= 0 )){  // assures that they are visible (not filtered)
 	   return true;
 	  }
 	return false;

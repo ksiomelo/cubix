@@ -32,10 +32,17 @@
 				
 				<label for="select-size"style="text-align: left;">Size:</label>
 				<select id="select-size" name="select_size[]" style="width: 160px">
+								
+								<!--
 								<option value="1">Default</option>
 								<option value="2" selected="selected">Support</option>
 								<option value="3" >Stability</option>
+								-->
 				</select>
+				<label for="select-color"style="text-align: left;">Color:</label>
+				<select id="select-color" name="select_color[]" style="width: 160px">
+				</select>
+				
 				
 				<label for="select-label" style="text-align: left;">Label:</label>
 				<select id="select-label" name="select_label[]" style="width: 160px">
@@ -75,7 +82,7 @@
 		<div id="metricPanel" class="toolbarPanel">
 			<h1>Metrics</h1>
 			<div style="display: inline">
-				<input type="checkbox" checked="true" style="margin-right: 10px" id="calc-stab" />
+				<input type="checkbox" checked="false" style="margin-right: 10px" id="calc-stab" />
 				<span>Stability</span>
 			</div>
 			<br/>
@@ -85,12 +92,12 @@
 			</div>
 			<br/>
 			<div style="display: inline">
-				<input type="checkbox" checked="true" style="margin-right: 10px" />
+				<input type="checkbox" style="margin-right: 10px" />
 				<span>Confidence</span>
 			</div>
 			<br/>
 			<div style="display: inline">
-				<input type="checkbox" checked="true" style="margin-right: 10px" />
+				<input type="checkbox" style="margin-right: 10px" />
 				<span>Similarity</span>
 			</div>
 		</div>
@@ -179,10 +186,14 @@
 				
 				| <a href="#" class="reset-filters">Reset</a>
 				
+				<!--
+				
 				|  <input type="radio" name="filter-type" value="drill-down" checked="checked"/>
 				<span class="explain" data-tooltip="Filter acts eliminating data progressively">Progressive</span> 
+					
 					<input type="radio" name="filter-type" value="selective" /> 
 				<span class="explain" data-tooltip="Filter keeps only selected data">Selective</span>
+				-->
 					
 					
 				

@@ -379,8 +379,8 @@ ul.entityList li span{
  * filters 
  */
 
-#filtersPanel   { color: #a0a0a0; height: 1px; overflow:hidden; width:100%; margin: 0; position:fixed; bottom: 0; left: 0; background:#333; padding: 8px; opacity: 0;}
-#showFiltersPanel { padding:10px 0 10px 10px; position:fixed; z-index:2; left:0px; bottom: 0px;  width:100%; cursor:pointer; background: #333;}
+#filtersPanel   { color: #a0a0a0; height: 1px; overflow:hidden; width:100%; margin: 0; position:fixed; bottom: 0; left: 0; background-color:rgba(50,50,50,0.9); padding: 8px; opacity: 0;}
+#showFiltersPanel { padding:10px 0 10px 10px; position:fixed; z-index:2; left:0px; bottom: 0px;  width:100%; cursor:pointer; background-color:rgba(50,50,50,0.9);}
 #showFiltersPanel span{color: #f0f0f0;  font-size:16px; }
 
 #filtersPanel div.filters_container {

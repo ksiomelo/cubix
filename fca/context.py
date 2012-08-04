@@ -128,6 +128,34 @@ class Context(models.Model):
 
     def get_attributes(self):
         return self._attributes
+    
+    
+    def get_attribute_names_and_values(self):
+        ret = {}
+        for attr in self._attributes:
+            raw_attr = attr.split("-")[0]
+            value = "-".join(attr.split("-")[1:])
+            if not raw_attr in ret:
+                ret[raw_attr] = []
+            ret[raw_attr].append(value)
+        return ret
+    
+    def get_attribute_objects(self):
+        ret = {}
+        for attr in self._attributes:
+            raw_attr = attr.split("-")[0]
+            abc = self.get_attribute_extent(attr)
+            
+            if not raw_attr in ret:
+                ret[raw_attr] = list(abc)
+            else:
+                for aobj in abc:
+                    if aobj not in ret[raw_attr]:
+                        ret[raw_attr].append(aobj)
+                
+            
+       
+        return ret
 
     #attributes = property(get_attributes)
     

@@ -16,6 +16,7 @@ from fca.concept_lattice import ConceptLattice
 from fca.context import Context
 from fca.concept import Concept
 from fca.algorithms import implication_fuzz
+from fca.algorithms.filtering import stability
 
 from semantics.search import Semantic
 import pymongo.json_util  
@@ -94,6 +95,18 @@ def mine_association_rules(request):
 
 @login_required
 def calculate_metric(request):
+    lattice_id = request.GET.get('lattice_id')
+    lattice = ConceptLattice.objects.get(id=lattice_id)
+    theid = lattice._concepts[0].id
+    metric = request.GET.get('metric')
+    st = stability.compute_estability(lattice)
+    
+    # SHOULD APPEND THE METRICS TO THE LATTICE SAVED AND TO THE VISUALISATION
+    for concept_id in st:
+        for concept in lattice._concepts:
+            if concept_id == concept.concept_id:
+                # concept.support  # HOW TO DYNAMICALLY ADD ATTRIBUTES?
+                absc = 1
     return None
 
 

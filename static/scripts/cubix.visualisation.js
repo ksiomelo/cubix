@@ -1,11 +1,17 @@
 /*
  * Visualisations
  */
+
+var labeling_type = LABEL_MULTILABEL; //  multi
+var size_type = 'default';
+var color_type = 'default';
+var highlightPath = true;
+
 var currentVis = 'lattice';
 var previousVis = 'lattice';
 
-var w = 960,
-    h = 500;
+var w = DEFAULT_WIDTH;
+var h = DEFAULT_HEIGHT;
 
 var force;
 var vis;
@@ -56,6 +62,70 @@ function updateVis(){
 
 
 
+/*
+ * Drawing options
+ */
+	
+
+function getNodeSize(d){ // TODO generalize
+	
+	// if (size_type == SIZE_SUPPORT) {
+		// var radius = Math.round(d["support"]*(NODE_MAX_SIZE-NODE_MIN_SIZE)) + NODE_MIN_SIZE;
+		// return radius;//(radius < NODE_MIN_SIZE) ? NODE_MIN_SIZE : radius;
+	// } else if (size_type == SIZE_STABILITY) {
+		// var radius = Math.round(d["stability"]*(NODE_MAX_SIZE-NODE_MIN_SIZE)) + NODE_MIN_SIZE;
+		// return radius;//(radius < NODE_MIN_SIZE) ? NODE_MIN_SIZE : radius;
+	// }
+	
+	//else return DEFAULT_NODE_RADIUS;
+	if (size_type == 'default') return DEFAULT_NODE_RADIUS;
+	else return Math.round(d[size_type]*(NODE_MAX_SIZE-NODE_MIN_SIZE)) + NODE_MIN_SIZE;
+	
+}
+
+
+function changeNodeSize(type){
+	size_type = type;
+	if (currentVis=='treemap') {
+		console.log("changin");
+		tm_updateTree(getTree0);
+	} else { 
+		vis.selectAll("circle").attr("r", function(d) { // TODO 
+			return getNodeSize(d);
+		});
+	}
+}
+
+function changeNodeColor(type){
+	size_type = type;
+	if (currentVis=='treemap') {
+		console.log("changin");
+		tm_updateTree(getTree0);
+	}
+	else { 
+		vis.selectAll("circle").attr("r", function(d) { // TODO
+			return getNodeSize(d);
+		});
+	}
+}
+
+
+
+function changeNodeVisibility(criteria, minValue, maxValue, toShow){
+	vis.selectAll("circle").style("fill", function(d) {
+
+		if(maxValue == null || typeof(maxValue) == 'undefined') { // single slider
+			if((d[criteria])*100 >= minValue) {
+				
+				return "#ff0000";
+			}
+		} else {// range slider
+			if((d[criteria])*100 >= minValue && (d[criteria])*100 <= maxValue) {
+				return "#ff0000";
+			}
+		}
+	});
+}
 
 
 
@@ -239,7 +309,8 @@ function updateSunburst() {
 	      	.style("fill", function(d) { return color((d.children ? d : d.parent).name); })
 	      	.on("mouseover", nodeMouseOver)
 		  	.on("mouseout", nodeMouseOut)
-	   		.on("click", sbclick);
+		  	.on("click", nodeClick)
+	   		.on("dblclick", sbclick);
 	   		
 	   	 // Exit any old nodes.
 	  		path.exit().remove();
@@ -259,7 +330,8 @@ function updateSunburst() {
 	            rotate = angle + (multiline ? -.5 : 0);
 	        return "rotate(" + rotate + ")translate(" + (y(d.y) + p) + ","+(x(d.x)+20*d.depth)+")rotate(" + (angle > 90 ? -180 : 0) + ")";
 	      })
-	      .on("click", sbclick);
+	      .on("click", nodeClick)
+	      .on("dblclick", sbclick);
 	  textEnter.append("svg:tspan")
 	      .attr("x", 0)
 	      .text(function(d) { return d.depth ? d.name.split(" ")[0] : ""; });
@@ -386,8 +458,9 @@ function updateIcicle(){
 		      .attr("height", function(d) { return y(d.dy); })
 		      .attr("fill", function(d) { return color((d.children ? d : d.parent).name); })
 		      .on("mouseover", nodeMouseOver)
-		  		.on("mouseout", nodeMouseOut)
-		      .on("click", icclick);
+		  	  .on("mouseout", nodeMouseOut)
+		  	  .on("click", nodeClick)
+		      .on("dblclick", icclick);
 		 
 		 vis.selectAll("rect")
 	          .data(partition.nodes)   
@@ -455,8 +528,8 @@ var m, duration;
     
 function initTree(){
     m = [20, 120, 20, 120];
-    w = DEFAULT_WIDTH - m[1] - m[3];
-    h = DEFAULT_HEIGHT - m[0] - m[2];
+    //w = DEFAULT_WIDTH;// - m[1] - m[3];
+    //h = DEFAULT_HEIGHT;// - m[0] - m[2];
    
     duration = 500;
 
@@ -511,10 +584,11 @@ function updateTree(source) {
   var nodeEnter = node.enter().append("svg:g")
       .attr("class", "node")
       .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-      .on("click", clickCollapse);
+      .on("dblclick", clickCollapse);
 
   nodeEnter.append("svg:circle")
       .attr("r", getNodeSize)//1e-6)
+      .on("click", nodeClick)
       .on("mouseover", nodeMouseOver)
 	  .on("mouseout", nodeMouseOut);
      // .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
@@ -625,8 +699,8 @@ function treemap(){
 console.log("initilizing treemap");
 
 m = [20, 120, 20, 120]; // margins
-    h = DEFAULT_WIDTH - m[1] - m[3];
-    w = DEFAULT_HEIGHT - m[0] - m[2];
+    //h = DEFAULT_WIDTH - m[1] - m[3];
+    //w = DEFAULT_HEIGHT - m[0] - m[2];
     duration = 500;
 treemap = d3.layout.treemap()
    .size([h, w])
@@ -693,7 +767,7 @@ function tm_updateTree(source) {
   var nodeEnter = node.enter().append("svg:g")
       .attr("class", "node")
       .attr("transform", function(d) { return "translate(" + tm_root.y0 + "," + tm_root.x0 + ")"; })
-      .on("click", clickCollapse);
+      .on("dblclick", clickCollapse);
 
   nodeEnter.append("svg:rect")
       .attr("x", function(d){return d.x; /*+3*d.depth*/})//1e-6)

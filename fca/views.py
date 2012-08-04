@@ -21,6 +21,9 @@ from fca.association_rule import AssociationRule
 @login_required
 def index(request):
     cxt_form = LoadCxtForm()
+    
+    
+    
     return render_to_response('fca/index.html', {'cxt_form': cxt_form, 'djson': None}, context_instance=RequestContext(request))
 
     
@@ -31,18 +34,18 @@ def load_cxt(request):
     if request.method == 'POST':
         form = LoadCxtForm(request.POST, request.FILES)
         if form.is_valid():
-            try:
+            #try:
             
-                context = ContextUtils.handle_cxt_file(request.FILES['cxtfile'])
-                cl = ConceptLattice(_context=context)
-                cl.compute_lattice()
-                
-                cl.save()
-                
-                return render_to_response('fca/index.html', {'cxt_form': cxt_form, 'djson': FCAUtils.lattice_to_json_depth2(cl)}, context_instance=RequestContext(request))
-    
-            except Exception,e:
-                return render_to_response('shared/error.html', {'error_msg': 'It was not possible to read the file. Please be sure it is a valid cxt file.'}, context_instance=RequestContext(request))
+            context = ContextUtils.handle_cxt_file(request.FILES['cxtfile'])
+            cl = ConceptLattice(_context=context)
+            cl.compute_lattice()
+            
+            cl.save()
+            
+            return render_to_response('fca/index.html', {'cxt_form': cxt_form, 'djson': FCAUtils.lattice_to_json_depth2(cl)}, context_instance=RequestContext(request))
+
+            #except Exception,e:
+            #    return render_to_response('shared/error.html', {'error_msg': 'It was not possible to read the file. Please be sure it is a valid cxt file.'}, context_instance=RequestContext(request))
     
     
     else:

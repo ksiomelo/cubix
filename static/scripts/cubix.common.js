@@ -29,4 +29,11 @@ $(function() {
 		$("div.alert").fadeOut('fast');
 	});
 	
+	// Dropdown menus
+	$('.dropdown-toggle').dropdown();
+	
+	
+	// new data modal
+	
+	
 });

@@ -54,6 +54,24 @@ var ARVisOpts = [
 ];
 
 
+// size and color options 
+// when a metric is calculated the corresponding option becomes available
+var colorAndSizeOpts = [
+	{ 
+		name: "Default",
+		val: "default",
+		tooltip: "Default option"
+	}, 
+	{ 
+		name: "Support", // support is the only metric pre-calculated
+		val: "support",
+		tooltip: "Support"
+	}, 
+];
+
+
+
+
 /*
  * Initialization
  */
@@ -103,6 +121,7 @@ $(function() {
 				scroller_object.css( { position: "absolute", top: "128px" } );
 			}
     });
+ 	
  	
  	/*
  	 * TOOLBAR
@@ -158,6 +177,11 @@ $(function() {
 	
 	// TOOLBAR - VISUALISATIONS
 	buildOptionsForSelect(latticeVisOpts, "select-vis", "lattice");
+	
+	// TOOLBAR COLOR AND SIZE OPTIONS
+	buildOptionsForSelect(colorAndSizeOpts,"select-size", "default");
+	buildOptionsForSelect(colorAndSizeOpts,"select-color", "default");
+	
 
 	// TOOLBAR - METRICS   
  	$( "#slider-supp" ).slider({
@@ -201,7 +225,11 @@ $(function() {
 	});
 	
  	$( "#select-size" ).change(function(){
-		changeNodeSize(parseInt($(this).attr('value')));
+		changeNodeSize($(this).attr('value'));
+	});
+	
+	$( "#select-color" ).change(function(){
+		changeNodeColor($(this).attr('value'));
 	});
 	
 	$( "#select-vis" ).change(function(){
@@ -299,9 +327,9 @@ $(function() {
 	 */
 	
 		$( "#slider-layout" ).slider({
-			value:3,
+			value:2,
 			min: 1,
-			max: 3,
+			max: 2,
 			step: 1,
 			slide: function( event, ui ) {
 				
@@ -310,7 +338,7 @@ $(function() {
 				if(ui.value == 1) {
 					layout_txt = "Viewer";
 				} else if(ui.value == 2) {
-					layout_txt = "Explorer";
+					layout_txt = "Dashboard"; // explorer
 				} else if(ui.value == 3) {
 					layout_txt = "Dashboard";
 				}
@@ -327,17 +355,21 @@ $(function() {
 		// drawing
 		//$("#control_1").multiSelect();
 		
-		
-		
-		
 		// hover box
 		$("#hoverbox").hover(
 		  function () {
 		  	mouseOverHoverBox = true;
+		  	//hoverbox.style("display", "block");
+			//hoverbox.style("opacity", 1);
 		  }, 
 		  function () {
 			mouseOverHoverBox = false;
-		  }
+				// hide hoverbox
+			hoverbox.transition()
+		  		.duration(200)
+		  		.delay(800)
+	      		.style("opacity", 0);
+			  }
 		);
 
 		
@@ -395,9 +427,11 @@ $(function() {
 		
 		// calculate stability (test)
 		 $("#calc-stab").change(function(){
-			$.get("/lattice/compute",  { metric: "stability"}, function(data) {
-		        alert(data);
-		    });
+			//$.get("/lattice/compute",  { metric: "stability"}, function(data) {
+		    //    alert(data);
+		   // });
+		   calculate("stability");
+		   
 		 });
 		 
 		 // link clear selection
@@ -436,15 +470,15 @@ $(function() {
 		// end dashboard
 		
 		$("a.cancel-upload").live("click",function(){
-			$('#context').popover('hide');
+			$('#cxt-file').popover('hide');
 
 		 });
-		$("#context").click(function(){
-			$('#context').popover('show');
+		$("#cxt-file").click(function(){
+			$('#cxt-file').popover('show');
 
 		 });
 		
-		$('#context').popover({
+		$('#cxt-file').popover({
 			placement: "bottom",
 			html: "true",
 			trigger: "manual",
@@ -471,14 +505,37 @@ $(function() {
 });
 
 
+function inflateDiv(layoutType){
+	if (layoutType == 1) {
+		//$("#thepanel").animate({marginLeft:"-210px"}, 500 );
+	    $("#columns").animate({width:"1px", opacity:0}, 400 );
+	    $("#columns").hide();
+		//$("#showFiltersPanel").show("normal").animate({height:"20px", opacity:1}, 200);
+		$("#chart").animate({width:"1040px"}, 400 );
+		
+		// var aspect = w/h;
+		// var chart = $("#chart");
+		// chart.attr("width", 1040);
+		// chart.attr("height", 1040 / aspect);
 
+
+
+	} else {
+		$("#chart").animate({width:"570px"}, 400 );
+		$("#columns").show();
+		$("#columns").animate({width:"570px", opacity:1}, 400 );
+		
+		//$("#showFiltersPanel").show("normal").animate({height:"20px", opacity:1}, 200);
+		
+	}	
+}
 
 
 function getAttributeValuesPairs(){ // TODO refatorar || eg output: [{name : "age->30", attrName: "age", valueName: ">30"}]// TODO colocar no context
 
 		var ret = [];
-		for (var attr in data.attributes) {
-		  var valuesNumber = data.attributes[attr];
+		for (var attr in context.attributes) {
+		  var valuesNumber = context.attributes[attr];
 		  
 		 	for (var j=0; j < valuesNumber.length; j++) {
 		 		
@@ -619,7 +676,7 @@ function updateEntityList(){
       };
       
       // Update objects names
-      var objsNames = data.objects;
+      var objsNames = context.objects;
       for (var i=0; i < objsNames.length; i++) {
         var li = $('<li>').appendTo('#obj_list');
       	li.html("<span><input type='checkbox' name='obj' value='"+ objsNames[i] +"'> "+ objsNames[i] + "</span>")

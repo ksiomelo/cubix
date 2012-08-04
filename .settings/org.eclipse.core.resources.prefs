@@ -1,4 +1,5 @@
-#Thu Apr 26 15:04:30 CEST 2012
+#Wed Jul 18 17:00:10 CEST 2012
 eclipse.preferences.version=1
 encoding//fca/__init__.py=utf-8
+encoding//fca/algorithms/filtering/stability.py=utf-8
 encoding//fca/readwrite/cxt.py=utf-8

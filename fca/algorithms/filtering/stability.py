@@ -43,7 +43,7 @@ def compute_istability(lattice):
     bottom_concepts = set([concepts.bottom_concept])
     while not len(concepts) == 0:
         bottom_concept = bottom_concepts.pop()
-        stability[bottom_concept] = subsets[bottom_concept] / \
+        stability[str(bottom_concept.concept_id)] = subsets[bottom_concept] / \
             (2 ** len(bottom_concept.extent))
         concepts.remove(bottom_concept)
         for c in concepts:

@@ -160,6 +160,16 @@
     padding: 10px 0;
 }
 
+div.edit-box-param {
+    float:left;
+    padding: 0 10px;
+    
+}
+
+div.edit-box-param a {
+	margin-top: 10px;	
+}
+
 .edit-box li.item {
     padding: 10px 0;
     overflow: hidden;

@@ -30,7 +30,10 @@
     <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
     <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
     -->
+	
     <script type="text/javascript" src="{{STATIC_URL}}scripts/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}scripts/bootstrap-dropdown.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}scripts/bootstrap-modal.js"></script>
     <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.common.js"></script>
     
     {% block js %}{% endblock %}
@@ -66,12 +69,48 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#">Cubix</a>
+          <a class="brand" href="./">Cubix</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li><a href="../" class="home">Home</a></li>
-	            <li><a href="#" id="context">Context</a></li>
+              	<li><a href="/home/" class="home">Home</a></li>
+              	 <li class="dropdown" id="workspace">
+					<a class="dropdown-toggle" data-toggle="dropdown" href="#menu1">
+						
+						{% if request.session.cur_workspace_slug %}
+							{{ request.session.cur_workspace_slug }}  
+							
+							{% if request.session.cur_context_slug  %}
+								:: {{ request.session.cur_context_slug }}  
+							{% endif %}
+							
+						{% else %}
+		    				Workspace
+						{% endif %}
+						
+						
+						
+					<b class="caret"></b>
+					</a>
+					<ul class="dropdown-menu">
+						{% for context in request.session.cur_workspace.contexts %}
+						<li><a href="#">{{context.title}}</a></li>
+						{% endfor %}
+						
+						<li class="divider"></li>
+						<li>
+							<a href="#" class="new-data" data-controls-modal="new-data-modal" data-backdrop="true" data-keyboard="true">New data</a> 
+						</li>
+					</ul>
+				</li>
+				
+				{% if request.session.cur_context_id  %}
+								
+				<li><a href="#" id="cxt-file">File</a></li>
+	            <li id="context"><a href="/{{ request.session.cur_workspace_slug }}/context">Context</a></li>
 	            <li id="analysis" class="active"><a href="../../fca">Analysis</a></li>
+	            
+				{% endif %}
+	            
 	            <li id="semantics"><a href="../../semantics">Semantics</a></li>
             </ul>
           </div><!--/.nav-collapse -->
@@ -85,6 +124,7 @@
 	
 
     <div class="container" >
+    	<!-- alerts -->
     	<div class="alert alert-error" style="display:none;">
     		<a class="close dismiss-alert" data-dismiss="alert" href="#">×</a>
     		<span></span>
@@ -93,7 +133,24 @@
     		<a class="close dismiss-alert" data-dismiss="alert" href="#">×</a>
     	   	<span></span>
    		</div>
-   		
+   		<!-- new data -->
+   		<div id="new-data-modal" class="modal hide fade" style="width: 640px">
+            <div class="modal-header">
+              <a href="#" class="close">&times;</a>
+              <h3>New data file</h3>
+            </div>
+            <div class="modal-body">
+              <p>form here... </p>
+              
+            </div>
+            <div class="modal-footer">
+              <a href="#" class="btn primary compare">OK</a>
+              
+              <!--
+              <a href="#" class="btn secondary">Secondary</a>
+              -->
+            </div>
+          </div>
      
      {% block sidebarcontainer %}{% endblock %}
      
@@ -101,8 +158,12 @@
      
         {% block content %}{% endblock %}
 
+		
+
         <footer>
+        	<!--
           <p>&copy; </p>
+         -->
 
         </footer>
       

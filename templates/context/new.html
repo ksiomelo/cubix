@@ -1,0 +1,59 @@
+
+
+{% extends "shared/base.html" %}
+
+{% block js %}
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery-1.7.2.min.js"></script>
+<script type="text/javascript">
+	$(function() {
+	
+		$('ul.nav > li.active').removeClass("active");
+		$('li#workspace').addClass("active"); 
+		
+		// activate dropdown
+		
+	});
+</script>
+{% endblock js %}
+
+
+{% block content %}
+
+
+   
+    <div class="row">
+	
+	<div>
+		
+		<h3>New data source2</h3>
+		<!-- Upload form. Note enctype attribute! -->
+		<form action="/{{ workspace_slug }}/context/new" method="post" enctype="multipart/form-data">
+		{% csrf_token %}
+		<p>{{ form.non_field_errors }}</p>
+		<p>{{ form.cxtfile.label_tag }} {{ form.cxtfile.help_text }}</p>
+		
+		<p>
+		<label>Title</label>
+		{{ form.title.errors }}
+		{{ form.title }}
+		</p>
+		
+		<p>
+		<label>Select file</label>
+		{{ form.cxtfile.errors }}
+		{{ form.cxtfile }}
+		</p>
+		<p><input type="submit" value="Upload" /></p>
+		</form>
+	</div>
+	
+	
+	
+	
+	
+    </div>
+
+
+
+
+{% endblock content %}

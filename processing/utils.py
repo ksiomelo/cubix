@@ -337,6 +337,8 @@ class FCAUtils(object):
         links = []
         to_json = {}
         
+        cxt = lattice.get_context()
+        
         added_c = []
         
         c_list = []
@@ -348,14 +350,13 @@ class FCAUtils(object):
             
             if (not added_c.__contains__(cur)): # if it was not added
                 concept = {}
-                concept["id"] = lattice.index(cur)
+                concept["id"] = str(cur.concept_id) #if cur.concept_id else lattice.index(cur) 
                 #concept["name"] = "A: [" + ",".join(cur.intent) + '] === ' + "O: [" + ",".join(cur.extent) + "]"
                 concept["intent"] = list(cur.intent)
                 concept["extent"] = list(cur.extent)
-                concept["parents_ids"] = map(lambda x: lattice.index(x), lattice.parents(cur))
-                concept["children_ids"] = map(lambda x: lattice.index(x), lattice.children(cur))
-                concept["support"] = random.random()
-                concept["stability"] = random.random()
+                concept["parents_ids"] = map(lambda x: str(x.concept_id), lattice.parents(cur))
+                concept["children_ids"] = map(lambda x: str(x.concept_id), lattice.children(cur))
+                concept["support"] = len(cur.extent)/len(cxt._objects)
                 concept["depth"] = 0 
                 nodes.append(concept) 
                 added_c.append(cur)
@@ -366,14 +367,13 @@ class FCAUtils(object):
                 
                 if (not added_c.__contains__(child)): # if it was not added
                     concept = {}
-                    concept["id"] = lattice.index(child)
+                    concept["id"] = str(child.concept_id) #if child.concept_id else lattice.index(child)
                     #concept["name"] = "A: [" + ",".join(child.intent) + '] === ' + "O: [" + ",".join(child.extent) + "]"
                     concept["intent"] = list(child.intent)
                     concept["extent"] = list(child.extent)
-                    concept["parents_ids"] = map(lambda x: lattice.index(x), lattice.parents(child))
-                    concept["children_ids"] = map(lambda x: lattice.index(x), lattice.children(child))
-                    concept["support"] = random.random()
-                    concept["stability"] = random.random()
+                    concept["parents_ids"] = map(lambda x: str(x.concept_id), lattice.parents(child))  #map(lambda x: lattice.index(x), lattice.parents(child))
+                    concept["children_ids"] = map(lambda x: str(x.concept_id), lattice.children(child))
+                    concept["support"] = len(child.extent)/len(cxt._objects)
                     concept["depth"] = 0
                     
                     nodes.append(concept) 
@@ -404,7 +404,7 @@ class FCAUtils(object):
         
         
         attrs = {}
-        cxt = lattice.get_context()
+        
         
         groups = {}
         

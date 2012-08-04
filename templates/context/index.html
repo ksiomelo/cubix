@@ -1,0 +1,71 @@
+{% extends "shared/base.html" %}
+
+{% load util_tags %}
+
+{% block js %}
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery-1.7.2.min.js"></script>
+<script type="text/javascript">
+	$(function() {
+	
+		$('ul.nav > li.active').removeClass("active");
+		$('li#context').addClass("active"); 
+		
+		// activate dropdown
+		
+	});
+</script>
+{% endblock js %}
+
+
+{% block content %}
+
+
+   
+    <div class="row">
+	
+	<div>
+		
+		<h3>Context: {{context_file.title}} </h3>
+		<span>{{context_file.cxtfile.name}}</span>
+		
+		
+		<table class="table table-bordered">
+			<tr>
+			<th>Attribute</th>
+			<th>Values</th>
+			<th>Type</th>
+			<th>Objects</th>
+			</tr>
+			
+			
+			{% for tkey,value in attr_values.items %}
+			<tr>
+			<td>{{tkey}}</td>
+			<td>
+					{{value|commify}}
+			</td>
+			<td></td>
+			<td>
+				
+					{{attr_objects|get_item:tkey|commify}}
+			</td>
+			</tr>
+			{% endfor %}
+			
+		</table>
+		
+		<button class="btn btn-large btn-primary">Generate Lattice</button>
+		
+		
+	</div>
+	
+	
+	
+	
+	
+    </div>
+
+
+
+
+{% endblock content %}
