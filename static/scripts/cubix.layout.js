@@ -2,15 +2,15 @@
 // visualisations options for lattice
 var latticeVisOpts = [
 	{ 
-		name: "FD Lattice",
+		name: "Hasse diagram",
 		val: "lattice",
 		tooltip: "A Hasse diagram with dynamic arrangement"
 	}, 
-	{ 
-		name: "Static Lattice",
-		val: "static-lattice",
-		tooltip: "A static Hasse diagram"
-	}, 
+	// { 
+		// name: "Static Lattice",
+		// val: "static-lattice",
+		// tooltip: "A static Hasse diagram"
+	// }, 
 	{ 
 		name: "Tree",
 		val: "tree",
@@ -457,11 +457,6 @@ $(function() {
 			createHorizontalBarChart("box1a-chart", $("#control_1").selectedPairsArray(), $("#control_2").selectedPairsArray());
 		 });
 		 
-		$("#attr-y-1a").change(function() {
-        	//alert($(this).val());
-        	alert("oi4")
-        	changeOptionsChart(".draw-chart-1a", $(this).val());
-    	});
     	
     	createDistributionChart();
 		 
@@ -534,8 +529,8 @@ function inflateDiv(layoutType){
 function getAttributeValuesPairs(){ // TODO refatorar || eg output: [{name : "age->30", attrName: "age", valueName: ">30"}]// TODO colocar no context
 
 		var ret = [];
-		for (var attr in context.attributes) {
-		  var valuesNumber = context.attributes[attr];
+		for (var attr in context.attributeNames) {
+		  var valuesNumber = context.attributeNames[attr];
 		  
 		 	for (var j=0; j < valuesNumber.length; j++) {
 		 		

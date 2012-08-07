@@ -244,10 +244,10 @@ function resetFilters(){
 	};
 	
 	// CLONE
-	lattice.concepts = _data_nodes.slice(0);
-	lattice.edges = _data_links.slice(0);
-	context.attributes = HashClone(_data_attributes); // TODO necessary?
-	context.objects = _data_objects.slice(0);
+	lattice.concepts = lattice.initialConcepts.slice(0);
+	lattice.edges = lattice.initialEdges.slice(0);
+	context.attributeNames = HashClone(context.initialAttributeNames); // TODO necessary?
+	context.objects = context.initialObjects.slice(0);
 	
 	
 	updateEntityList();
@@ -263,7 +263,7 @@ function resetFilters(){
 
 function keepLinks(){
 	
-	lattice.edges = _data_links.filter(function(d) { 
+	lattice.edges = lattice.initialEdges.filter(function(d) { 
 		//return (lattice.concepts.indexOf(d.source) < 0 || lattice.concepts.indexOf(d.target) < 0)
 		return (lattice.concepts.indexOf(d.source) >= 0 && lattice.concepts.indexOf(d.target) >= 0)
 	});
@@ -285,9 +285,9 @@ function clickFilterValue(){ //boolean atributes
     
     	var removed = [];
 	    // iterate over original data nodes
-	    for (var i=0; i < _data_nodes.length; i++) { // this solution is preferreed over the next one because even if we need to iterate again to make the intersection with current filter,
+	    for (var i=0; i < lattice.initialConcepts.length; i++) { // this solution is preferreed over the next one because even if we need to iterate again to make the intersection with current filter,
 	    												// this solution enables storing of affected nodes by a filter (and thus allowing user to remove filters non-sequentially later)
-	      var d = _data_nodes[i];
+	      var d = lattice.initialConcepts[i];
 	      
 	      // eliminate bottom concept
 	      if (d.extent.length == 0) {
@@ -329,7 +329,7 @@ function clickFilterValue(){ //boolean atributes
 
 
 function loadFilters(){
-	var rawAttrs = getKeys(context.attributes);
+	var rawAttrs = getKeys(context.attributeNames);
 	
 	for (var i=0; i < rawAttrs.length; i++) {
 	  //var attribute = context.attributes[rawAttrs[i]];
@@ -338,7 +338,7 @@ function loadFilters(){
 	  		animation: true,
 			type: 'pie',
 			name: rawAttrs[i],
-			data: context.attributes[rawAttrs[i]]
+			data: context.attributeNames[rawAttrs[i]]
 		}];
 		//context.attributes[rawAttrs[i]]
 		var renderTo = $('<div class="chartFilter"><span> '+rawAttrs[i]+' </span><div id="chart_'+i+'" >').appendTo("#filters_container");
@@ -405,7 +405,7 @@ function updateVisualFilters(){
 	for (var i=0; i < visualFilters.length; i++) {
 	  var serie = visualFilters[i].series[0];
 	  
-	  if (!(serie.name in context.attributes)) { // if there's not this attribute
+	  if (!(serie.name in context.attributeNames)) { // if there's not this attribute
 	  	//visualFilters[i].options.chart.style.visibility = "visible";
 	  	//visualFilters[i].redraw();
 	  //	$("#highcharts-"+(i+1)).hide();
@@ -417,7 +417,7 @@ function updateVisualFilters(){
 	 // visualFilters[i].options.chart.style.visibility = "hidden";
 		document.getElementById("chart_"+i).style.opacity = 1;
 		
-	  serie.setData(context.attributes[serie.name], true);
+	  serie.setData(context.attributeNames[serie.name], true);
 	  
 	  
 	};

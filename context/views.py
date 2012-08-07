@@ -62,6 +62,7 @@ def new(request, workspace_slug):
         context_instance=RequestContext(request)
     )
 
+@get_contexts
 def show(request, workspace_slug):
     
     context_id = request.session['cur_context_id']#request.POST['id']
@@ -79,8 +80,8 @@ def show(request, workspace_slug):
     # Render list page with the documents and the form
     return render_to_response(
         'context/index.html',
-        {'form': form, 'context_file':context_file, 'context': context_file.context, 'attr_values':  context_file.context.get_attribute_names_and_values(),\
-         'attr_objects':context_file.context.get_attribute_objects()},
+        {'cxtform': form, 'context_file':context_file, 'context': context_file.context, 'attr_values':  context_file.context.get_attribute_names_and_values(),\
+         'attr_objects':context_file.context.get_attribute_objects(), 'workspace_slug':workspace_slug},
         context_instance=RequestContext(request)
     )
 

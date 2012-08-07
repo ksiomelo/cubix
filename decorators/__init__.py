@@ -2,6 +2,7 @@
 
 from functools import wraps
 from workspace.models import Workspace
+from workspace.forms import LoadCxtForm
 
 def get_contexts(func):
     @wraps(func)
@@ -15,7 +16,8 @@ def get_contexts(func):
 #                user = authenticate(username=username, password=password)
 #                if user:
 #                    login(request, user)
-
+        request.session['cxtform'] = LoadCxtForm()
+        
         if request.session['cur_workspace_slug']:
             workspace_slug = request.session['cur_workspace_slug']
             try:

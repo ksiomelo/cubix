@@ -24,7 +24,7 @@ function multiSelectOptionsForAttributes(multiSelectControlId){
 	$el.empty(); // remove old options
 	$el.append($("<option></option>"));
 	
-	$.each(context.attributes, function(key,value) {
+	$.each(context.attributeNames, function(key,value) {
 	  
 	  var optGrp = $("<optgroup label='"+key+"'></optgroup>");
 	  $el.append(optGrp);

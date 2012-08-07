@@ -35,6 +35,7 @@ urlpatterns += patterns('fca.views',
     (r'^(?P<workspace_slug>[-\w]+)/fca/$', 'index'),
     (r'^(?P<workspace_slug>[-\w]+)/fca/load_cxt/$', 'load_cxt'),
     (r'^(?P<workspace_slug>[-\w]+)/fca/show$', 'load_cxt'),
+    (r'^(?P<workspace_slug>[-\w]+)/fca/generate', 'generate_lattice'),
     #(r'^fca/compute/(?P<metric>\w+)/$', 'compute_metric'),
 )
 

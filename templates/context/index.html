@@ -12,6 +12,25 @@
 		
 		// activate dropdown
 		
+		// $('#gen_lattice_btn').click(function(){
+			// var thetoken = $('input[name=csrfmiddlewaretoken]').val();
+			// var arlink = "/api/v1/metrics/";
+		 	// $.getJSON(arlink,{ lattice_id: lattice_id, metric: "stability", csrfmiddlewaretoken:  thetoken}, function(data) {
+// 		 		
+// 		 		
+// 	
+		 		// hideLoading();
+		 		// $("#calc-stab").attr("disabled", true);
+// 		 		
+		 		// // That's asynchronous!
+		 		// if (typeof callback != 'undefined') 
+		 		// {
+// 		 			
+		 		// };
+			// });
+		// });
+		
+		
 	});
 </script>
 {% endblock js %}
@@ -54,8 +73,7 @@
 			
 		</table>
 		
-		<button class="btn btn-large btn-primary">Generate Lattice</button>
-		
+		<a class="btn btn-large btn-primary" id="gen_lattice_btn" href="/{{workspace_slug}}/fca/generate/">Generate Lattice</a>
 		
 	</div>
 	

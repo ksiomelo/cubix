@@ -16,10 +16,6 @@ var h = DEFAULT_HEIGHT;
 var force;
 var vis;
     
-var r = Math.min(w, h) / 2,
-    x = d3.scale.linear().range([0, 2 * Math.PI]),
-    y = d3.scale.sqrt().range([0, r]),
-    color = d3.scale.category20c();
 
 function redrawVis(){
 	if (currentVis != 'lattice')
@@ -148,7 +144,7 @@ function initStaticLattice2(){
     .attr("viewBox", "0 0 "+w+" "+h);
     
     
-     var nodes = data.nodes,
+     var nodes = lattice.concepts,
       links = data.links;
 	
 	
@@ -204,7 +200,7 @@ function tickStatic(e) {
 	
 	 
      var k = .1 * e.alpha;
-	  	data.nodes.forEach(function(o, i) {
+	  	lattice.concepts.forEach(function(o, i) {
 	    o.y += (foci[o.id].y - o.y) * k;
 	    o.x += (foci[o.id].x - o.x) * k;
 	  });
@@ -264,12 +260,18 @@ var arc = d3.svg.arc()
 	    .innerRadius(function(d) { return Math.max(0, y(d.y)); })
 	    .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
 
+var r,x,y,color;
 
 
 function initSunburst(){
 	
 	// w = 960;
     // h = 500;
+    r = Math.min(w, h) / 2;
+    x = d3.scale.linear().range([0, 2 * Math.PI]);
+    y = d3.scale.sqrt().range([0, r]);
+    color = d3.scale.category20c();
+	
 	
 	vis = d3.select("#chart").append("svg:svg")
 	    .attr("width", w)
@@ -277,10 +279,12 @@ function initSunburst(){
 	  .append("svg:g")
 	    .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")");
 	    
-	partition = d3.layout.partition()
-	    .value(function(d) { return Math.round(d.support*100); });
+	 partition = d3.layout.partition()
+     .sort(null)
+     //.size([2 * Math.PI, radius * radius])
+     .value(function(d) { return 1; });
 	    
-	    updateSunburst();
+	  updateSunburst();
 	
 }
 
@@ -290,7 +294,7 @@ function updateSunburst() {
        //	treeTransform();
        
        	
-        var json = getTree0();// data.nodes[0]; //  no need to transform :)
+        var json = getTree0();// lattice.concepts[0]; //  no need to transform :)
         
         //labelizeThis(json, true);
        	//$("body").html(JSON.stringify(json))
@@ -431,7 +435,8 @@ function initIcicle(){
     .attr("height", h);
     
     partition = d3.layout.partition()
-    .value(function(d) { return  Math.round(d.support*100); }); // TODO d.size
+    .value(function(d) { return  1; }); // TODO d.size
+    //.value(function(d) { return  Math.round(d.support*100); }); // TODO d.size
 
 
 	updateIcicle();
@@ -856,13 +861,13 @@ var n=0;
 var attr_list=[];
 
 
-for (a in data.attributes) {
-for(i=0;i<data.attributes[a].length;i++){
-if ( (data.attributes[a])[i][0]=="yes") attr_list.push( a.toString());
+for (a in context.attributeNames) {
+for(i=0;i<context.attributeNames[a].length;i++){
+if ( (context.attributeNames[a])[i][0]=="yes") attr_list.push( a.toString());
 else
-if ( (data.attributes[a])[i][0]=="no") continue;
+if ( (context.attributeNames[a])[i][0]=="no") continue;
 else
-attr_list.push( a.toString()+"-"+(data.attributes[a])[i][0]);
+attr_list.push( a.toString()+"-"+(context.attributeNames[a])[i][0]);
 }
 }
 n=attr_list.length;
@@ -915,7 +920,7 @@ var x = d3.scale.ordinal().rangeBand([0, w]),
 //Adjusting margins
 
 var ml=0;
-for (i in data.attributes) ml=Math.max(ml,i.length);
+for (i in context.attributeNames) ml=Math.max(ml,i.length);
 m[0]=ml*12;
 ml=0;
 for (var i=0;i<myobject.length;i++) {ml=Math.max(ml,(myobject[i].premise.toString().length))}
@@ -1004,13 +1009,13 @@ var n=0;
 var attr_list=[];
 
 
-for (a in data.attributes) {
-for(i=0;i<data.attributes[a].length;i++){
-if ( (data.attributes[a])[i][0]=="yes") attr_list.push( a.toString());
+for (a in context.attributeNames) {
+for(i=0;i<context.attributeNames[a].length;i++){
+if ( (context.attributeNames[a])[i][0]=="yes") attr_list.push( a.toString());
 else
-if ( (data.attributes[a])[i][0]=="no") continue;
+if ( (context.attributeNames[a])[i][0]=="no") continue;
 else
-attr_list.push( a.toString()+"-"+(data.attributes[a])[i][0]);
+attr_list.push( a.toString()+"-"+(context.attributeNames[a])[i][0]);
 }
 }
 n=attr_list.length;

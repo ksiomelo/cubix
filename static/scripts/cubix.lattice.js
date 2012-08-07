@@ -5,7 +5,6 @@
 
  
 var numberSelected = 0;
-//var _data_attributes, _data_objects;
 
 
 /*
@@ -22,7 +21,7 @@ function loadData(data){
 	data.a_rules_concerned_attributes=clone(data.attributes);
 	_data_a_rules_concerned_attributes=clone(data.attributes);
 	
-	context = new Context(data.context.objects,data.context.attributes,data.context.rel,data.context.attributes)
+	context = new Context(data.context.objects, data.context.attributes, data.context.rel, data.attributes) //TODO refactor
 	lattice = new Lattice(data);
 	
 	
@@ -80,12 +79,15 @@ function Lattice(data) {
 	// _data_attributes = HashClone(data.attributes); // TODO deep copy??
 	//_data_objects = data.objects.slice(0);
 	
-	this.initial_concepts = data.nodes.slice(0);
+	this.initialConcepts = data.nodes.slice(0);
+	this.initialEdges = data.links.slice(0);
 	// _data_nodes = lattice.concepts.slice(0);
 	// _data_links = lattice.edges.slice(0);
 	
 	this.concepts = data.nodes;
 	this.edges = data.links
+	
+	this.id = data.id;
 	
 	
 	

@@ -37,7 +37,7 @@ function get_attribute_list()
 }
 
 function fetchAssociationRules(callback){	
-	if (typeof lattice_id == "undefined" || lattice_id == null) { // no lattice id
+	if (typeof lattice.id == "undefined" || lattice.id == null) { // no lattice id
 		flashAlert("error", "The current concept lattice is not saved in the server - could not compute association rules.");
 		return;
 	}
@@ -49,7 +49,7 @@ function fetchAssociationRules(callback){
 	
 	var thetoken = $('input[name=csrfmiddlewaretoken]').val();
 	var arlink = "/api/v1/association_rules/";
-	 $.getJSON(arlink,{ lattice_id: lattice_id, csrfmiddlewaretoken:  thetoken}, function(data) {
+	 $.getJSON(arlink,{ lattice_id: lattice.id, csrfmiddlewaretoken:  thetoken}, function(data) {
 	 		association_rules = data;
 	 		for (t=0;t<association_rules.length;t++) {
 	 			association_rules[t].id="id"+t;

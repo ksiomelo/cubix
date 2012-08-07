@@ -1,0 +1,25 @@
+
+	
+	<div>
+		
+		<!-- Upload form. Note enctype attribute! -->
+		<form action="/{{ workspace_slug }}/context/new" method="post" enctype="multipart/form-data">
+		{% csrf_token %}
+		<p>{{ request.session.cxtform.non_field_errors }}</p>
+		<p>{{ request.session.cxtform.cxtfile.label_tag }} {{ request.session.cxtform.cxtfile.help_text }}</p>
+		
+		<p>
+		<label>Title</label>
+		{{ request.session.cxtform.title.errors }}
+		{{ request.session.cxtform.title }}
+		</p>
+		
+		<p>
+		<label>Select file</label>
+		{{ request.session.cxtform.cxtfile.errors }}
+		{{ request.session.cxtform.cxtfile }}
+		</p>
+		<p><input type="submit" value="Upload" /></p>
+		</form>
+	</div>
+	

@@ -17,18 +17,23 @@ from fca.context import Context
 from fca.concept import Concept
 from fca.concept_link import ConceptLink
 from fca.association_rule import AssociationRule
+from workspace.models import ContextFile
 
 @login_required
-def index(request):
+def index(request, workspace_slug):
     cxt_form = LoadCxtForm()
     
     
-    
-    return render_to_response('fca/index.html', {'cxt_form': cxt_form, 'djson': None}, context_instance=RequestContext(request))
+    if request.session['cur_lattice_id']:
+        lattice = ConceptLattice.objects.get(id=request.session['cur_lattice_id'])
+        return render_to_response('fca/index.html', {'cxt_form': cxt_form, 'djson': FCAUtils.lattice_to_json_depth2(lattice)}, context_instance=RequestContext(request))
+           
+    else:
+        return render_to_response('fca/index.html', {'cxt_form': cxt_form, 'djson': None}, context_instance=RequestContext(request))
 
     
 @login_required
-def load_cxt(request):
+def load_cxt(request, workspace_slug):
     cxt_form = LoadCxtForm()
     
     if request.method == 'POST':
@@ -62,6 +67,29 @@ def load_cxt(request):
     
             
     return render_to_response('fca/lattice', {'form': form})
+
+
+@login_required
+def generate_lattice(request, workspace_slug):
+    cxt_form = LoadCxtForm()
+    
+    
+    context_id = request.session['cur_context_id']#request.POST['id']
+    context_file = ContextFile.objects.get(id=context_id)
+    
+    #try :
+    cl = ConceptLattice(_context=context_file.context)
+    cl.compute_lattice()
+            
+    cl.save()
+    
+    request.session['cur_lattice_id'] = cl.id
+
+    return render_to_response('fca/index.html', {'cxt_form': cxt_form, 'djson': FCAUtils.lattice_to_json_depth2(cl)}, context_instance=RequestContext(request))
+#    except Exception:
+#            return render_to_response('shared/error.html', {'error_msg': 'Error computing concept lattice.'}, context_instance=RequestContext(request))
+
+            
     
 
 

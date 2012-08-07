@@ -2,8 +2,8 @@
 function Context(objs, attrs, rels, attrNames) {
 //var context = new function(){
 	
-	// data.attributes      ["age"] = [["<= 30", 3][">30", 4]]
-	
+	this.initialAttributeNames = HashClone(attrNames); 
+	this.initialObjects = objs.slice(0);
 	
 	this.attributeNames = attrNames;
 	this.attributes = attrs;
@@ -70,13 +70,18 @@ function Context(objs, attrs, rels, attrNames) {
 		var ret = [];
 		
 		var rawAttr = attrName.split("-");
-		var negation = (rawAttr.length > 0 && rawAttr[1] == "no");
+		var lastIdx = rawAttr.length-1;
+		var negation = (lastIdx >= 0 && rawAttr[lastIdx] == "no");
 		
-		if (rawAttr.length > 0 && (rawAttr[1] == "no" || rawAttr[1] == "yes")) { //boolean attr take raw name
-			attrName = rawAttr[0];
+		if (rawAttr.length > 0 && (rawAttr[lastIdx] == "no" || rawAttr[lastIdx] == "yes")) { //boolean attr take raw name
+			
+			attrName = "";
+			for (var i=0; i < lastIdx; i++) {
+			  attrName += rawAttr[i];
+			};
 		}
 		
-		var attrIdx = this.attributeNames.indexOf(attrName);
+		var attrIdx = this.attributes.indexOf(attrName);
 		
 		for (var j=0; j < this.objects.length; j++) {
 		  var obj = this.objects[j];
@@ -141,17 +146,17 @@ function eliminateEntities(){ // TODO how to optmize?? = interate over concepts 
 	var remAttr = [];
 	
 	// Remove objects
-	for (var j=0; j < data.objects.length;) {
+	for (var j=0; j < context.objects.length;) {
 		
 		var contains = false;
-		for (var i=0; i < data.nodes.length && !contains; i++) {
+		for (var i=0; i < lattice.concepts.length && !contains; i++) {
 			// there's at least one node with that objct, keep it
-			contains = (data.nodes[i].extent.indexOf(data.objects[j]) >= 0);
+			contains = (lattice.concepts[i].extent.indexOf(context.objects[j]) >= 0);
 		}
 		
 		if (!contains) { // remove objm keep the same pointer (j)
-			remObjs.push(data.objects[j]);
-			data.objects.splice(j,1);
+			remObjs.push(context.objects[j]);
+			context.objects.splice(j,1);
 		} else j++;
 		
 	  };
@@ -162,9 +167,9 @@ function eliminateEntities(){ // TODO how to optmize?? = interate over concepts 
 	  for (var j=0; j < attrNames.length; j++) {
 		
 		var contains = false;
-		for (var i=0; i < data.nodes.length && !contains; i++) {
+		for (var i=0; i < lattice.concepts.length && !contains; i++) {
 			// there's at least one node with that objct, keep it
-			contains = (data.nodes[i].intent.indexOf(attrNames[j].name) >= 0);
+			contains = (lattice.concepts[i].intent.indexOf(attrNames[j].name) >= 0);
 		}
 		
 		if (!contains) { 
@@ -177,19 +182,19 @@ function eliminateEntities(){ // TODO how to optmize?? = interate over concepts 
 			theAttrVal.booleanAttr = attrNames[j].booleanAttr;
 			theAttrVal.attrName = curAttrName; // raw attr name
 			if (curAttrValue) // mv attribute
-				theAttrVal.value = data.attributes[curAttrName][getValueIdxfromAttr(curAttrName,curAttrValue)];
+				theAttrVal.value = context.attributeNames[curAttrName][getValueIdxfromAttr(curAttrName,curAttrValue)];
 			else // boolean
-				theAttrVal.value = data.attributes[curAttrName];
+				theAttrVal.value = context.attributeNames[curAttrName];
 				
 			remAttr.push(theAttrVal);
 			
 			if (attrNames[j].booleanAttr) { // if boolean remove the entire attribute
-				delete data.attributes[curAttrName];
+				delete context.attributeNames[curAttrName];
 			} else {
 				
-				if (curAttrName in data.attributes) { // checks if the attribute is there (it might be already removed)
-					if (data.attributes[curAttrName].length == 1)  // if it's a mv attr but it has only one value left, delete attr
-						delete data.attributes[curAttrName];
+				if (curAttrName in context.attributeNames) { // checks if the attribute is there (it might be already removed)
+					if (context.attributeNames[curAttrName].length == 1)  // if it's a mv attr but it has only one value left, delete attr
+						delete context.attributeNames[curAttrName];
 					else
 						removeValuefromAttr(curAttrName, curAttrValue);
 				}
@@ -213,11 +218,11 @@ function eliminateEntities(){ // TODO how to optmize?? = interate over concepts 
 function removeValuefromAttr(attrString, valueString) { 
 	var valueIdx = getValueIdxfromAttr(attrString, valueString); // format {"attribute":[["value1", n], ["value2", m] ]}
 	
-	if (valueIdx >= 0) data.attributes[attrString].splice(valueIdx,1);
+	if (valueIdx >= 0) context.attributeNames[attrString].splice(valueIdx,1);
 }
 
 function getValueIdxfromAttr(attrString, valueString){
-	var valuesArray = data.attributes[attrString]; // format {"attribute":[["value1", n], ["value2", m] ]}
+	var valuesArray = context.attributeNames[attrString]; // format {"attribute":[["value1", n], ["value2", m] ]}
 	for (var i=0; i < valuesArray.length; i++) {
 	  if (valuesArray[i][0] == valueString) return i;
 	};
@@ -227,17 +232,17 @@ function getValueIdxfromAttr(attrString, valueString){
 
 
 function addEntities(objs, attrsVals){
-	ArrayAddAll(objs, data.objects);
+	ArrayAddAll(objs, context.objects);
 	
 	for (var i=0; i < attrsVals.length; i++) {
-	  if (attrsVals[i].attrName in data.attributes) { 
-	  	if (data.attributes[attrsVals[i].attrName].indexOf(attrsVals[i].value) < 0) // assure that the value is not already there
-	  		data.attributes[attrsVals[i].attrName].push(attrsVals[i].value);
+	  if (attrsVals[i].attrName in context.attributeNames) { 
+	  	if (context.attributeNames[attrsVals[i].attrName].indexOf(attrsVals[i].value) < 0) // assure that the value is not already there
+	  		context.attributeNames[attrsVals[i].attrName].push(attrsVals[i].value);
 	  } else {
 	  	if (attrsVals[i].booleanAttr) // boolean
-	  		data.attributes[attrsVals[i].attrName] = attrsVals[i].value;
+	  		context.attributeNames[attrsVals[i].attrName] = attrsVals[i].value;
 	  	else // mv attr
-	  		data.attributes[attrsVals[i].attrName] = [attrsVals[i].value];
+	  		context.attributeNames[attrsVals[i].attrName] = [attrsVals[i].value];
 	  }
 	  
 	};

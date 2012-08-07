@@ -23,29 +23,8 @@
    
     <div class="row">
 	
-	<div>
-		
-		<h3>New data source2</h3>
-		<!-- Upload form. Note enctype attribute! -->
-		<form action="/{{ workspace_slug }}/context/new" method="post" enctype="multipart/form-data">
-		{% csrf_token %}
-		<p>{{ form.non_field_errors }}</p>
-		<p>{{ form.cxtfile.label_tag }} {{ form.cxtfile.help_text }}</p>
-		
-		<p>
-		<label>Title</label>
-		{{ form.title.errors }}
-		{{ form.title }}
-		</p>
-		
-		<p>
-		<label>Select file</label>
-		{{ form.cxtfile.errors }}
-		{{ form.cxtfile }}
-		</p>
-		<p><input type="submit" value="Upload" /></p>
-		</form>
-	</div>
+	<h3>New data source</h3>
+	{% include 'context/_form.html' %}
 	
 	
 	
