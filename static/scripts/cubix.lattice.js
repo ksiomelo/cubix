@@ -15,14 +15,16 @@ var context;
 var lattice;
 //var lattice_id;
 
+var a_rules_concerned_attributes;
+var _data_a_rules_concerned_attributes;
+
 function loadData(data){
-	
-		// association rules objects
-	data.a_rules_concerned_attributes=clone(data.attributes);
-	_data_a_rules_concerned_attributes=clone(data.attributes);
 	
 	context = new Context(data.context.objects, data.context.attributes, data.context.rel, data.attributes) //TODO refactor
 	lattice = new Lattice(data);
+	
+	a_rules_concerned_attributes=clone(data.attributes);
+	_data_a_rules_concerned_attributes=clone(data.attributes);
 	
 	
 	// load autosuggest for attributes

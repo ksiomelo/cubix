@@ -14,20 +14,19 @@ function get_attribute_list()
 {
 	var attr_list=[];
 	s=0;
-	for (a in data.a_rules_concerned_attributes) {
+	for (var a in a_rules_concerned_attributes) {
 		s++;
-		for(i=0;i<data.a_rules_concerned_attributes[a].length;i++){
+		for(var i=0;i<a_rules_concerned_attributes[a].length;i++){
 			t=Object();
 			t.family=s;			
-			if ( (data.a_rules_concerned_attributes[a])[i][0]=="yes") {
+			if ( (a_rules_concerned_attributes[a])[i][0]=="yes") {
 				t.text=a.toString(); 
 				attr_list.push( t );
 				}
 			else
-				if ( (data.a_rules_concerned_attributes[a])[i][0]=="no") continue;
+				if ( (a_rules_concerned_attributes[a])[i][0]=="no") continue;
 				else
 				{
-					t.text=a.toString()+"-"+(data.a_rules_concerned_attributes[a])[i][0];
 					attr_list.push( t );
 				}
 		}
@@ -51,7 +50,7 @@ function fetchAssociationRules(callback){
 	var arlink = "/api/v1/association_rules/";
 	 $.getJSON(arlink,{ lattice_id: lattice.id, csrfmiddlewaretoken:  thetoken}, function(data) {
 	 		association_rules = data;
-	 		for (t=0;t<association_rules.length;t++) {
+	 		for (var t=0;t<association_rules.length;t++) {
 	 			association_rules[t].id="id"+t;
 	 			association_rules[t].highlighted=true;
 	 			}
@@ -61,20 +60,20 @@ function fetchAssociationRules(callback){
 	 		if (typeof callback != 'undefined') 
 	 		{
 	 			// Go through fiters for a_rules
-				for (i=0;i<filter.history.length;i++)
+				for (var i=0;i<filter.history.length;i++)
 				{
 					filter.history[i].removedRules=[];	
 					arrjs=[];
-					for (j=0;j<association_rules.length;j++)
+					for (var j=0;j<association_rules.length;j++)
 					{
 						
 						flag=true;
 						
-						for (k=0;k<association_rules[j].premise.length;k++)
+						for (var k=0;k<association_rules[j].premise.length;k++)
 						{
 							if (association_rules[j].premise[k]==filter.history[i].attr+'-'+filter.history[i].value) { flag=false;} //break;}
 						}
-						for (k=0;k<association_rules[j].conclusion.length;k++)
+						for (var k=0;k<association_rules[j].conclusion.length;k++)
 						{
 							if (association_rules[j].conclusion[k]==filter.history[i].attr+'-'+filter.history[i].value) { flag=false;} // break;}
 						}
@@ -84,7 +83,7 @@ function fetchAssociationRules(callback){
 						if (flag) {filter.history[i].removedRules.push(association_rules[j]); arrjs.push(j);}						 
 					}
 	        	
-	        	for (t=0;t<arrjs.length;t++){association_rules.splice(arrjs[t]-t,1);}
+	        	for (var t=0;t<arrjs.length;t++){association_rules.splice(arrjs[t]-t,1);}
 
 					
 					
@@ -126,7 +125,7 @@ function addGradient(param,id,lefttoright,toptobottom)
 function objectJoin (array,symbol)
 {
 	res="";
-	for (i=0;i<array.length;i++)
+	for (var i=0;i<array.length;i++)
 		res+=array[i].text+symbol;
 	return res.substring(0,res.length-1);
 }
@@ -182,7 +181,7 @@ function initARView(){
 	}
 	//console.log(association_rules);
 	//Adjusting margins
-	for (i=0;i<n;i++){m[0]=Math.max(m[0],attr_list[i].text.length);}
+	for (var i=0;i<n;i++){m[0]=Math.max(m[0],attr_list[i].text.length);}
 	m[0]=m[0]*7;
 	
 	m[1]=10+10*Math.log(association_rules.length)/Math.LN10;
@@ -329,7 +328,7 @@ function initDiagonalARView(){
 	
 	//Adjusting margins	
 	var m = [0, 120, 20, 120]; // margins
-	for (i=0;i<attr_list.length;i++){m[0]=Math.max(m[0],attr_list[i].text.length);}
+	for (var i=0;i<attr_list.length;i++){m[0]=Math.max(m[0],attr_list[i].text.length);}
 	m[0]=m[0]*0;
 	//initializing environement
 	vis = d3.select("#chart").append("svg:svg")
@@ -354,7 +353,7 @@ function initDiagonalARView(){
 	parent.y=0;
 
 	//calculate layout
-	for (a in data.attributes)
+	for (var a in data.attributes)
 		{
 			//attribution to family (attribute)
 			var sub_parent=Object();
@@ -364,7 +363,7 @@ function initDiagonalARView(){
 			sub_parent.x=(w/4-50)*(Math.cos(s*2*Math.PI/o));
 			sub_parent.y=(w/4-50)*(Math.sin(s*2*Math.PI/o))
 			s++;
-			for(i=0;i<data.attributes[a].length;i++){
+			for(var i=0;i<data.attributes[a].length;i++){
 				var c=Object();				
 				if ( (data.attributes[a])[i][0]=="yes")
 				{
@@ -395,7 +394,7 @@ function initDiagonalARView(){
 	for (var i=0;i<association_rules.length;i++)
 		{
 		
-			for (j=0;j<association_rules[i].premise.length;j++)
+			for (var j=0;j<association_rules[i].premise.length;j++)
 				{
 					source=Object();
 					for (var t=0;t<node_mas.length;t++)
@@ -406,7 +405,7 @@ function initDiagonalARView(){
 								source.x=node_mas[t].x;
 								source.y=node_mas[t].y;
 							}
-							for (k=0;k<association_rules[i].conclusion.length;k++)
+							for (var k=0;k<association_rules[i].conclusion.length;k++)
 								{
 								var target=Object();
 								for (var u=0;u<node_mas.length;u++)
@@ -457,7 +456,7 @@ function initDiagonalARView(){
 	    .attr("id",function(d){return d[4].id;})
 	    .attr("d",function(d,i){
 	    	pathinfo=[];
-	    	for (a=0;a<d.length;a++) {point={}; point.x=d[a].x; point.y=d[a].y; pathinfo.push(point);}
+	    	for (var a=0;a<d.length;a++) {point={}; point.x=d[a].x; point.y=d[a].y; pathinfo.push(point);}
 	    	var d3line2=d3.svg.line()
 	    	 .x(function(d){return d.x;})
 	    	 .y(function(d){return d.y;})
@@ -662,7 +661,7 @@ Ololobject['values'] = myobject;
           {
           	topush=true;
           	
-          	for (i=0;i<association_rules.length;i++)
+          	for (var i=0;i<association_rules.length;i++)
           	{
           		//eliminate redundant association rules
           		if (compare_a_rules(association_rules[i],d)) topush=false;         		
@@ -700,7 +699,7 @@ Ololobject['values'] = myobject;
 
   function sp_cross(a, b) {
     var c = [], n = a.length, m = b.length, i, j;
-    for (i = -1; ++i < n;) for (j = -1; ++j < m;) c.push({x: a[i], i: i, y: b[j], j: j});
+    for (var i = -1; ++i < n;) for (var j = -1; ++j < m;) c.push({x: a[i], i: i, y: b[j], j: j});
     return c;
   }
   
@@ -725,10 +724,10 @@ var brush;
 var myobject=clone(association_rules);
 var n = myobject.length;
 
-for (i=0;i<myobject.length;i++)
+for (var i=0;i<myobject.length;i++)
 	{
-	for (j=0;j<myobject[i].premise.length;j++)		
-		for (k=0;k<attr_list.length;k++)
+	for (var j=0;j<myobject[i].premise.length;j++)		
+		for (var k=0;k<attr_list.length;k++)
 		{
 			if (myobject[i].premise[j]==attr_list[k].text)
 				{
@@ -739,8 +738,8 @@ for (i=0;i<myobject.length;i++)
 				}
 		}
 	
-	for (j=0;j<myobject[i].conclusion.length;j++)		
-		for (k=0;k<attr_list.length;k++)
+	for (var j=0;j<myobject[i].conclusion.length;j++)		
+		for (var k=0;k<attr_list.length;k++)
 		{
 			if (myobject[i].conclusion[j]==attr_list[k].text)
 				{
@@ -783,7 +782,7 @@ for (var i=0; i<n ; i++)
 			res.occurencies=1; res.parent=p_parent; return res;
 			});
 		
-		for (j=0;j<common_parent.children.length;j++)
+		for (var j=0;j<common_parent.children.length;j++)
 		{ 
 			if (objectJoin( myobject[i].premise,'&')==common_parent.children[j].text) 
 			{

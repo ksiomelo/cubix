@@ -62,13 +62,13 @@ USE_L10N = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = PROJECT_PATH + '/media/'
+MEDIA_ROOT = PROJECT_PATH + '/public/media/'
 FILE_UPLOAD_TEMP_DIR = MEDIA_ROOT + "tmp/"
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
-MEDIA_URL = '/media/'
+MEDIA_URL = '/public/media/'
 
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
@@ -136,7 +136,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 ROOT_URLCONF = 'cubix.urls' # WHEN DEPLOYING CHANGE TO "urls" !!
 
 TEMPLATE_DIRS = (
-    PROJECT_PATH + '/templates/'
+    PROJECT_PATH + '/public/templates/'
 )
 
 INSTALLED_APPS = (

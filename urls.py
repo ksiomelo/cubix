@@ -26,6 +26,8 @@ urlpatterns += patterns('workspace.views',
 urlpatterns += patterns('context.views',
     (r'^(?P<workspace_slug>[-\w]+)/context/new', 'new'),
     (r'^(?P<workspace_slug>[-\w]+)/context/', 'show'),
+    (r'^(?P<workspace_slug>[-\w]+)/context/delete', 'delete'),
+    (r'^(?P<workspace_slug>[-\w]+)/context/select', 'select'),
 )
 
 

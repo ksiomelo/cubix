@@ -8,7 +8,7 @@ from django.middleware.csrf import get_token
 from django.core import serializers
 from semantics.search import Semantic
 from django.utils.html import escape
-from workspace.models import ContextFile
+from workspace.models import ContextFile, Workspace
 from workspace.forms import LoadCxtForm
 from decorators import get_contexts
 from fca.readwrite import cxt
@@ -85,6 +85,38 @@ def show(request, workspace_slug):
         context_instance=RequestContext(request)
     )
 
+    
+@login_required  #TODO verify it the user has permission for it
+@get_contexts
+def delete(request, workspace_slug):
+    context_id = request.GET['id']
+    contextfile = ContextFile.objects.get(id=context_id)
+    contextfile.context.delete()
+    contextfile.delete()
+    
+    if request.session['cur_context_id'] == context_id:
+        request.session['cur_context_id'] = None
+        request.session['cur_context_slug'] = None
+        
+    #return redirect('workspace.views.index')
+    return HttpResponseRedirect('/home/')
+
+
+@login_required  #TODO verify it the user has permission for it
+@get_contexts
+def select(request, workspace_slug):
+    
+    context_id = request.GET['id']
+    contextfile = ContextFile.objects.get(id=context_id)
+    
+    workspace = Workspace.objects.get(title_slug__exact=workspace_slug)
+    
+    request.session['cur_workspace_slug'] = workspace_slug
+    request.session['cur_workspace_id'] = workspace.id
+    request.session['cur_context_id'] = contextfile.id
+    request.session['cur_context_slug'] = contextfile.title
+    
+    return HttpResponseRedirect('/'+workspace_slug+'/context/')
     
     
         

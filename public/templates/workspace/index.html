@@ -27,7 +27,7 @@
 		        <li><a href="/{{ workspace.title_slug }}/select/">{{ workspace.title }}</a> - <a href="/{{ workspace.title_slug }}/delete/">Delete</a> </li>
 		        <ul>
 			    {% for data_source in workspace.contexts %}
-			        <li>{{ data_source.title }} - {{ data_source.filename }} - <a href="/workspace/delete/{{ data_source.id }}/">Delete</a>
+			        <li>{{ data_source.title }} - {{ data_source.filename }} - <a href="/{{ workspace.title_slug }}/context/delete/&id={{ data_source.id }}/">Delete</a>
 			        </li>
 			    {% endfor %}
 			    </ul>
