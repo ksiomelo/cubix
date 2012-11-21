@@ -13,7 +13,7 @@ def dir_list(dir_name, subdir, *args):
     Additional arguments, if any, are file extensions to add to the list.
     Example usage: fileList = dir_list(r'H:\TEMP', False, 'txt', 'py', 'dat', 'log', 'jpg')
     '''
-    skiplist = ["cubix.min-intersect.js", "cubix.static-lattice.js", "cubix.static-lattice2.js","cubix.dashboard.onload.js"]
+    skiplist = ["cubix.js","cubix.min-intersect.js", "cubix.static-lattice.js", "cubix.compare.js", "cubix.static-lattice2.js","cubix.dashboard.onload.js"]
     
     fileList = []
     for file in os.listdir(dir_name):
