@@ -23,6 +23,7 @@ DATABASES = {
       'NAME' : 'cubix3'
    }
 }
+#MONGODB_AUTOMATIC_REFERENCING = True
 
 LOGIN_URL = '/login/'
 
@@ -150,6 +151,7 @@ INSTALLED_APPS = (
     'middlewares',
     'workspace',
     'context',
+    'analytics',
 	'fca',
     'templatetags',
     'cubix'

@@ -320,7 +320,7 @@ function clickFilterValue(){ //boolean atributes
 	    $("#"+sname +'-'+svalue).remove();
 		$('<span id="'+ sname +'-'+svalue+'"> | '+sname+': '+svalue+' <a href="#" class="remove-filter"><img src="'+STATIC_URL+'/images/remove.gif"></a></span>').appendTo("#showFiltersPanel");
 		
-		labelize2();
+		labelizeData();
 	    //updateLattice();
 	    updateVis();
     }
@@ -341,7 +341,7 @@ function loadFilters(){
 			data: context.attributeNames[rawAttrs[i]]
 		}];
 		//context.attributes[rawAttrs[i]]
-		var renderTo = $('<div class="chartFilter"><span> '+rawAttrs[i]+' </span><div id="chart_'+i+'" >').appendTo("#filters_container");
+		var renderTo = $('<div class="chartFilter"><span> '+rawAttrs[i]+' </span><div id="chart_'+i+'" />').appendTo("#filters_container");
 		visualFilters.push(createChart(rawAttrs[i], "chart_"+i, serie));	
 	  
 	}
@@ -493,9 +493,8 @@ function filterAttributes(){
     var sname= "attribute_" + attrFilterCt;
     filter.addFilter("attribute_sel", sname, "filter", removed);
     
-    
     //$("#"+sname +'-'+svalue).remove();
-	$('<span id="'+ sname +'" class="explain" data-tooltip="'+attrNames.join(", ")+'">' +
+	$('<span id="'+ sname +'" rel="tooltip" data-trigger="hover" data-placement="top" data-title="'+attrNames.join(", ")+'">' +
 	 ' | attributes sel. <a href="#" class="remove-filter"><img src="'+STATIC_URL+'/images/remove.gif"></a></span>').appendTo("#showFiltersPanel");
 	
 	attrFilterCt++;
@@ -543,7 +542,7 @@ function filterObjects(){
     
     
     //$("#"+sname +'-'+svalue).remove();
-	$('<span id="'+ sname +'" class="explain" data-tooltip="'+objNames.join(", ")+'">' +
+	$('<span id="'+ sname +'" rel="tooltip" data-trigger="hover" data-placement="top" data-title="'+objNames.join(", ")+'">' +
 	 ' | objects sel. <a href="#" class="remove-filter"><img src="'+STATIC_URL+'/images/remove.gif"></a></span>').appendTo("#showFiltersPanel");
 	
 	objFilterCt++;
@@ -554,3 +553,25 @@ function filterObjects(){
 	
 	
 }
+
+
+
+
+// Attribute lattices
+function loadAttributeLattices(data){
+	
+	var i = 0;
+	for (var attr in context.attributeNames) {
+		
+		var lid = "minilattice_" + i++;
+		var renderTo = $('<div class="chartFilter"><span> '+attr+' </span><div id="'+lid+'" />').appendTo("#graph_container");
+		
+		createMiniLattice(data[attr].nodes, data[attr].links, lid);
+		
+	}
+	
+}
+
+
+
+

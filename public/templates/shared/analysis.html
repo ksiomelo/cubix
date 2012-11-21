@@ -22,23 +22,21 @@
 
 		<div id="visPanel" class="toolbarPanel">
 			<h1>Visualization</h1>
-			<a href="#" id="hideVisPanel">&laquo; Hide Panel</a><br/>
+			<!--
+			<a href="#" id="hideVisPanel">&laquo; Hide Panel</a><br/> -->
 			
 				<label for="select-vis"style="text-align: left;">Visualisation:</label>
 				<select id="select-vis" name="select_vis[]" style="width: 160px">
 									
 				</select>
-				
+				<label for="select-edge"style="text-align: left;">Edges:</label>
+				<select id="select-edge" name="select_edge[]" style="width: 160px">
+				</select>
 				
 				<label for="select-size"style="text-align: left;">Size:</label>
 				<select id="select-size" name="select_size[]" style="width: 160px">
-								
-								<!--
-								<option value="1">Default</option>
-								<option value="2" selected="selected">Support</option>
-								<option value="3" >Stability</option>
-								-->
 				</select>
+				
 				<label for="select-color"style="text-align: left;">Color:</label>
 				<select id="select-color" name="select_color[]" style="width: 160px">
 				</select>
@@ -46,35 +44,29 @@
 				
 				<label for="select-label" style="text-align: left;">Label:</label>
 				<select id="select-label" name="select_label[]" style="width: 160px">
-								<option value="2">Multi-label</option>
-								<option value="1">Repetitive</option>
-								<option value="3">Support</option>
 				</select>
+				
+				<div>
+				<div style="float: left">
+					<input type="checkbox" name="label-for-attr" value="attr" checked="true"/>Attributes
+				</div>
+				<div style="float: left; margin-left: 10px;">
+					<input type="checkbox" name="label-for-obj" value="obj" checked="true"/>Objects
+				</div>
+				</div>
+				
 			
 			<div style="margin-top: 10px;">
-			<input type="checkbox" name="highlight" value="path" checked="checked" /> Highlight path
+				<input type="checkbox" name="highlight" value="path" checked="checked" /> Highlight path
 			</div>
+			
 		</div>
 		
 		
 		<div id="highlightPanel" class="toolbarPanel">
-			<h1>Highlight</h1>
-			<div>
-				<p>
-					<label for="support" style="text-align: left; width:90px"> Support:</label>
-					<input type="text" id="support" style="width: 75px; border:0; color:#f6931f; font-weight:bold; background-color: transparent;" />
-					<div id="slider-supp" class="slider support"></div>
-				</p>
-				<p>
-					<label for="stability" style="text-align: left; ">Stability:</label>
-					<input type="text" id="stability" style="width: 30px; color:#f6931f; font-weight:bold; background-color: transparent;" />
-					<div id="slider-stab" class="slider stability"></div>
-				</p>
-				<p>
-					<label for="confidence" style="text-align: left; ">Confidence:</label>
-					<input type="text" id="confidence" style="width: 30px; color:#f6931f; font-weight:bold; background-color: transparent;" />
-					<div id="slider-conf" class="slider confidence"></div>
-				</p>
+			<h1>Filter</h1>
+			<div id="metric-filter-content">
+				
 			</div>
 		</div>
 		
@@ -82,35 +74,53 @@
 		<div id="metricPanel" class="toolbarPanel">
 			<h1>Metrics</h1>
 			<div style="display: inline">
-				<input type="checkbox" checked="false" style="margin-right: 10px" id="calc-stab" />
-				<span>Stability</span>
+				<input type="checkbox" name="metric" value="istability"  style="margin-right: 10px" />
+				<span>Stability (Intent)</span>
 			</div>
 			<br/>
 			<div style="display: inline">
-				<input type="checkbox" checked="true" style="margin-right: 10px" />
-				<span>Support</span>
+				<input type="checkbox" name="metric" value="esupport" style="margin-right: 10px" />
+				<span>Support (Extent)</span>
 			</div>
 			<br/>
 			<div style="display: inline">
-				<input type="checkbox" style="margin-right: 10px" />
+				<input type="checkbox" name="metric" value="separation"  style="margin-right: 10px" />
+				<span>Separation</span>
+			</div>
+			<br/>
+			<div style="display: inline">
+				<input type="checkbox"  name="metric" value="probability"style="margin-right: 10px" />
+				<span>Probability</span>
+			</div>
+			<br/>
+			<div style="display: inline">
+				<input type="checkbox"  name="metric" value="confidence"style="margin-right: 10px" />
 				<span>Confidence</span>
 			</div>
 			<br/>
 			<div style="display: inline">
-				<input type="checkbox" style="margin-right: 10px" />
+				<input type="checkbox"  name="metric" value="similarity"style="margin-right: 10px" />
 				<span>Similarity</span>
+			</div>
+			<h1>Transformation</h1>
+			<div style="margin-top: 10px;">
+				<a class="btn btn-mini btn-primary tree-transform" href="#modal-tree-transform" data-toggle="modal" data-backdrop="true" data-keyboard="true">Tree-transform</a>
+			</div>
+			<h1>Clustering</h1>
+			<div style="margin-top: 10px;">
+				<a class="btn btn-mini btn-primary clustering" href="#modal-clustering" data-toggle="modal" data-backdrop="true" data-keyboard="true">Clustering</a>
 			</div>
 		</div>
 		
 		<div id="toolbar">
 				<ul>
-					<li class="visButton explain" data-tooltip="Visualisation and drawing options">
+					<li class="visButton" rel="tooltip"  data-trigger="hover" data-placement="right" data-title="Visualisation">
 						<img src="{{STATIC_URL}}images/connections.jpg"/>
 					</li>
-					<li class="highlightButton explain" data-tooltip="Highlight">
+					<li class="highlightButton"  rel="tooltip"  data-trigger="hover" data-placement="right" data-title="Filter">
 						<img src="{{STATIC_URL}}images/lookup.jpg"/>
 					</li>
-					<li class="metricButton explain" data-tooltip="Metrics">
+					<li class="metricButton"  rel="tooltip"  data-trigger="hover" data-placement="right" data-title="Metric">
 						<img src="{{STATIC_URL}}images/bar-chart.jpg"/>
 					</li>
 				</ul>
@@ -181,8 +191,7 @@
 				<a href="#" id="hideFiltersPanel">&laquo; Collapse</a> 
 				
 				
-				| <a href="#" class="distribution-view active">Distribution</a>
-				| <a href="#" class="graph-view">Graph</a>
+				| <a href="#" class="distribution-view active">Distribution</a> <a href="#" class="graph-view">Lattice</a>
 				
 				| <a href="#" class="reset-filters">Reset</a>
 				
@@ -198,7 +207,7 @@
 					
 				
 				<div id="filters_container" class="filters_container"></div>
-				<div id="graph_container" class="filters_container" style="display:none">abc</div>
+				<div id="graph_container" class="filters_container" style="display:none"></div>
 				
 				
 			</div>
@@ -227,6 +236,57 @@
               -->
             </div>
           </div>
+          
+          
+   <div id="modal-tree-transform" class="modal hide fade" style="width: 640px">
+            <div class="modal-header">
+              <a href="#" class="close"  data-dismiss="modal" aria-hidden="true">&times;</a>
+              <h3>Tree-transformation</h3>
+            </div>
+           <form action="/{{workspace_slug}}/fca/transform" method="GET">
+           <div class="modal-body">
+        	
+	        	<label> Criteria: </label>
+	        	<select id="select-criteria" name="criteria" style="width: 160px">
+								<option value="istability">Stability (Intent)</option>
+								<option value="estability">Stability (Extent)</option>
+								<option value="esupport">Support (Extent)</option>
+								<option value="separation">Separation</option>
+								<option value="probability">Probability</option>
+								<option value="confidence">Confidence</option>
+								<option value="similarity">Similarity</option>
+								<option value="root-distance">Root distance</option>
+				</select>
+          	
+        	</div>
+            <div class="modal-footer">
+              <input type="submit" class="btn primary tree-transform-ok" value="OK">
+              <!--
+              <a href="#" class="btn secondary">Secondary</a>
+              -->
+            </div>
+            </form>
+     </div>
+          
+          
+     <div id="modal-clustering" class="modal hide fade" style="width: 640px">
+            <div class="modal-header">
+              <a href="#" class="close"  data-dismiss="modal" aria-hidden="true">&times;</a>
+              <h3>Clustering</h3>
+            </div>
+           <form action="/{{workspace_slug}}/fca/cluster" method="GET">
+           <div class="modal-body">
+        	
+	        	<label> Numer of Clusters: </label>
+	        	
+          		<input type="text" id="n_clusters" name="n_clusters" style="width: 75px; border:0; color:#f6931f; font-weight:bold; background-color: transparent;" />
+				<div id="slider-clustering" class="slider clustering"></div>
+        	</div>
+            <div class="modal-footer">
+              <input type="submit" class="btn primary clustering-ok" value="OK">
+            </div>
+            </form>
+     </div>
 
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.dashboard.onload.js"></script>
 

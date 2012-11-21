@@ -3,7 +3,7 @@
 	<div>
 		
 		<!-- Upload form. Note enctype attribute! -->
-		<form action="/{{ workspace_slug }}/context/new" method="post" enctype="multipart/form-data">
+		<form action="/{{ request.session.cur_workspace_slug }}/context/new" method="post" enctype="multipart/form-data">
 		{% csrf_token %}
 		<p>{{ request.session.cxtform.non_field_errors }}</p>
 		<p>{{ request.session.cxtform.cxtfile.label_tag }} {{ request.session.cxtform.cxtfile.help_text }}</p>
@@ -12,6 +12,12 @@
 		<label>Title</label>
 		{{ request.session.cxtform.title.errors }}
 		{{ request.session.cxtform.title }}
+		</p>
+		
+		<p>
+		<label>Type</label>
+		<input type="radio" name="file_type" value="cxt" checked="true"/>CXT
+		<input type="radio" name="file_type" value="csv"/>Comma separated (CSV)
 		</p>
 		
 		<p>

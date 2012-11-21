@@ -402,6 +402,10 @@ class FCAUtils(object):
         
         to_json["objects"] = lattice.get_context().get_objects()
         
+        # tree transform
+        if lattice.original_id:
+            to_json["original_id"] = lattice.original_id
+        
         
         attrs = {}
         
@@ -470,6 +474,7 @@ class FCAUtils(object):
         #jsonSerializer = JSONSerializer()
         #abc = jsonSerializer.serialize(lattice._attr_lattices, use_natural_keys=True)
         to_json["attribute_lattices"] = lattice._attr_lattices
+        to_json["attribute_graph"] = lattice._attr_graph
         
         # LATTICE PROPERTIES
         to_json["id"] = lattice.id

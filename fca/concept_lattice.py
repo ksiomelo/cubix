@@ -50,6 +50,10 @@ class ConceptLattice(models.Model):
     _concepts =  ListField(EmbeddedModelField('Concept'))
     _links = ListField(EmbeddedModelField('ConceptLink'))
     _attr_lattices = models.TextField() #EmbeddedModelField('ConceptLattice')
+    _attr_graph= models.TextField()
+    original_id = models.CharField(max_length=200)
+    
+    metrics = ListField(EmbeddedModelField('Metric'))
     
     one = None
     zero = None
@@ -74,6 +78,20 @@ class ConceptLattice(models.Model):
         self.one = None
         self.zero = None
         self.compute_attribute_lattices()
+        self.compute_attribute_graph()
+        
+    def compute_attribute_graph(self):
+        
+        attr_lattices = {}
+        nodes_links = self._context.get_graph_of_attributes()
+        attr_lattices["nodes"] = nodes_links[0]
+        attr_lattices["links"] = nodes_links[1]
+        
+        # convert it to json to be saved
+        jsonSerializer = utils.JSONSerializer()
+        abc = jsonSerializer.serialize(attr_lattices, use_natural_keys=True)
+        self._attr_graph = abc
+        print "end"
     
     def compute_attribute_lattices(self):
         subcontexts = {}
@@ -90,7 +108,6 @@ class ConceptLattice(models.Model):
             else:
                 pairs[attr] = [] # TODO 
                 
-        
         # extract sub contexts for each attribute
         for attrname in pairs:
             attrvalues = []
@@ -100,9 +117,15 @@ class ConceptLattice(models.Model):
                     attrvalues.append(attrname + "-"+ value)
             else : # there's no value (eg.: preying)
                 attrvalues.append(attrname)
+   
                 
-            attr_context = self._context.extract_subcontext(attrvalues)
-            #subcontexts.append(attr_context)
+                
+            attr_context = self._context.extract_subcontext_containing_attributes(attrvalues)
+
+            #HACK to fix consistency between this method and the javascript
+            if len(attrvalues) == 1:
+                attrname = attrvalues[0]
+                
             subcontexts[attrname] = attr_context
             
         # compute lattice for each context
@@ -119,6 +142,12 @@ class ConceptLattice(models.Model):
         abc = jsonSerializer.serialize(attr_lattices, use_natural_keys=True)
         self._attr_lattices = abc
         print "end"
+        
+    def get_concept_by_id(self, cid):
+        for c in self._concepts:
+            if c.concept_id == cid:
+                return c
+        return None
     
     def get_context(self):
         return self._context
@@ -167,8 +196,10 @@ class ConceptLattice(models.Model):
         #return self._parents[concept]
         
         #return set([cl._parent for cl in self._links if cl._child==concept])
-    
-        idx = self.index(concept)
+        try:
+            idx = self.index(concept)
+        except Exception, e:
+            print concept.concept_id
         return set([self._concepts[cl._parent] for cl in self._links if cl._child==idx])
 
     def children(self, concept):
@@ -198,6 +229,25 @@ class ConceptLattice(models.Model):
             lattice["context"] = self._context
         return lattice
     
+    def unlink(self, concept1, concept2):
+        for link in self._links:
+            if ((self._concepts[link._parent] == concept1 and self._concepts[link._child] == concept2) or \
+                (self._concepts[link._parent] == concept2 and self._concepts[link._child] == concept1)):
+                self._links.remove(link)
+    
+    def clone(self):
+        clone = ConceptLattice()
+        clone._top_concept =  self._top_concept
+        clone._bottom_concept =  self._bottom_concept
+        clone._context = self._context
+        clone._concepts =  self._concepts
+        clone._links = self._links
+        clone.original_id = self.id
+        return clone
+        #_attr_lattices = models.TextField() 
+    
+    one = None
+    zero = None
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

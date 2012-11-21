@@ -7,15 +7,14 @@
 <script type="text/javascript" src="{{STATIC_URL}}scripts/collapsible_panel.js"></script>
 <!-- D3 -->
 <script type="text/javascript" src="{{STATIC_URL}}scripts/d3.v2.min.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/sankey.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/dagre.js"></script>
 <!-- jquery slider -->
 <link type="text/css" href="{{STATIC_URL}}styles/jquery-ui-1.8.20.custom.css" rel="stylesheet" />
 <script type="text/javascript" src="{{STATIC_URL}}scripts/jquery-ui-1.8.20.custom.min.js"></script>
-<!-- bootstrap popovers -->
-<script type="text/javascript" src="{{STATIC_URL}}scripts/bootstrap-tooltip.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}scripts/bootstrap-popover.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}scripts/bootstrap-tabs.js"></script>
 <!-- highcharts -->
-<script type="text/javascript" src="{{STATIC_URL}}scripts/highcharts.2.2.2.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/highcharts.2.3.3.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/highcharts-more.js"></script>
 <!-- dashboard -->
 <link type="text/css" href="{{STATIC_URL}}styles/dashboard.css" rel="stylesheet" />
 <!-- multiselect -->
@@ -25,22 +24,50 @@
 <!-- autosuggest -->
 <link type="text/css" href="{{STATIC_URL}}styles/token-input-facebook.css" rel="stylesheet" />
 <script type="text/javascript" src="{{STATIC_URL}}scripts/jquery.tokeninput.js"></script>
+<!-- PARALLEL SETS-->
+<script type="text/javascript" src="{{STATIC_URL}}scripts/d3.modparsets.js"></script>
+<!--
+<link type="text/css" href="{{STATIC_URL}}styles/d3.parsets.css" rel="stylesheet" />
+-->
+<!-- EXPORT IMAGES  
+<script type="text/javascript" src="{{STATIC_URL}}scripts/rgbcolor.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/canvg.js"></script>
+-->
 <!-- CUBIX  -->
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.a.defaults.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.utils.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.drawing.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.visualisation.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.visualisation.lattice.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.visualisation.dagre.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.visualisation.sankey.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.visualisation.sunburst.js"></script>
+
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.associationrules.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.layout.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.filters.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.facets.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.transform.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.lattice.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.dashboard.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.min-intersect.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.context.js"></script>
-
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.compare.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.metrics.js"></script>
+
+<script type="text/javascript">
+	var PREF_VIS = {% if "pref_vis" in request.session %} "{{ request.session.pref_vis }}" {% else %} "lattice" {% endif %}; // preferred visualisation from the session
+	
+	var OVERWHELMING = {% if "overwhelming" in request.session %} false {% else %} true {% endif %}; // flag to ask or not the user to transform the vis
+	
+	
+	{% if n_concepts %}
+	
+		var n_concepts = {{n_concepts}};
+		var n_links = {{n_links}};
+		
+	{% endif %}
+
+</script>
 
 {% endblock js %}
 
@@ -62,18 +89,22 @@
 </div>
 
 
-<div id="hoverbox" class="tooltip" style="opacity: 0; display:none;">
+<div id="hoverbox" class="hoverbox" style="opacity: 0; display:none;">
 	<div>
-		<span>Attributes</span>
+		<span class="column-name">Attributes (<span class="attr-count-concept"></span>)</span>
 		<ul class="hb_attr_list"/>
 	</div>
 	<div>
-		<span>Objects</span>
+		<span class="column-name">Objects (<span class="obj-count-concept"></span>)</span>
 		<ul class="hb_obj_list"/>
+	</div>
+	
+	<div id="metrics-table">
+		
 	</div>
 </div>
 
-<div id="A_rules_box" class="tooltip" style="opacity: 0; display:none;">
+<div id="A_rules_box" class="hoverbox" style="opacity: 0; display:none;">
 <div>
 <ul class="hb_role"/>
 </div>
@@ -102,8 +133,16 @@
 
 <div style="overflow: hidden; width: 100%; padding-bottom: 10px">
 	
+	
+	<div style="margin-right: 20px; margin-top: 5px; float: left;">
+		<!--
+		<a href="/{{workspace_slug}}/fca/undo" class="undo-link" style="display:none">Undo</a>
+		-->
+		<a class="undo-link"  href="/{{workspace_slug}}/fca/undo" style="display:none; margin-left: 20px">&larr; Lattice</a>
+	</div>
+	
 	<div id="bounds">
-	    <label><input type="radio" name="toggle" value="lattice" checked="checked"><span>Lattice</span></label>
+	    <label><input type="radio" name="toggle" value="lattice" checked="checked"><span id="tree-opts">Lattice</span></label>
 	    <label><input type="radio" name="toggle" value="rules"><span>Rules</span></label>
 	</div>
 	
@@ -114,21 +153,32 @@
 		<input type="text" id="layout_type" style="border:0; color:#f6931f; font-weight:bold; width: 70px; float:left" />
 		<div id="slider-layout" style="width: 100px; margin: 8px 40px 8px 20px; float: left"></div>
 	</div>
+	<div style="float: left;">
+		<input type="text" value="100%" id="zoom_level" rel="tooltip"  data-trigger="hover" data-placement="bottom" data-title="Use the mouse scroll to zoom in and out. Click to reset." />
+		<!--
+		<div id="slider-zoom"  style="width: 100px; margin: 8px 40px 8px 20px; float: left"></div>
+		-->
+	</div>
 	<div style="margin-left: 20px; float: left;">
 		<input type="text" id="search" style="width: 300px;" class="search"/>
 		<input type="button" class="filter-search" value="Filter"/>
 	</div>
 	
+	<!--
 	<div style="margin-left: 20px; float: left;">
 		<a href="#" class="lattice-json-link">Lattice.json</a>
 		<a href="#" class="ar-json-link">Association Rules.json</a>
 	</div>
+	-->
 
 </div>
 
 
 
 <div class="span12">
+	<!--
+	<a href="javascript:exportCurVis();" id="export-link">Export</a>
+	-->
 	<div id="chart" class="span6"></div>
 	<!--
 	<div class="span6" style="">&nbsp;</div>
@@ -148,12 +198,28 @@
                 </div>
             </li>
             -->
+            
             <li class="widget color-silver">  
+                <div class="widget-head">
+                    <h3>Distribution</h3>
+                </div>
+                
+                <div class="edit-box" style="display:none">
+					No config available for this chart.
+				</div>
+
+                <div class="widget-content">
+                    
+					<div id="distribution-chart" style="float:left; width: 100%; height: 80%"></div>
+
+                </div>
+            </li>
+             <li class="widget color-silver">  
                 <div class="widget-head">
                     <h3>Co-occurence</h3>
                 </div>
                 
-                <div class="edit-box" style="display:none">
+                <div class="edit-box" style="display:block">
 					<div>
 							<label for="control_1">X: </label>
 							<select id="control_1" name="control_1[]" multiple="multiple" size="5" style="width: 120px; font-size: 10px;">
@@ -176,7 +242,7 @@
             
             <li class="widget color-silver">  
                 <div class="widget-head">
-                    <h3>Distribution</h3>
+                    <h3>Attribute Graph</h3>
                 </div>
                 
                 <div class="edit-box" style="display:none">
@@ -185,24 +251,30 @@
 
                 <div class="widget-content">
                     
-					<div id="distribution-chart" style="float:left; width: 100%; height: 80%"></div>
+					<div id="attr-graph" style="float:left; width: 100%; height: 80%"></div>
 
                 </div>
             </li>
             
-            <li class="widget color-yellow">  
+            <!--
+            <li class="widget color-silver">  
                 <div class="widget-head">
-                    <h3>Chat</h3>
+                    <h3>Compare</h3>
                 </div>
+                
+                <div class="edit-box" style="display:none">
+					No config available for this chart.
+				</div>
+
                 <div class="widget-content">
-                    <p>Try clicking the 'X' in the top right of this widget... Just watch how cool the animaton is! :D</p>
-                    <ul>
-                        <li>Since this is just a demo your settings will NOT be saved anywhere when you leave the page.</li>
-                        <li>This demo has been tested successfully on a Windows XP PC in the following browsers: Firefox 2, Firefox 3, Chrome, Safari 3, Opera 9.5, IE6, IE7</li>
-                    </ul>
+                    
+					<div id="polar-chart" style="float:left; width: 100%; height: 80%"></div>
+
                 </div>
             </li>
+            -->
             
+            <!--
             <li class="widget color-blue" id="instructions">  
                 <div class="widget-head">
                     <h3>Top Facts</h3>
@@ -215,17 +287,8 @@
                     </ul>
                 </div>
             </li>
+            -->
             
-            <li class="widget color-green">  
-                <div class="widget-head">
-                    <h3>Chart</h3>
-                </div>
-                <div class="widget-content">
-                    <ul>
-                        <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aliquam magna sem, fringilla in, commodo a, rutrum ut, massa. Donec id nibh eu dui auctor tempor. Morbi laoreet eleifend dolor. Suspendisse pede odio, accumsan vitae, auctor non, suscipit at, ipsum. Cras varius sapien vel lectus.</li>  
-                    </ul>
-                </div>
-            </li>
         </ul>
 		
 		<ul id="dashboard_ar" class="column" style="display: none">
@@ -255,8 +318,6 @@
 	
 </div>
 
-
-	
 	
 
 <script type="text/javascript">

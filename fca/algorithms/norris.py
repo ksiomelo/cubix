@@ -114,6 +114,11 @@ def norris(context):
     ([1, 4], ['d'])
 
     """
+    cs = norris_miner(context)
+    return (cs, compute_covering_relation(cs))
+
+
+def norris_miner(context):
     # To be more efficient we store intent (as Python set) of every 
     # object to the list
     # TODO: Move to Context class?
@@ -139,8 +144,10 @@ def norris(context):
                 if new:
                     appe = Concept(extent=(set([context._objects[i]]) | c.extent), intent=new_intent)
                     cs.append(appe)
-    return (cs, compute_covering_relation(cs))
+    return cs
 
+def get_number_of_concepts(context):
+    return len(norris_miner(context))
 
 def compute_covering_relation(cs):
         """Computes covering relation for a given concept system.

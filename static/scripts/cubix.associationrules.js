@@ -13,44 +13,52 @@ var conclusionColor="#FFD500";
 function get_attribute_list()
 {
 	var attr_list=[];
+	var attr_idx = []; // TODO this is to sort AR after
 	s=0;
-	for (var a in a_rules_concerned_attributes) {
+	for (a in a_rules_concerned_attributes) {
 		s++;
-		for(var i=0;i<a_rules_concerned_attributes[a].length;i++){
+		for(i=0;i<a_rules_concerned_attributes[a].length;i++){
 			t=Object();
 			t.family=s;			
 			if ( (a_rules_concerned_attributes[a])[i][0]=="yes") {
 				t.text=a.toString(); 
 				attr_list.push( t );
 				}
-			else
+			else{
 				if ( (a_rules_concerned_attributes[a])[i][0]=="no") continue;
 				else
 				{
+					t.text=a.toString()+"-"+(a_rules_concerned_attributes[a])[i][0];
 					attr_list.push( t );
 				}
+			}
+			
+			attr_idx.push(t.text);
+			
+			
 		}
 	}
 	if (s<11) color_set=d3.scale.category10();
-	return attr_list;
+	return [attr_list,attr_idx];
 }
 
 function fetchAssociationRules(callback){	
 	if (typeof lattice.id == "undefined" || lattice.id == null) { // no lattice id
-		flashAlert("error", "The current concept lattice is not saved in the server - could not compute association rules.");
+		flashAlert("The current concept lattice is not saved in the server - could not compute association rules.","error");
 		return;
 	}
 	if (typeof association_rules != "undefined") {// already fetched AR, return..
 		callback();
+		
 		return;
 	}
-	showLoading();
+	flashAlert("Calculating assotiation rules, this may take some minutes...");
 	
 	var thetoken = $('input[name=csrfmiddlewaretoken]').val();
 	var arlink = "/api/v1/association_rules/";
 	 $.getJSON(arlink,{ lattice_id: lattice.id, csrfmiddlewaretoken:  thetoken}, function(data) {
 	 		association_rules = data;
-	 		for (var t=0;t<association_rules.length;t++) {
+	 		for (t=0;t<association_rules.length;t++) {
 	 			association_rules[t].id="id"+t;
 	 			association_rules[t].highlighted=true;
 	 			}
@@ -60,20 +68,20 @@ function fetchAssociationRules(callback){
 	 		if (typeof callback != 'undefined') 
 	 		{
 	 			// Go through fiters for a_rules
-				for (var i=0;i<filter.history.length;i++)
+				for (i=0;i<filter.history.length;i++)
 				{
 					filter.history[i].removedRules=[];	
 					arrjs=[];
-					for (var j=0;j<association_rules.length;j++)
+					for (j=0;j<association_rules.length;j++)
 					{
 						
 						flag=true;
 						
-						for (var k=0;k<association_rules[j].premise.length;k++)
+						for (k=0;k<association_rules[j].premise.length;k++)
 						{
 							if (association_rules[j].premise[k]==filter.history[i].attr+'-'+filter.history[i].value) { flag=false;} //break;}
 						}
-						for (var k=0;k<association_rules[j].conclusion.length;k++)
+						for (k=0;k<association_rules[j].conclusion.length;k++)
 						{
 							if (association_rules[j].conclusion[k]==filter.history[i].attr+'-'+filter.history[i].value) { flag=false;} // break;}
 						}
@@ -83,7 +91,7 @@ function fetchAssociationRules(callback){
 						if (flag) {filter.history[i].removedRules.push(association_rules[j]); arrjs.push(j);}						 
 					}
 	        	
-	        	for (var t=0;t<arrjs.length;t++){association_rules.splice(arrjs[t]-t,1);}
+	        	for (t=0;t<arrjs.length;t++){association_rules.splice(arrjs[t]-t,1);}
 
 					
 					
@@ -92,12 +100,111 @@ function fetchAssociationRules(callback){
 				if (!full_association_rules) full_association_rules = association_rules;	
 	 			callback(); 
 	 			createScatterPlotChart();
+	 			createRulesList();
 	 		};
 	});
 	
 	
 	
 }
+
+function select_rule(id)
+{
+	
+	if(prevIndex !== -1) {
+	updated_prev=false;
+		for( t = 0; !(updated_prev) ; t++) {
+			if(rules_list_chart.series[0].data[t].category == prevIndex) {
+				rules_list_chart.series[0].data[t].update({
+						color : '#4572A7'
+				}, true, false);
+			updated_prev=true;
+			}
+		}
+	}
+	updated_selection =  false;
+	for( t = 0; !(updated_selection) ; t++) {
+		if(rules_list_chart.series[0].data[t].category == id) {
+			rules_list_chart.series[0].data[t].update({
+				color : '#f00'
+			}, true, false);
+		updated_selection =  true;
+		}					
+	}
+	
+	if (currentVis=='radiagram')
+	{
+		d3.select("#chart").select("svg").selectAll("path").style("opacity", function(d) {
+							flag=false;
+							for (i=0;i<d[0].ids.length;i++)
+							{
+								if (d[0].ids[i]==id) {flag=true; break;}
+							}
+							return flag ? 0.99 : 0.1;
+						});
+	}
+	else if (currentVis=='matrixview')
+	{
+		d3.select("#chart").select("svg").selectAll(".matrix-row").style("opacity",function(d){return d[0].id==id ? 0.99 : 0.05;});
+	}
+	else if (currentVis=='gg_ar_plot')
+	{
+		d3.select("#chart").select("svg").selectAll("line").style("opacity", function(d) {
+							return d[3]==id ? 0.99 : 0.1;
+						});
+		d3.select("#chart").select("svg").selectAll("polygon").style("opacity", function(d) {
+							return d[3]==id ? 0.99 : 0.1;
+						});
+		d3.select("#chart").select("svg").selectAll("circle").style("opacity", function(d) {
+							flag=false;
+							console.log(d);
+							if (d.ids){
+							for (i=0;i<d.ids.length;i++)
+							{
+								if (d.ids[i]==id) {flag=true; break;}
+							}
+							return flag ? 0.99 : 0.1;
+							}
+							else return 1.00;
+						});					
+	}
+	
+	prevIndex = id;
+	
+}
+
+function unselect_all()
+{
+	
+	if(prevIndex !== -1) {
+
+						for( t = 0; t < rules_list_chart.series[0].data.length; t++) {
+							if(rules_list_chart.series[0].data[t].category == prevIndex) {
+								rules_list_chart.series[0].data[t].update({
+									color : '#4572A7'
+								}, true, false);
+								break;
+							}
+						}
+	
+	if (currentVis=='radiagram')
+	{
+		d3.select("#chart").select("svg").selectAll("path").style("opacity",0.99);
+	}
+	else if (currentVis=='matrixview')
+	{
+		d3.select("#chart").select("svg").selectAll(".matrix-row").style("opacity", 1.00);
+	}
+	else if (currentVis=='gg_ar_plot')
+	{
+		d3.select("#chart").select("svg").selectAll("line").style("opacity", 0.99);
+		d3.select("#chart").select("svg").selectAll("polygon").style("opacity",0.99);
+		d3.select("#chart").select("svg").selectAll("circle").style("opacity", 1.00);			
+	}
+	prevIndex = -1;
+	}
+}
+
 
 function addGradient(param,id,lefttoright,toptobottom)
 {
@@ -125,7 +232,7 @@ function addGradient(param,id,lefttoright,toptobottom)
 function objectJoin (array,symbol)
 {
 	res="";
-	for (var i=0;i<array.length;i++)
+	for (i=0;i<array.length;i++)
 		res+=array[i].text+symbol;
 	return res.substring(0,res.length-1);
 }
@@ -138,15 +245,19 @@ function objectJoin (array,symbol)
 
 function initARView(){
 	if (typeof association_rules == 'undefined') 
-		flashAlert("error", "The association rules couldn't be fetched from the server");
+		flashAlert("The association rules couldn't be fetched from the server","error");
 		
 		
 		
 	//initializing environement
-	var m = [0, 20, 10, 20]; // margins
+	var m = [0, 0, 0, 0]; // margins
 	var matrix=[];
 	var n=0;
+	
 	var attr_list=get_attribute_list();
+	var attr_idx = attr_list[1];
+	attr_list = attr_list[0];
+	
 	n=attr_list.length;
 		
 	//initialize matrix
@@ -155,6 +266,46 @@ function initARView(){
 	matrix[i]=[];
 	matrix[i]=d3.range(n).map(function(j){return {x:i, y:j, z:0}});
 	}
+	
+	// sort association rules
+	association_rules.sort(function(x, y){ 
+		
+		
+		for (var j=0;j<attr_idx.length;j++){
+			var idx1 = x.premise.indexOf(attr_idx[j]);
+			var idx2 = y.premise.indexOf(attr_idx[j]);
+			
+			if ((idx1>=0 && idx2>=0) || (idx1<0 && idx2<0)) continue; // neither or both has attr, continue
+			else if(idx1>=0 && idx2<0) return -1; // x has, y not, x > y
+			else if(idx1<0 && idx2>=0) return 1; // x doens't, y has, x < y
+		}
+		
+		for (var j=0;j<attr_idx.length;j++){
+			var idx1 = x.conclusion.indexOf(attr_idx[j]);
+			var idx2 = y.conclusion.indexOf(attr_idx[j]);
+			
+			if ((idx1>=0 && idx2>=0) || (idx1<0 && idx2<0)) continue; // neither or both has attr, continue
+			else if(idx1>=0 && idx2<0) return -1; // x has, y not, x > y
+			else if(idx1<0 && idx2>=0) return 1; // x doens't, y has, x < y
+		}
+		
+		return -1;
+		
+		
+		// var sum1 = 0;
+		// for (var j=0;j<x.premise.length;j++){
+			// sum1 += attr_idx.indexOf(x.premise[j]) + 1;
+		// }
+// 		
+		// var sum2 = 0;
+		// for (var j=0;j<y.premise.length;j++){
+			// sum1 += attr_idx.indexOf(y.premise[j]) + 1;
+		// }
+// 		
+		// return sum1 > sum2;
+	});
+	
+	
 	
 	//fill matrix
 	for (var i=0;i<association_rules.length;i++){	
@@ -167,6 +318,8 @@ function initARView(){
 					matrix[i][k].conclusion_supp=association_rules[i].conclusion_supp;
 					matrix[i][k].premise=association_rules[i].premise;
 					matrix[i][k].conclusion=association_rules[i].conclusion;
+					matrix[i][0].id=association_rules[i].id;
+					matrix[i][k].id=association_rules[i].id;
 				}
 			for (var j=0;j<association_rules[i].conclusion.length;j++)
 				if (attr_list[k].text ==association_rules[i].conclusion[j]){					
@@ -176,63 +329,69 @@ function initARView(){
 					matrix[i][k].conclusion_supp=association_rules[i].conclusion_supp;
 					matrix[i][k].premise=association_rules[i].premise;
 					matrix[i][k].conclusion=association_rules[i].conclusion;
+					matrix[i][0].id=association_rules[i].id;
+					matrix[i][k].id=association_rules[i].id;
 				}
 		}
 	}
-	//console.log(association_rules);
 	//Adjusting margins
-	for (var i=0;i<n;i++){m[0]=Math.max(m[0],attr_list[i].text.length);}
+	for (i=0;i<n;i++){m[0]=Math.max(m[0],attr_list[i].text.length);}
 	m[0]=m[0]*7;
 	
-	m[1]=10+10*Math.log(association_rules.length)/Math.LN10;
+	m[1]=20+10*Math.log(association_rules.length)/Math.LN10;
+	
+	var arHeight = (h < association_rules.length*10+m[0]+m[2]) ? association_rules.length*10+m[0]+m[2] : h; // TODO hack
 	
 		vis = d3.select("#chart").append("svg:svg")
 		.attr("width", w)
-		.attr("height", Math.max(h, association_rules.length*10))
+		.attr("height", arHeight ) //Math.max(h, association_rules.length*10)
+		//.attr("viewBox", "0 0 "+w+" "+h)
+    	//.attr("preserveAspectRatio", "xMidYMid")
 		.append("svg:g")
 		.attr("transform","translate("+m[1]+","+m[0]+")");
-		
-		// vis.append("rect")
-		// .attr("class", "background")
-		// .attr("width", w)
-		// .attr("height", h);
+
 
 	  
   var row = vis.selectAll(".matrix-row")
       .data(matrix)
     .enter().append("g")
       .attr("class", "matrix-row")
+      .attr("id",function(d) {return d[0].id;})
       .attr("transform", function(d, i) {return "translate(0," + d[0].x*(Math.max(10,(h-m[0])/association_rules.length)) + ")"; })
       .each(row);
 
   row.append("line")
       .attr("x2", w)
-      .attr("class","matrix_view_separator");
+      .attr("y1",(Math.max(10,(h-m[0])/association_rules.length)))
+      .attr("y2",(Math.max(10,(h-m[0])/association_rules.length)))
+      .attr("class","matrix_view_separator")
+      .style("fill-opacity", 0.99);
+    row.append("line")
+      .attr("x2", w)
+      .attr("class","matrix_view_separator")
+      .style("fill-opacity", 0.99);
 
   row.append("text")
       .attr("x",0)
       .attr("dy", "1em")
       .attr("text-anchor", "end")
       .attr("class","label")
-      .text(function(d, i) {return "R"+i.toString()});
+      .text(function(d) {return d[0].id;});
    var column = vis.selectAll(".column")
 		.data(attr_list)    
-    //  .data(matrix.transpose())
     .enter().append("g")
       .attr("class", "column")
       .attr("transform", function(d, i) {if (d[i]) return "translate(" + i*(w-m[1]-1)/n + ")rotate(-90)"; else return "translate(0)rotate(-90)"});
-      //.attr("transform", function(d, i) {if (d[i]) return "translate(" + d[i].y*(w-m[1]-1)/n + ")rotate(-90)"; else return "translate(0)rotate(-90)"});
   column.append("line")
-      .attr("x1",-w) //-w
+      .attr("x1",-association_rules.length*10) 
       .attr("transform", function(d, i) { return "translate(0," + i*(w-m[1]-1)/n + ")"; })
       .attr("class","matrix_view_separator");
   column.append("text")
    .attr("class","label")
       .attr("x", 0)
-      
       .attr("dy", "1em")
       .attr("text-anchor", "start")
-      .attr("transform", function(d, i) { return "translate(0," + i*(w-m[1]-1)/n + ")"; })
+      .attr("transform", function(d, i) { return "translate(12," + i*(w-m[1]-1)/n + ")rotate(+45)"; })
       .style("stroke",function(d,i){return color_set(attr_list[i].family-1);})
       .text(function(d, i) { return attr_list[i].text; });
 
@@ -247,7 +406,8 @@ function initARView(){
         .style("fill-opacity", function(d) { return d.confidence; })
         .style("fill", function(d) {return d.z==1 ? d3.rgb(premiseColor) : d3.rgb(conclusionColor) ;})
         .on("mouseover", Matrix_View_MouseOver)
-        .on("mouseout", Matrix_View_MouseOut);
+        .on("mouseout", Matrix_View_MouseOut)
+        .on("click",function (p){console.log(p.id); select_rule(p.id)});
         
      
   }
@@ -256,10 +416,12 @@ function initARView(){
 
 function Matrix_View_MouseOver(p){
 
+//d3.selectAll(".matrix-row").style("stroke", "red");
 d3.selectAll(".matrix-row text").classed("highlighted", function(d, i) { return i == p.x; });
     d3.selectAll(".column text").classed("highlighted", function(d, i) { return i == p.y; });
 
 var thenode = d3.select(this);
+//console.log(p);
 thenode.style("stroke", "red");
 
 // show hoverbox
@@ -277,7 +439,7 @@ A_rules_box.transition()
 
     if (p.z==1) wrapperElementsInList($('ul.hb_role'), ["Antecedent"])
     else wrapperElementsInList($('ul.hb_role'), ["Consequent"]);
-    wrapperElementsInList($('ul.hb_confidence'), p.confidence);
+    wrapperElementsInList($('ul.hb_confidence'), [Math.round(p.confidence*100).toString()+"%"]);
     wrapperElementsInList($('ul.hb_p_support'), p.premise_supp);
     wrapperElementsInList($('ul.hb_c_support'), p.conclusion_supp);
 	wrapperElementsInList($('ul.hb_premise_list'),p.premise);
@@ -315,28 +477,35 @@ var rx = w / 2,
 
 
 function initDiagonalARView(){
-	if (typeof association_rules == 'undefined') 
-		flashAlert("error", "The association rules couldn't be fetched from the server");
+	
+	if (typeof association_rules == 'undefined') { 
+		flashAlert("The association rules couldn't be fetched from the server","error");
+		return;
+	}
 		
+	flashAlert("Select a rule by clicking on a bar in the \"Generated Rules\" chart ", "info", 5000);
+	
 	//Processing attributes
-	attr_list=get_attribute_list();
+	attr_list=get_attribute_list()[0];
 	var n=0,
 		o=0;
-	for (a in data.attributes) {n++;}
+	for (a in context.attributeNames) {n++;}
 	n+=attr_list.length;
 	o=n-attr_list.length;
 	
 	//Adjusting margins	
 	var m = [0, 120, 20, 120]; // margins
-	for (var i=0;i<attr_list.length;i++){m[0]=Math.max(m[0],attr_list[i].text.length);}
+	for (i=0;i<attr_list.length;i++){m[0]=Math.max(m[0],attr_list[i].text.length);}
 	m[0]=m[0]*0;
 	//initializing environement
 	vis = d3.select("#chart").append("svg:svg")
 	.attr("width",w)
 	.attr("height",h)
- 	.attr("viewBox",((-1)*(m[0]+0*rx))+" "+((-1)*(m[0]+0*ry))+" "+(2*rx+0*m[0])+" "+(2*ry+0*m[0]))
+	.attr("viewBox", "0 0 "+w+" "+h)
+	.attr("preserveAspectRatio", "xMidYMid")
+ 	//.attr("viewBox",((-1)*(m[0]+0*rx))+" "+((-1)*(m[0]+0*ry))+" "+(2*rx+0*m[0])+" "+(2*ry+0*m[0]))
   .append("svg:g")
-    .attr("transform", "translate(" + rx + "," + ry + "), scale(1.5)");
+    .attr("transform", "translate(" + w/2 + "," + h/2 + ")");
 	
 	
 
@@ -352,8 +521,27 @@ function initDiagonalARView(){
 	parent.x=0;
 	parent.y=0;
 
+	//Null-antecedent
+	s_parent=Object();
+	s_parent.children=[];
+	s_parent.name="<Nothing family>";
+	s_parent.parent=parent;
+	s_parent.x=(w/4-50);
+	s_parent.y=0;
+	f=Object();				
+	f.family=s;
+	f.parent=s_parent;
+	f.x=(w/2-100);
+	f.y=0;
+	f.name="Nothing";
+	s_parent.children.push(f);
+	node_mas.push(f);
+	z++;z++;
+	o++;
+	n++;
+
 	//calculate layout
-	for (var a in data.attributes)
+	for (a in context.attributeNames)
 		{
 			//attribution to family (attribute)
 			var sub_parent=Object();
@@ -363,9 +551,9 @@ function initDiagonalARView(){
 			sub_parent.x=(w/4-50)*(Math.cos(s*2*Math.PI/o));
 			sub_parent.y=(w/4-50)*(Math.sin(s*2*Math.PI/o))
 			s++;
-			for(var i=0;i<data.attributes[a].length;i++){
+			for(i=0;i<context.attributeNames[a].length;i++){
 				var c=Object();				
-				if ( (data.attributes[a])[i][0]=="yes")
+				if ( (context.attributeNames[a])[i][0]=="yes")
 				{
 					c.family=s;
 					c.parent=sub_parent;
@@ -373,14 +561,14 @@ function initDiagonalARView(){
 					c.y=(w/2-100)*(Math.sin(z*2*Math.PI/n));
 					c.name=a.toString();sub_parent.children.push(c); node_mas.push(c);z++;}
 				else
-					if ( (data.attributes[a])[i][0]=="no") continue;
+					if ( (context.attributeNames[a])[i][0]=="no") continue;
 					else
 						{
 						c.family=s;
 						c.parent=sub_parent;
 						c.x=(w/2-100)*(Math.cos(z*2*Math.PI/n));
 						c.y=(w/2-100)*(Math.sin(z*2*Math.PI/n));
-						c.name=a.toString()+"-"+(data.attributes[a])[i][0];
+						c.name=a.toString()+"-"+(context.attributeNames[a])[i][0];
 						z++;
 						node_mas.push(c);sub_parent.children.push(c);	
 						}	
@@ -390,56 +578,73 @@ function initDiagonalARView(){
 		}
 
 	var rules_links=[];
-	
-	for (var i=0;i<association_rules.length;i++)
+	var general_links=[];
+	//Now forming links
+	for (u=0;u<node_mas.length;u++)
 		{
-		
-			for (var j=0;j<association_rules[i].premise.length;j++)
+		for (t=0;t<node_mas.length;t++)
+		{
+			if (u!==t) {
+				//fill in ids and confidencies
+				ids=[];
+				confidencies=[];
+				for (l=0;l<association_rules.length;l++){
+					//attention for null - antecedent
+					if (association_rules[l].premise.length==0 && t==0)
+					{
+						ids.push(association_rules[l].id);
+						confidencies.push(association_rules[l].confidence);
+					}
+					else
+					{
+					//if link in rule, add ids
+					link_in_rule=false;
+					in_premise=false;
+					in_conclusion=false;
+					for (counter=0;counter<association_rules[l].premise.length;counter++)
+					{if (association_rules[l].premise[counter]==node_mas[t].name){ in_premise=true; break;}}
+					for (counter=0;counter<association_rules[l].conclusion.length;counter++)
+					{if (association_rules[l].conclusion[counter]==node_mas[u].name) {in_conclusion=true; break;}}
+					link_in_rule=in_premise && in_conclusion;
+					if (link_in_rule)
+					{
+						//add id and confidence
+						ids.push(association_rules[l].id);
+						confidencies.push(association_rules[l].confidence);
+					}
+				
+					}
+					
+				}
+				if (ids.length>0)
 				{
 					source=Object();
-					for (var t=0;t<node_mas.length;t++)
-						{
-						if(node_mas[t].name==association_rules[i].premise[j])
-							{						
-								source.parent=node_mas[t].parent;
-								source.x=node_mas[t].x;
-								source.y=node_mas[t].y;
-							}
-							for (var k=0;k<association_rules[i].conclusion.length;k++)
-								{
-								var target=Object();
-								for (var u=0;u<node_mas.length;u++)
-									if(node_mas[u].name==association_rules[i].conclusion[k])
-										{
-											target.parent=node_mas[u].parent;
-											target.x=node_mas[u].x;
-											target.y=node_mas[u].y;
-											target.id=association_rules[i].id;
-											z=Object();
-											z.source=source;
-											z.target=target;
-											z.conf=association_rules[i].confidence;
-										
-											rules_links.push(z);
-										}
-								}
-						}
-										
+					source.parent=node_mas[t].parent;
+					source.ids=ids;
+					source.conf=confidencies;
+					source.x=node_mas[t].x;
+					source.y=node_mas[t].y;
+					target=Object();
+					target.parent=node_mas[u].parent;
+					target.x=node_mas[u].x;
+					target.y=node_mas[u].y;
+					z=Object();
+					z.source=source;
+					z.target=target;
+					//z.conf=association_rules[l].confidence;
+					general_links.push(z);
 				}
+				
+			}	
 		}
+	}
+	
 	var cluster = d3.layout.cluster()		
     	.size([2 * Math.PI, 500]);
     	
     var bundle=d3.layout.bundle();
-    splines = bundle(rules_links);
-    for (i=0;i<splines.length;i++) {
-	for(j=0;j<splines[i].length;j++) 
-	{
-	splines[i][j].parent=0;  if (splines[i][j].children!==undefined) splines[i][j].children=0;
-	}
-	}
-    splines=unique_set(splines,true);
-    
+    m_splines= bundle(general_links); 
+        
     //Adding gradients
     var defs=d3.select("#chart").select("svg").append("defs")
     addGradient(defs,"lt-rb",true,true);
@@ -449,14 +654,16 @@ function initDiagonalARView(){
     
     //Drawing links
     vis.selectAll("path")
-    	.data(splines)
+    	.data(m_splines)
+   // 	.data(splines)
     .enter().append("path")
-	    .style("stroke-width", function(d){return 2*z.conf+1;})
+	    .style("stroke-width", function(d){return 2*d3.max(d[0].conf)+1;})
 	    .style("fill", "none")
-	    .attr("id",function(d){return d[4].id;})
+	    .attr("ids",function(d){return d[0].ids;})
+	    .attr("confs",function(d){return d[0].conf;})
 	    .attr("d",function(d,i){
 	    	pathinfo=[];
-	    	for (var a=0;a<d.length;a++) {point={}; point.x=d[a].x; point.y=d[a].y; pathinfo.push(point);}
+	    	for (a=0;a<d.length;a++) {point={}; point.x=d[a].x; point.y=d[a].y; pathinfo.push(point);}
 	    	var d3line2=d3.svg.line()
 	    	 .x(function(d){return d.x;})
 	    	 .y(function(d){return d.y;})
@@ -464,8 +671,8 @@ function initDiagonalARView(){
 	    	 
 	    	 return d3line2(pathinfo)})
 	    .style("stroke",function(d,i){
-	    	left_to_right=(d[0].x>d[4].x)? false : true ;
-    		top_to_bottom=(d[0].y>d[4].y)? false : true ;
+	    	left_to_right=(d[0].x>d[d.length-1].x)? false : true ;
+    		top_to_bottom=(d[0].y>d[d.length-1].y)? false : true ;
     		if (left_to_right && top_to_bottom) return "url(#gradientlt-rb)";
     		else if (!left_to_right && top_to_bottom) return "url(#gradientrt-lb)";
     		else if (left_to_right && !top_to_bottom) return "url(#gradientlb-rt)";
@@ -490,6 +697,13 @@ function initDiagonalARView(){
       	.text(function(d){return d.name;})
       	.style("stroke",function(d){return color_set(d.family-1);})
       	.attr("transform",function(d){return "translate("+d.x+","+d.y+")rotate("+Math.atan(d.y/d.x)*180/Math.PI+")";});
+      	
+     // var svg = d3.select("#chart").select("svg");
+	  // var svgBBox = svg.node().getBBox();
+	  // svg
+	  // .attr("width",svgBBox.width)
+	// .attr("height",svgBBox.height)
+	 // .attr("viewBox", "0 0 "+svgBBox.width+" "+svgBBox.height);
 	  	
 }
 
@@ -526,7 +740,7 @@ renderTo = renderTo || "#chart";
 var m = [20, 120, 20, 120]; // margins
 
 var n=0;
-var attr_list=get_attribute_list();
+var attr_list=get_attribute_list()[0];
 var brush;
 n=attr_list.length;
 
@@ -661,7 +875,7 @@ Ololobject['values'] = myobject;
           {
           	topush=true;
           	
-          	for (var i=0;i<association_rules.length;i++)
+          	for (i=0;i<association_rules.length;i++)
           	{
           		//eliminate redundant association rules
           		if (compare_a_rules(association_rules[i],d)) topush=false;         		
@@ -687,7 +901,8 @@ Ololobject['values'] = myobject;
     });
     document.getElementById("chart").innerHTML="";
     //document.getElementById(renderTo).innerHTML="";
-    redrawVis();
+    redrawCurVis();
+    createRulesList();
     /*
     d3.select("g.brush").style("pointer-events","all").selectAll(".resize").style("display", "none");
         d3.select("g.brush").select(".extent").style("display", "none");
@@ -699,7 +914,7 @@ Ololobject['values'] = myobject;
 
   function sp_cross(a, b) {
     var c = [], n = a.length, m = b.length, i, j;
-    for (var i = -1; ++i < n;) for (var j = -1; ++j < m;) c.push({x: a[i], i: i, y: b[j], j: j});
+    for (i = -1; ++i < n;) for (j = -1; ++j < m;) c.push({x: a[i], i: i, y: b[j], j: j});
     return c;
   }
   
@@ -717,17 +932,17 @@ function init_gg_plot(){
 var m = [20, 120, 20, 120]; // margins
 
 var n=0;
-var attr_list=get_attribute_list();
+var attr_list=get_attribute_list()[0];
 var brush;
 
 //get and parse association rules
 var myobject=clone(association_rules);
 var n = myobject.length;
 
-for (var i=0;i<myobject.length;i++)
+for (i=0;i<myobject.length;i++)
 	{
-	for (var j=0;j<myobject[i].premise.length;j++)		
-		for (var k=0;k<attr_list.length;k++)
+	for (j=0;j<myobject[i].premise.length;j++)		
+		for (k=0;k<attr_list.length;k++)
 		{
 			if (myobject[i].premise[j]==attr_list[k].text)
 				{
@@ -738,8 +953,8 @@ for (var i=0;i<myobject.length;i++)
 				}
 		}
 	
-	for (var j=0;j<myobject[i].conclusion.length;j++)		
-		for (var k=0;k<attr_list.length;k++)
+	for (j=0;j<myobject[i].conclusion.length;j++)		
+		for (k=0;k<attr_list.length;k++)
 		{
 			if (myobject[i].conclusion[j]==attr_list[k].text)
 				{
@@ -755,7 +970,6 @@ var links = [];
 //common parent - one node to rule them all, one node to bind them
 common_parent = Object();
 common_parent.children=[];
-
 for (var i=0; i<n ; i++)
 	{
 	// parent - group representatif - to be pushed into common_parent
@@ -764,56 +978,63 @@ for (var i=0; i<n ; i++)
 		p_parent=Object();
 		p_parent.occurencies=1;
 		p_parent.parent=common_parent;
+		p_parent.ids=[];
+		p_parent.ids.push(myobject[i].id);
 		p_parent.text= objectJoin( myobject[i].premise,'&');
 		p_parent.children=myobject[i].premise;
 		p_parent.children=p_parent.children.map(function (element) {
 			res=Object();
 			res= element;
-			res.occurencies=1; res.parent=p_parent; return res;
+			res.occurencies=1; res.parent=p_parent; res.ids=p_parent.ids; return res;
 			});
 		c_parent=Object();
 		c_parent.occurencies=1;
 		c_parent.parent=common_parent;
+		c_parent.ids=[];
+		c_parent.ids.push(myobject[i].id);
 		c_parent.text= objectJoin( myobject[i].conclusion,'&');
 		c_parent.children=myobject[i].conclusion;
 		c_parent.children=c_parent.children.map(function (element) {
 			res=Object();
 			res=element;
-			res.occurencies=1; res.parent=p_parent; return res;
+			res.occurencies=1; res.parent=p_parent; res.ids=c_parent.ids; return res;
 			});
 		
-		for (var j=0;j<common_parent.children.length;j++)
+		for (j=0;j<common_parent.children.length;j++)
 		{ 
 			if (objectJoin( myobject[i].premise,'&')==common_parent.children[j].text) 
 			{
 				t_link[0]=j;
 				common_parent.children[j].occurencies++;
+				common_parent.children[j].ids.push(myobject[i].id);
 				p_parent.occurencies++;
-				common_parent.children[j].children=common_parent.children[j].children.map(function (element) {element.occurencies=common_parent.children[j].occurencies/common_parent.children[j].children.length; return element;});
+				common_parent.children[j].children=common_parent.children[j].children.map(function (element) {element.occurencies=common_parent.children[j].occurencies/common_parent.children[j].children.length; element.ids=common_parent.children[j].ids; return element;});
 			};
 			if (objectJoin( myobject[i].conclusion,'&')==common_parent.children[j].text)
 			{
 				t_link[1]=j; 
 				common_parent.children[j].occurencies++;
+				common_parent.children[j].ids.push(myobject[i].id);
 				c_parent.occurencies++;
-				common_parent.children[j].children=common_parent.children[j].children.map(function (element) {element.occurencies=common_parent.children[j].occurencies/common_parent.children[j].children.length; return element;});			
+				common_parent.children[j].children=common_parent.children[j].children.map(function (element) {element.occurencies=common_parent.children[j].occurencies/common_parent.children[j].children.length; element.ids=common_parent.children[j].ids; return element;});			
 			};
 			
 		}
 		if (p_parent.occurencies==1) {t_link[0]=common_parent.children.length; common_parent.children.push(p_parent)};
 		if (c_parent.occurencies==1) {t_link[1]=common_parent.children.length; common_parent.children.push(c_parent)};
 		t_link[2]=myobject[i].confidence;
+		t_link[3]=myobject[i].id;
 		links.push(t_link);
 	}
 
+//console.log(common_parent);
 // Root panel.
 var xdom = d3.scale.linear().range([0,w]);
 var ydom = d3.scale.linear().range([0,h]);
 
 var vis = d3.select("#chart").append("svg")
     .attr("width", w)
-    .attr("height", h);
-    
+    .attr("height", h);   
 //Adding gradient
 //addGradient(d3.select("#chart").select("svg"));
 
@@ -831,6 +1052,7 @@ vis.selectAll("circle")
     .data(nodes)
   .enter().append("svg:circle")
     .attr("class", function(d) { return d.children ? "parent" : "child"; })
+    .attr("ids", function(d) { return d.ids; })
     .style("fill", function(d) {if (d.family) return color_set(d.family-1);})
     .attr("cx", function(d) { return d.x; })
     .attr("cy", function(d) { return d.y; })
@@ -843,6 +1065,7 @@ vis.selectAll("line")
     .data(links)
    .enter().append("svg:line")
      .style("stroke-width", function(d){return (2*d[2]+1);})
+     .attr("id",function(d){return d[3];})
 	 .attr("x1",function(d){return origin[d[0]].x;})
 	 .attr("y1",function(d){return origin[d[0]].y;})
 	 .attr("x2",function(d){return origin[d[1]].x;})
@@ -854,6 +1077,7 @@ vis.selectAll("polygon")
 	.data(links)
    .enter().append("svg:polygon")
      //.style("stroke-width", function(d){return 3*d[2];})
+     .attr("id",function(d){return d[3];})
 	 .attr("points",function(d){
 	 	
 	 	return (-5)*(d[2]+1)+","+3*(d[2]+1)+" "+(-5)*(d[2]+1)+","+(-3)*(d[2]+1)+" "+3*(d[2]+1)+",0";

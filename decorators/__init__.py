@@ -18,7 +18,7 @@ def get_contexts(func):
 #                    login(request, user)
         request.session['cxtform'] = LoadCxtForm()
         
-        if request.session['cur_workspace_slug']:
+        if 'cur_workspace_slug' in request.session and request.session['cur_workspace_slug']:
             workspace_slug = request.session['cur_workspace_slug']
             try:
                 workspace = Workspace.objects.get(title_slug__exact=workspace_slug)

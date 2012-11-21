@@ -14,9 +14,17 @@ div.alert {
 }
 
 
-
+#zoom_level {
+	border:0; color:#f6931f; font-weight:bold; width: 70px; float:left;
+	cursor:pointer;
+}
 
 .nodetext { pointer-events: none; font: 10px sans-serif; }
+
+
+input.metric-value {
+	width: 30px; color:#f6931f; font-weight:bold; background-color: transparent;
+}
 
 /*
  * Layouts
@@ -60,9 +68,136 @@ div.alert {
     color:#F7F7F7;
 }
 
+
+/*
+ * Attribute graph
+ */
+
+path.aglink {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+marker#licensing {
+  fill: green;
+}
+
+path.aglink.licensing {
+  stroke: green;
+}
+
+path.aglink.resolved {
+  stroke-dasharray: 0,2 1;
+}
+
+circle.agcircle {
+  fill: #ccc;
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+
+/*
+text {
+  font: 10px sans-serif;
+  pointer-events: none;
+}*/
+
+text.shadow {
+  stroke: #fff;
+  stroke-width: 3px;
+  stroke-opacity: .8;
+}
+
 /*
  * Lattice
  */
+
+
+.dnode rect {
+  stroke-width: .3px;
+  stroke: #333;
+  fill: #fff;
+}
+
+#dnode-CLOSED rect {
+  stroke-width: 3px;
+  fill: #f88;
+}
+
+.dnode text {
+  font-family: Verdana;
+}
+
+path.dedge {
+  fill: none;
+  stroke: #999;
+  stroke-opacity: .6;
+  /*stroke-width: 4px;*/
+}
+
+path.dedge.highlighted {
+  stroke-opacity: 1;
+  stroke: #666;
+}
+
+.labelbox rect {
+	fill: red;
+}
+
+line.llink {
+	stroke-width: 2px;
+	stroke-dasharray: 5, 2;
+	stroke: #999;
+}
+
+/*
+ * Attribute Lattice
+ */
+
+text.mini-intent {
+  fill: #E3E3E3;
+}
+
+
+/*
+ * Association Rules
+ */
+#A_rules_box div span{
+	font-weight:bold;
+}
+
+#A_rules_box .hb_role {
+	font-size:14px;
+	font-weight:bold;
+}
+
+
+/*
+ * sankey
+ */
+
+.sknode rect {
+  cursor: move;
+  fill-opacity: .9;
+  shape-rendering: crispEdges;
+}
+
+.sknode text {
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff;
+}
+
+.sklink {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .2;
+}
+
+.sklink:hover {
+  stroke-opacity: .5;
+}
+
 
 
 /*
@@ -146,6 +281,14 @@ circle.node {
   stroke-width: 3px;
 }
 
+circle.node.concept.hover {
+  cursor: pointer;
+  stroke: #FF0000;
+  stroke-dasharray: 4, 2;
+}
+
+
+
 circle.selected {
 	fill: #ff0000;
 	opacity: 1;
@@ -183,6 +326,19 @@ text.extent {
 }
 
 
+tspan.intent {
+  fill: #DD3333;
+}
+
+tspan.extent {
+ /* stroke: #fff;
+  stroke-width: 1px;
+  stroke-opacity: ,8;*/
+  fill: #000;
+}
+
+
+
 text.hoverbox_content {
  /* stroke: #fff;
   stroke-width: 1px;
@@ -204,36 +360,57 @@ rect.hidden {
 }
 
 
-div.tooltip {
+div.hoverbox {
   position: absolute;
   width: 200px;
   height: 120px;
   overflow-y:auto;
   padding: 8px;
   font: 10px sans-serif;
-  background: #F5F5F5;
-  border: solid 1px #ccc;
-  border-radius: 8px;
+  
+  background-color: #FBFBFB;
+    background-image: -moz-linear-gradient(center top , #FFFFFF, #F5F5F5);
+    background-repeat: repeat-x;
+    border: 1px solid #DDDDDD;
+    box-shadow: 0 1px 0 #FFFFFF inset;
+  
+  /*color: #a0a0a0;*/
+  /*background: #F5F5F5;*/
+  /*background-color:rgba(220,220,220,0.9);
+  border: solid 1px #ccc;*/
+  /*border-radius: 8px;*/
+  /*-moz-box-shadow:    0px 0px 2px 3px #ccc;
+  -webkit-box-shadow: 0px 0px 2px 3px #ccc;
+  box-shadow:         0px 0px 2px 3px #ccc;*/
   z-index: 999;
 }
 
-div.tooltip div {
+div.hoverbox div {
 	display: block;
     float: left;
     width: 50%;
    
 }
 
-div.tooltip div span {
+div.hoverbox div span.column-name {
 	margin: 0 0 0 15px;
 	font-weight: bold;
 	text-align: center;
 }
 
-div.tooltip div ul{
+div.hoverbox div ul{
 	 margin: 0 0 10px 15px;
 	 list-style: none outside none;
 }
+
+#metrics-table {
+	width:100%;
+}
+
+#metrics-table table td{
+	padding: 5px; 15px;
+}
+
 
 a.facetSel {
 	color: orange;
@@ -423,11 +600,27 @@ a.selected {
 
 
 #filtersPanel a.active {
-	background-color: black;
-    color: white;
-    padding: 0 10px;
+	background-color: #6B6B6B;
+	border-radius:4px;
+    border:1px solid #EFEFEF;
+    color: #F7F7F7;
     text-decoration: none;
 }
+
+#filtersPanel a.distribution-view,  #filtersPanel a.graph-view{
+	border-radius:4px;
+    border:1px solid #EFEFEF;
+    padding: 3px 10px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+#filtersPanel a.distribution-view:hover,  #filtersPanel a.graph-view:hover {
+	text-decoration: none;
+	color: #F7F7F7;
+}
+
+
 
 /*
  *  histogram

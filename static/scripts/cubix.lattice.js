@@ -27,6 +27,21 @@ function loadData(data){
 	_data_a_rules_concerned_attributes=clone(data.attributes);
 	
 	
+	if (typeof n_concepts != 'undefined') {
+		var reduction = 1-(lattice.edges.length/n_links);
+		
+		// Tree buttom
+		 $('#tree-opts').popover({
+			title: 'Tree stats',
+			placement: "bottom",
+			html: true,
+			trigger: "hover",
+			content: 'Concepts (source): '+n_concepts+' <br/> Links (source): '+n_links+
+			' <br/><br/> Concepts (tree): '+lattice.concepts.length+ ' <br/> Links (tree): '+lattice.edges.length+
+			 '<br/><br/> Reduction: '+ Math.round(reduction*100)/100+ '%',
+		});
+	}
+	
 	// load autosuggest for attributes
 	$("input.search").tokenInput(getAttributeValuesPairs(),{
               propertyToSearch: "name",
@@ -36,21 +51,38 @@ function loadData(data){
               onAdd: selectionAdded,
               onDelete: selectionAdded
               });
+    
+    // load clustering slider
+    $( "#slider-clustering" ).slider({
+			min: 1,
+			max: lattice.concepts.length,
+			value: [ lattice.concepts.length ],
+			slide: function( event, ui ) {
+				$( "#n_clusters" ).val( ui.value);
+				
+			}
+		});
+	$( "#n_clusters" ).val( lattice.concepts.length);
 	
+	
+	if (typeof lattice.original_id != "undefined") { 
+		$("#tree-opts").show(); 
+		$("a.undo-link").show();
+	}
 	
 	
 	hoverbox = d3.select("#hoverbox");
 	A_rules_box = d3.select("#A_rules_box");
 	
+	labelizeFirst();
+	
 	checkLatticeConstraints();
 	
-	// Labels TODO colocar uma funcao no label que ja pega a intersecao com os parents?
-	labelizeData();
-	
-	//initThisLattice();
-	//initStaticLattice();
-    initLattice();
     
+    displayAttrLabel = $("input[name='label-for-attr']").is(':checked');
+	displayObjLabel = $("input[name='label-for-attr']").is(':checked');
+    labelizeData();
+
     
     // lists
     updateEntityList();
@@ -64,10 +96,18 @@ function loadData(data){
 	// Dashboard
 	loadDashboard();
 	
-	$('a.lattice-json-link').attr("href", "/api/v1/lattice/?id="+lattice_id);
-	$('a.ar-json-link').attr("href", "/api/v1/association_rules/?lattice_id="+lattice_id);
+	// $('a.lattice-json-link').attr("href", "/api/v1/lattice/?id="+lattice_id);
+	// $('a.ar-json-link').attr("href", "/api/v1/association_rules/?lattice_id="+lattice_id);
 	
 	$('text[text-anchor="end"]').remove();
+	
+	// Attribute lattices
+    if (data.attribute_lattices)
+    	loadAttributeLattices(JSON.parse(data.attribute_lattices));
+    
+    // Attribute graph
+    if (data.attribute_graph)
+    	loadAttributeGraph(JSON.parse(data.attribute_graph));
 	
 }
 
@@ -91,6 +131,7 @@ function Lattice(data) {
 	
 	this.id = data.id;
 	
+	this.original_id = data.original_id;
 	
 	
 	this.getConcept = function(tid){
@@ -99,10 +140,23 @@ function Lattice(data) {
 		  	return this.concepts[i];
 		};
 	};
+	this.getConceptById = function(tid){
+		for (var i=0; i < this.concepts.length; i++) {
+		  if (this.concepts[i].id == tid) 
+		  	return this.concepts[i];
+		};
+	};
+	
+	this.getEdge = function(concept1, concept2){
+		for (var i=0; i < this.edges.length; i++) {
+		  if ((this.edges[i].source.id == concept1.id && this.edges[i].target.id == concept2.id) ||
+		    (this.edges[i].target.id == concept1.id && this.edges[i].source.id == concept2.id)) 
+		  	return this.edges[i];
+		};
+	};
 	
 	this.topConcept = this.getConcept(data.top_id);
 	this.bottomConcept = this.getConcept(data.bottom_id);
-	
 	
 	
 	 this.isEmpty = function () {
@@ -111,6 +165,11 @@ function Lattice(data) {
 	 
 	 this.conceptsCount = function(){
 	 	return concepts.length;
+	 }
+	 
+	 this.resetLattice = function(){
+	 	concepts = initialConcepts.slice(0);
+	 	edges = initialEdges.slice(0);
 	 }
 	 
 	 /*
@@ -150,9 +209,123 @@ function Lattice(data) {
 		   		ret.push(this.edges[i]);
 		 };
 	 	return ret;
-	 }
+	 };
 	 
 	 
+	 this.removeConcept = function(concept){
+	 	for (var idx=0; idx < lattice.concepts.length; idx++) {
+		   var curCpt = lattice.concepts[idx];
+		   if (curCpt.id == concept.id) { // found
+		   	
+			   	lattice.concepts.splice(idx,1); // remove concept
+		 		
+		 		// remove links to the concept
+		 		for (var i=0; i < lattice.edges.length; i++) { 
+				   var curEdge = lattice.edges[i];
+				   if (curEdge.target.id == concept.id || curEdge.source.id == concept.id ) { 
+				   		lattice.edges.splice(i,1);
+				   		i = i -1;
+				   	}
+				   		//edgesMarkedForRemoval.push(i);
+				 };
+				 
+				 // for (var j=0; j < edgesMarkedForRemoval.length; j++) {
+				  	// lattice.edges.splice(edgesMarkedForRemoval[j],1); // BUG
+				 // };
+		   	
+		   	return;
+		   }
+	 	}
+	 };
+	 
+	 this.existsEdge = function(source_id, target_id) {
+	 	for (var i=0; i < lattice.edges.length; i++) {
+		   if (lattice.edges[i].source.id == source_id && lattice.edges[i].target.id == target_id) return true;
+		 };
+		return false;
+	 };
+	 
+	 this.readdConcept = function(concept){
+	 	var curCpt = lattice.getConceptById(concept.id);
+	 	if (typeof curCpt == 'undefined') {
+	 		lattice.concepts.push(concept);
+	 		// readd links
+	 		for (var i=0; i < lattice.initialEdges.length; i++) { 
+				   var curEdge = lattice.initialEdges[i];
+				   if (curEdge.target.id == concept.id && !lattice.existsEdge(curEdge.source.id,curEdge.target.id)) {
+				   		 lattice.edges.push(curEdge);
+				   } else if (curEdge.source.id == concept.id && !lattice.existsEdge(curEdge.source.id,curEdge.target.id)) {
+				   		 lattice.edges.push(curEdge);
+				   }
+			};
+	 		
+	 	} // else it was already there
+	 };
+	 
+	 
+	 
+	 /**
+	  * Cluster
+	  */
+	 
+	 /**
+	  * Tree transform
+	  */
+	 this.treeCache =  new Array();
+	 this.getTree = function() {
+		var top = getTopMostConcepts()[0];
+		
+		function copyNode(node) {
+			var treeNode = new Object();
+			treeNode.id = node.id;
+			treeNode.name = node.intent.join(", ");
+			//node.name;
+			treeNode.lowerLabel = node.lowerLabel;
+			treeNode.upperLabel = node.upperLabel;
+			treeNode.support = node.support;
+			treeNode.intent = node.intent;
+			treeNode.extent = node.extent;
+			treeNode.depth = 0;//node.depth;
+			//treeNode.children_ids = node.children_ids;
+			//treeNode.title = node.name;
+			treeNode.children = [];
+			
+			if (lattice.treeCache.indexOf(treeNode)<0)
+					lattice.treeCache.push(treeNode); // cache
+			
+			return treeNode;
+		}
+	
+		function recurse(node) {
+			if(node.children_ids.length == 0)
+				return null;
+			
+			var treeNode = copyNode(node)
+	
+			var children = getChildrenData(node);
+			//getChildrenDataNodes(node.children_ids)
+	
+			for(var i = 0; i < children.length; i++) {
+	
+				if(children[i].children_ids.length > 0) {
+					var chNode = recurse(children[i]);
+				} else { 
+					var chNode = copyNode(children[i])
+				}
+				chNode.depth = treeNode.depth + 1; // update depths for tree
+				//chNode.id = node.id + "-" + chNode.id; // current node id = node_id-parent_id to avoid duplicates
+				treeNode.children.push(chNode);
+				
+			};
+	
+			return treeNode;
+
+		}
+	
+		var topNode = recurse(top);
+		return topNode;
+
+	}
 	 
 	 /*
 	  * Layout methods
@@ -204,156 +377,6 @@ function Lattice(data) {
 
 
 
-
-function initLattice(){
-	
-	w = DEFAULT_WIDTH;
-	h = DEFAULT_HEIGHT;
-	
-	force = d3.layout.force()
-        .gravity(0.1)
-        .distance(100)
-        .charge(-320)
-        .on("tick", tick)
-        .size([w, h]);
-        
-        
-	
-	vis = d3.select("#chart").append("svg:svg")
-	.attr("width", "100%")
-    .attr("height", "100%")
-    .attr("viewBox", "0 0 "+w+" "+h)
-    .attr("preserveAspectRatio", "xMidYMid");
-	
-	
-	updateLattice();
-}
-
-
-function updateLattice() {
-	   // var nodes = flatten(data),
-       // links = d3.layout.tree().links(nodes);
-	
-	  var nodes = lattice.concepts,
-      links = lattice.edges;
-	
-	
-	  // Restart the force layout.
-	  force
-	      .nodes(nodes)
-	      .links(links)
-	      .start();
-	
-	 // Update the links…
-	  clink = vis.selectAll("line.link")
-	      .data(links);
-	
-	  // Enter any new links.
-	  clink.enter().insert("svg:line", ".node")
-	      .attr("class", "link")
-	      .attr("x1", function(d) { return d.source.x; })
-	      .attr("y1", function(d) { return d.source.y; })
-	      .attr("x2", function(d) { return d.target.x; })
-	      .attr("y2", function(d) { return d.target.y; })
-	      .attr("source_id", function(d) { return d.source.id; })
-          .attr("target_id", function(d) { return d.target.id; });
-	
-	  // Exit any old links.
-	  clink.exit().remove();
-	
-	  // Update the nodes…
-	  cnode = vis.selectAll("circle.node")
-	      .data(nodes, function(d) { return d.id; });
-	
-	  // Enter any new nodes.
-	  cnode.enter().append("svg:circle")
-	      .attr("class", "node")
-	      .attr("cx", function(d) { return d.x; })
-	      .attr("cy", function(d) { return d.y; })
-	      .attr("r", getNodeSize)
-	      .attr("intent", function(d) { return d.intent; })
-		  .attr("extent", function(d) { return d.extent; })
-		  .attr("id", function(d) { return  d.id; })
-		  .attr("children", function(d) { return d.children; })
-	      .on("click", nodeClick)
-		  .on("mouseover", nodeMouseOver)
-		  .on("mouseout", nodeMouseOut)
-		  .call(force.drag);
-	
-	  // Exit any old nodes.
-	  cnode.exit().remove();
-	  
-	  
-	   // Update the labels…
-	  ulabel = vis.selectAll("text.intent")
-	      .data(nodes, function(d) { return d.id; });
-	
-	  // Enter any new labels.
-	  ulabel.enter().append("svg:text")
-	      .attr("class", "intent")
-		  .attr("x", -22)
-		  .attr("y", "-1em")
-		  .attr("id", function(d){ return "intent_"+d.id})
-		  .text(get_upper_label);
-	  
-	  // Exit any old labels.
-	  ulabel.exit().remove();
-	  
-	  
-	   // Update the labels…
-	  llabel = vis.selectAll("text.extent")
-	      .data(nodes, function(d) { return d.id; });
-	
-	  // Enter any new labels.
-	  llabel.enter().append("svg:text")
-		.attr("x", -22)
-		.attr("y", "2em")
-		.attr("class", "extent")
-		.attr("id", function(d){ return "extent_"+d.id})
-		.text(get_lower_label); 
-	
-	  // Exit any old labels.
-	  llabel.exit().remove();
-	  
-}
-
-
-
-function tick(e) {
-      
-  clink.attr("x1", function(d) { return d.source.x; })
-      .attr("y1", function(d) { return d.source.y; })
-      .attr("x2", function(d) { return d.target.x; })
-      .attr("y2", function(d) { return d.target.y; });
-  
-  // first version
-  cnode.attr("cx", function(d) { return d.x; })
-      .attr("cy", function(d) { return d.y; });
-  
-  // clabel.attr("cx", function(d) { return d.x; })
-      // .attr("cy", function(d) { return d.y; });
-
-   // other version
-  // node.attr("transform", function(d) {
-    // return "translate(" + d.x + "," + d.y + ")";
-  // });
-// 
-   ulabel.attr("transform", function(d) {
-     return "translate(" + d.x + "," + d.y + ")";
-   });
-  
-  llabel.attr("transform", function(d) {
-     return "translate(" + d.x + "," + d.y + ")";
-   });
-   
-   var k = .5 * e.alpha;
-   cnode.each(function(d) {
-   			d.y += ((d.depth) * 100 - d.y) * k;
-   });    
-   
-   
-      
-}
 
 
 /*
@@ -447,107 +470,6 @@ function highlightNodes(nodelist, color) {
  * Search
  */
 
-
-
-
-
-/*
- * Node mouse events 
- */
-function visitEdges(node, callback) {
-	for (var i=0; i < get.length; i++) {
-	  get[i]
-	};
-}	
-	
-function nodeMouseOver(d){
-	//    $('#node_3').popover({title:"hey", content: "now it works!"});
-	//$('#node_3').popover('show');
-	
-	var thenode = d3.select(this);
-	thenode.style("stroke", "red"); 
-	
-	//getIncomingNodes(thenode);
-	
-	if (highlightPath) {
-		visitEdgesUp(d,function(l) {
-			d3.select("line.link[source_id=\""+l.source.id+"\"][target_id=\""+l.target.id+"\"]").classed("highlighted", true);
-		});
-	}
-	
-	
-	// show hoverbox
-	//hoverbox.style("opacity", 0);
-	hoverbox.style("display", "block");
-	hoverbox.transition()
-	  .delay(800)
-      .duration(300)
-      .style("opacity", 1);
-      
-    
-    hoverbox
-      .style("left", (d3.event.pageX + 20) + "px")
-      .style("top", (d3.event.pageY - 20) + "px");
-      //.select("div.hb_obj_list").text("attributes: "+thenode.attr("intent"));
-     
-    //var ul = $('ul.hb_attr_list');
-	wrapperElementsInList($('ul.hb_attr_list'), d.intent)
-	wrapperElementsInList($('ul.hb_obj_list'), d.extent)
-	
-	
-	// Dashboard
-	updateDistributionChart(d);
-	
-}
-
-function nodeMouseOut(){
-	if(mouseOverHoverBox) return;
-	//while(mouseOverHoverBox){}
-	
-	// In case they are highlighted
-	//var higg = d3.select("line.highlighted");
-	d3.selectAll("line.highlighted").classed("highlighted", false);
-
-
-	//function(){ (mouseOverHoverBox) ?   }
-	var thenode = d3.select(this);
-	thenode.style("stroke", "white");
-	
-	setTimeout(function(){
-		if(!mouseOverHoverBox){
-			// hide hoverbox
-			hoverbox.transition()
-	  		.duration(200)
-	  		//.delay(1800)
-      		.style("opacity", 0);
-		};
-		
-	}, 1800);
-	
-	
-    
-    //hoverbox.style("display", "none");
-}
-
-
-function nodeClick(){ // select node	
-	d3.select(this).classed("selected", function(){ 
-		if (this.classList.contains("selected")) {
-			numberSelected--;
-			return false;
-		} else {
-			numberSelected++;
-			return true
-		}
-		
-	});
-	clearSearch(); // if I made a click node to add/remove selection, the search is no longer valid
-	updateSelectionList();
-	
-	$("#sel-count").text("("+numberSelected+")"); // update counter
-}
-
-
 function clearSearch(){ // show hidden nodes/edges from previous search
 	$('#search').val('');
 	showNodes();
@@ -561,156 +483,37 @@ function clearSelection(){ // remove selection
 }
 
 
-
-/*
- *  LABELS
- */ 
-
-function get_upper_label(d){
-	if (labeling_type == LABEL_REPETITIVE) return d.intent; // repetitive
-	else if (labeling_type == LABEL_MULTILABEL) return d.upperLabel; // multilabel
-	else if (labeling_type == LABEL_SUPPORT) return ''; // support
-	else return "upper"
-}
-function get_lower_label(d){
-	if (labeling_type == LABEL_REPETITIVE) return d.extent;
-	else if (labeling_type == LABEL_MULTILABEL) return d.lowerLabel; // multilabel
-	else if (labeling_type == LABEL_SUPPORT) return Math.round(100*d.support) + "% (" + Math.round(context.objects.length*d.support) + ")" ;// multilabel
-	else return "lower"
-}
-
-function changeLabel(type){
-	labeling_type = type;
-	labelizeData();
-	
-	vis.selectAll("text.intent")
-        .text(get_upper_label); 
-    vis.selectAll("text.extent")
-        .text(get_lower_label); 
-}
-
-
-function labelize(){ // TODO work on data not on layout
-	
-	var labeling_type = 2;
-
-	var top_concept =vis.select('circle[id="'+ lattice.topConcept.id +'"]');
-	var nodelist = getOutgoingNodes(top_concept);
-	
-	// intent labels
-	for (var i=0; i < nodelist.length; i++) {
-		var cur = nodelist[i];
-		var curIntent = cur.attr("intent").split(',');
-		
-		var parentlist = getIncomingNodes(cur);
-		for (var j=0; j < parentlist.length && curIntent.length > 0; j++) {
-		  var parentIntent = parentlist[j].attr("intent").split(',');
-		  
-		     curIntent = ArraySubtract(curIntent,parentIntent);
-		};
-		
-		
-		vis.select('text[id="intent_'+cur.attr("id")+'"]').text(curIntent.join(", ")); 
-		
-		//nodelist.addAll(getOutgoingNodes(cur));
-		ArrayAddAll(getOutgoingNodes(cur), nodelist);
-	}
-	
-
-	// objects: bottom up
-	var bottom_concept = vis.select('circle[id="'+ lattice.bottomConcept.id +'"]');
-	nodelist = getIncomingNodes(bottom_concept);
-	
-	// extent labels
-	for (var i=0; i < nodelist.length; i++) {
-		var cur = nodelist[i];
-		var curExtent = cur.attr("extent").split(',');
-		
-		var childlist = getOutgoingNodes(cur);
-		for (var j=0; j < childlist.length && curExtent.length > 0; j++) {
-		  var childExtent = childlist[j].attr("extent").split(',');
-		  
-		     curExtent = ArraySubtract(curExtent,childExtent);
-		};
-		
-		vis.select('text[id="extent_'+cur.attr("id")+'"]').text(curExtent.join(", ")); 
-		
-		//nodelist.addAll(getIncomingNodes(cur));
-		ArrayAddAll(getIncomingNodes(cur), nodelist);
-	}
-	
-}
-
 /*
  * Check 
  */
 
 function checkLatticeConstraints(){
 	
-	// check labels
-	if (context.attributes > MAX_ENTITY_SIZE || context.objects > MAX_ENTITY_SIZE) {
-		if (confirm("Labeling concepts in this lattice may be overwhelming, do you want to label them by percentage?"))
-		labeling_type = LABEL_SUPPORT;
+	if (typeof lattice.original_id != 'undefined') { // it was already transformed in tree, display the viusalisation
+    		changeVis("sunburst");
+    		return;
+    }
+	//else
+	
+	if (OVERWHELMING && (context.attributes.length > MAX_ENTITY_SIZE || context.objects.length > MAX_ENTITY_SIZE)) {
+		
+		if (confirm("Labeling concepts in this lattice may be overwhelming, do you want to switch to a suitable tree visualisation?")) {
+			$('#modal-tree-transform').modal({ // option to transform tree
+					keyboard: true,
+					show: true,
+			});
+			return;
+		} else {
+			setOverwhelmingOff(); // disable the message to not annoy the user every time
+		}
+		
 	}
+	
+	$('#select-vis').val(PREF_VIS);
+	changeVis(PREF_VIS);
+		
 }
 
-function labelizeData(){ 
-	
-	if (labeling_type != LABEL_MULTILABEL) return; // not multi label
-	
-	//var top_concept = vis.select('circle[id="'+ data.top_id +'"]');
-	var nodelist = getTopMostConcepts();
-	
-	// intent labels
-	for (var i=0; i < nodelist.length; i++) {
-		var cur = nodelist[i];
-		
-		var parentlist = getParentsData(cur);
-		
-		var curIntent = cur.intent;
-		
-		for (var j=0; j < parentlist.length && curIntent.length > 0; j++) {
-		  var parentIntent = parentlist[j].intent;
-		  
-		     curIntent = ArraySubtract(curIntent,parentIntent);
-		};
-		
-		var intLabel = curIntent.join(", ");
-		//vis.select('text[id="intent_'+cur.id+'"]').text(intLabel); 
-		cur.name = intLabel;
-		cur.upperLabel = intLabel;
-		
-		
-		//nodelist.addAll(getChildrenData(cur));
-		ArrayAddAll(getChildrenData(cur), nodelist);
-		
-	}
-	
-	
-	// extent labels
-	nodelist = getBottomMostConcepts();
-	
-	for (var i=0; i < nodelist.length; i++) {
-		var cur = nodelist[i];
-		
-		var childrenList = getChildrenData(cur);
-		
-		var curExtent = cur.extent;
-		
-		for (var j=0; j < childrenList.length && curExtent.length > 0; j++) {
-		  var childExtent = childrenList[j].extent;
-		  
-		     curExtent = ArraySubtract(curExtent,childExtent);
-		};
-		
-		var extLabel = curExtent.join(", ");
-	//	vis.select('text[id="extent_'+cur.id+'"]').text(extLabel); 
-		cur.lowerLabel = extLabel;
-		//nodelist.addAll(getParentsData(cur));
-		ArrayAddAll(getParentsData(cur), nodelist);
-	}
-	
-}
 
 
 
@@ -766,145 +569,17 @@ function getBottomMostConcepts(){
 }
 
 
-function labelize2(){ // TODO work on data not on layout
-	
-
-
-	//var top_concept = vis.select('circle[id="'+ data.top_id +'"]');
-	var nodelist = getTopMostConcepts();
-	
-	// intent labels
-	for (var i=0; i < nodelist.length; i++) {
-		var cur = nodelist[i];
-		
-		var parentlist = getParentsData(cur);
-		
-		var curIntent = cur.intent;
-		
-		for (var j=0; j < parentlist.length && curIntent.length > 0; j++) {
-		  var parentIntent = parentlist[j].intent;
-		  
-		     curIntent = ArraySubtract(curIntent,parentIntent);
-		};
-		
-		var intLabel = curIntent.join(", ");
-		vis.select('text[id="intent_'+cur.id+'"]').text(intLabel); 
-		cur.name = intLabel;
-		
-		
-		//nodelist.addAll(getChildrenData(cur));
-		ArrayAddAll(getChildrenData(cur), nodelist);
-		
-	}
-	
-	
-	// extent labels
-	nodelist = getBottomMostConcepts();
-	
-	for (var i=0; i < nodelist.length; i++) {
-		var cur = nodelist[i];
-		
-		var childrenList = getChildrenData(cur);
-		
-		var curExtent = cur.extent;
-		
-		for (var j=0; j < childrenList.length && curExtent.length > 0; j++) {
-		  var childExtent = childrenList[j].extent;
-		  
-		     curExtent = ArraySubtract(curExtent,childExtent);
-		};
-		
-		var extLabel = curExtent.join(", ");
-		vis.select('text[id="extent_'+cur.id+'"]').text(extLabel); 
-		
-		//nodelist.addAll(getParentsData(cur));
-		ArrayAddAll(getParentsData(cur), nodelist);
-	}
-	
-
-}
-
-
-function labelizeThis(col, isTree){ 
-	
-	//var top_concept = vis.select('circle[id="'+ data.top_id +'"]');
-	var nodelist;
-	
-	if (isTree) {
-		nodelist = flatten(col);
-	}
-	else {
-		nodelist = getTopMostConcepts(col);
-	}
-	
-	// intent labels
-	for (var i=0; i < nodelist.length; i++) {
-		var cur = nodelist[i];
-		
-		var parentlist = getParentsData(cur);
-		
-		var curIntent = cur.intent;
-		
-		for (var j=0; j < parentlist.length && curIntent.length > 0; j++) {
-		  var parentIntent = parentlist[j].intent;
-		  
-		     curIntent = ArraySubtract(curIntent,parentIntent);
-		};
-		
-		var intLabel = curIntent.join(", ");
-		//vis.select('text[id="intent_'+cur.id+'"]').text(intLabel); 
-		cur.name = intLabel;
-		
-		
-		ArrayAddAll(getChildrenData(cur), nodelist);
-		
-	}
-	
-	
-	// extent labels
-	nodelist = getBottomMostConcepts();
-	
-	for (var i=0; i < nodelist.length; i++) {
-		var cur = nodelist[i];
-		
-		var childrenList = getChildrenData(cur);
-		
-		var curExtent = cur.extent;
-		
-		for (var j=0; j < childrenList.length && curExtent.length > 0; j++) {
-		  var childExtent = childrenList[j].extent;
-		  
-		     curExtent = ArraySubtract(curExtent,childExtent);
-		};
-		
-		var extLabel = curExtent.join(", ");
-		//vis.select('text[id="extent_'+cur.id+'"]').text(extLabel); 
-		
-		ArrayAddAll(getParentsData(cur), nodelist);
-	}
-	
-
-}
-
-
-/*
- * Hover box
- */
-
-function wrapperElementsInList(ul,array){
-	
-	ul.empty();
-	//var ul = $('<ul>').appendTo('body');
-	$(array).each(function(index, item) {
-	    ul.append(
-	        $(document.createElement('li')).text(item)
-	    );
-	});
-}
-
 /*
  * Utils
  */
+
+function visitEdges(node, callback) {
+	for (var i=0; i < get.length; i++) {
+	  get[i]
+	};
+}	
+	
+
 function visitEdgesUp(n, mycallback) {
 	var inEdges = getIncomingEdgesData(n);
 // 	
@@ -920,6 +595,17 @@ function visitEdgesUp(n, mycallback) {
 	
 }
 
+function visitEdgesDown(n, mycallback) {
+	var outEdges = getOutgoingEdgesData(n);
+	
+	for (var i=0; i < outEdges.length; i++) {
+	  mycallback(outEdges[i]);
+	  visitEdgesDown(outEdges[i].target,mycallback);
+	};
+	
+}
+
+
 
 function getIncomingEdgesData(n, eachCallback){
 	var inEdges = [];
@@ -934,9 +620,25 @@ function getIncomingEdgesData(n, eachCallback){
 	
 	return inEdges;
 }
+function getOutgoingEdgesData(n, eachCallback){
+	var outEdges = [];
+	
+	for (var i=0; i <lattice.edges.length; i++) {
+	  var curLink = lattice.edges[i]; 
+	  if (curLink.source.id == n.id) { 
+	  	outEdges.push(curLink)
+	  	if (typeof(eachCallback)!='undefined') eachCallback(curLink);
+	  };
+	};
+	
+	return outEdges;
+}
+
+
 
 
 function getIncomingEdges(n, eachCallback){
+	alert("avoid it. cubix.lattice.js line 668");
 	var inEdges = [];
 	inEdges = vis.selectAll('line[target_id="'+ n.attr("id") +'"]');
 	if (typeof(eachCallback)!='undefined') {
@@ -946,6 +648,7 @@ function getIncomingEdges(n, eachCallback){
 }
 
 function getOutgoingEdges(n, eachCallback){
+	alert("avoid it. cubix.lattice.js line 678");
 	var outEdges = [];
 	outEdges = vis.selectAll('line[source_id="'+ n.attr("id") +'"]');
 	if (typeof(eachCallback)!='undefined') {
@@ -977,24 +680,46 @@ function getOutgoingNodes(n){
 }
 ///
 
-function getParentsData(nd){
-	var parents = [];
-	for (var i=0; i < lattice.concepts.length; i++) {
-	  if(nd.parents_ids.indexOf(lattice.concepts[i].id) >= 0){
-	  	parents.push(lattice.concepts[i]);
-	  }
-	};
-	return parents;
+// TODO
+function getTreeParentsData(nd){
+	
+		for (var i=0; i < lattice.treeCache.length; i++) {
+			var children = lattice.treeCache[i].children;
+			
+			if (children == null) continue;
+		  	
+		  	for (var j=0; j < children.length; j++) {
+		  		if (children[j].id == nd.id) return [lattice.treeCache[i]] 
+		  	}
+		  	
+		};
+		return [];
 }
 
+function getParentsData(nd){
+		var parents = [];
+		for (var i=0; i < lattice.concepts.length; i++) {
+		  if(nd.parents_ids.indexOf(lattice.concepts[i].id) >= 0){
+		  	parents.push(lattice.concepts[i]);
+		  }
+		};
+		return parents;
+}
+function getTreeChildrenData(nd){
+		for (var i=0; i < lattice.treeCache.length; i++) {
+		  	if (lattice.treeCache[i].id == nd.id) return lattice.treeCache[i].children;
+		};
+		return [];
+}
+	
 function getChildrenData(nd){
-	var children = [];
-	for (var i=0; i < lattice.concepts.length; i++) {
-	  if(nd.children_ids.indexOf(lattice.concepts[i].id) >= 0){
-	  	children.push(lattice.concepts[i]);
-	  }
-	};
-	return children;
+		var children = [];
+		for (var i=0; i < lattice.concepts.length; i++) {
+		  if(nd.children_ids.indexOf(lattice.concepts[i].id) >= 0){
+		  	children.push(lattice.concepts[i]);
+		  }
+		};
+		return children;
 }
 
 function areNeighbor(n1, n2){
@@ -1013,4 +738,17 @@ function hasChild(n1, n2){
 	return false;
 }
 
+/*
+ * Tree lattice
+ */
+
+isParentOf = function(p, c) {
+	  if (p === c) return true;
+	  if (p.children) {
+	    return p.children.some(function(d) {
+	      return isParentOf(d, c);
+	    });
+	  }
+	  return false;
+	}
 

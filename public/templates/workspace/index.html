@@ -3,7 +3,6 @@
 {% extends "shared/base.html" %}
 
 {% block js %}
-<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery-1.7.2.min.js"></script>
 <script type="text/javascript">
 	$(function() {
 	
@@ -24,13 +23,9 @@
 	    <ul>
 		{% if workspace_list %}
 			{% for workspace in workspace_list %}
-		        <li><a href="/{{ workspace.title_slug }}/select/">{{ workspace.title }}</a> - <a href="/{{ workspace.title_slug }}/delete/">Delete</a> </li>
-		        <ul>
-			    {% for data_source in workspace.contexts %}
-			        <li>{{ data_source.title }} - {{ data_source.filename }} - <a href="/{{ workspace.title_slug }}/context/delete/&id={{ data_source.id }}/">Delete</a>
-			        </li>
-			    {% endfor %}
-			    </ul>
+		        <li><a href="/{{ workspace.title_slug }}/">{{ workspace.title }}</a> - <a href="/{{ workspace.title_slug }}/delete/">Delete</a> </li>
+		        
+
 			{% endfor %}
 		    </ul>
 		{% else %}

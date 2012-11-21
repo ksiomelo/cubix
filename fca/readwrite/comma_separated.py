@@ -3,6 +3,71 @@
 
 import csv
 import fca
+from fca.context import Context
+
+def read_csv(path):
+    
+    """
+    FORMAT:
+    
+    object1, attr1, attr2, , attrn
+    object2, , attr2, , attrn
+    objectn, attr1, attr2, , attrn
+    """
+    #input_file = open(path, "rb")
+    #rdr = csv.reader(input_file, delimiter=",")
+    
+    input_file = open(path, "rU")
+    rdr = csv.reader(input_file, dialect=csv.excel_tab,delimiter=",")
+    
+    objects = []
+    
+    rec = rdr.next()# read attributes names
+
+    attributes = []
+#    for attr in rec[1:]: # SKIP FIRST COLUMN
+#        attributes.append(str(attr).strip())
+
+    tempTable = {}
+    table = []
+    
+    for rec in rdr:
+        
+        obj = str(rec[0]).strip()
+        
+        if obj == '':
+            continue
+        
+        objects.append(obj)
+        tempTable[obj] = []
+        
+        for attr in rec[1:]:
+            attr = attr.strip()
+            
+            if attr.strip() == '':
+                continue
+            
+            if attr not in attributes:
+                attributes.append(attr)
+            
+            tempTable[rec[0]].append(attr)
+            
+    input_file.close()
+    
+    for obj in objects:
+        line = []
+        for attr in attributes:
+            
+            if attr in tempTable[obj]:
+                val = True
+            else:
+                val = False
+            line.append(val)
+            
+        table.append(line)
+
+    return Context(_table=table, _objects=objects, _attributes=attributes)
+
 
 def read_mv_csv(path):
     """Read many-valued context from path, which is comma-separated text file

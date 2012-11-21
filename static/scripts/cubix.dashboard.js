@@ -8,6 +8,11 @@ function removeWatermarks(){
 	$('text[text-anchor="end"]').remove();
 }
 
+function initDashboard(){
+	createDistributionChart();
+	//createPolarChart();
+}
+
 function loadDashboard(){
 	multiSelectOptionsForAttributes("#control_1");
 	multiSelectOptionsForAttributes("#control_2");
@@ -203,6 +208,8 @@ function createDistributionChart(){
 }
 
 function updateDistributionChart(d){
+			if (typeof d == "undefined")
+				return;
 	
 			var sumData = [];
 			
@@ -220,6 +227,66 @@ function updateDistributionChart(d){
 			distributionChart.xAxis[0].setCategories(subcontext.attributeNames);
 			//distributionChart.redraw();
 	
+}
+
+
+/*
+ * POLAR CHART
+ */
+var polarChart;
+function createPolarChart(){
+	polarChart = new Highcharts.Chart({
+	            
+	    chart: {
+	        renderTo: 'polar-chart',
+	        polar: true,
+	        type: 'line'
+	    },
+	    
+	    title: {
+	        text: 'Budget vs spending',
+	        x: -80
+	    },
+	    
+	    pane: {
+	    	size: '80%'
+	    },
+	    
+	    xAxis: {
+	        categories: ['Support', 'Stability', 'Probability', 'Separation'],
+	        tickmarkPlacement: 'on',
+	        lineWidth: 0
+	    },
+	        
+	    yAxis: {
+	        gridLineInterpolation: 'polygon',
+	        lineWidth: 0,
+	        min: 0
+	    },
+	    
+	    tooltip: {
+	    	shared: true,
+	        valuePrefix: '$'
+	    },
+	    
+	    legend: {
+	        align: 'right',
+	        verticalAlign: 'top',
+	        y: 100,
+	        layout: 'vertical'
+	    },
+	    
+	    series: [{
+	        name: 'Allocated Budget',
+	        data: [43000, 19000, 60000, 35000],
+	        pointPlacement: 'on'
+	    }, {
+	        name: 'Actual Spending',
+	        data: [50000, 39000, 42000, 31000],
+	        pointPlacement: 'on'
+	    }]
+	
+	});
 }
 
 /*
@@ -248,15 +315,23 @@ function createScatterPlotChart() {
  */
 
 function createRulesList() {
+	
+	if (typeof association_rules == 'undefined') return;
+	
+	
 	a1 = [];
 	a2 = [];
 	for( i = 0; i < association_rules.length; i++) {
 		a1.push(association_rules[i].id);
 		a2.push(association_rules[i].confidence);
 	}
+	
+	var new_height = 50 + (association_rules.length * 20);
+	
 	chart = new Highcharts.Chart({
 
 		chart : {
+			height: new_height,
 			renderTo : 'rules_render_area',
 			type : 'bar',
 			events : {
@@ -326,8 +401,11 @@ function createRulesList() {
 						event.point.update({
 							color : '#f00'
 						}, true, false)
-						d3.select("#chart").select("svg").selectAll("path").style("opacity", function(d) {
-							return d[4].id == event.point.category ? 0.99 : 0.1;
+						vis.selectAll("path").style("opacity", function(d) {
+							if (d[0].ids.indexOf(event.point.category) >= 0) return .99;
+							else return .1;
+							
+							//return d[4].id == event.point.category ? .99 : .1;
 						});
 						prevIndex = event.point.category;
 					}

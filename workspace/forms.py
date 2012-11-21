@@ -4,6 +4,8 @@ from workspace.models import Workspace
 
 #fs = FileSystemStorage(location='/media/context')
 
+#FILE_TYPES = ('cxt', 'csv')
+
 class SlugField(forms.CharField):
     def clean(self, request, initial=None):
         field = super(SlugField, self).clean(request)
@@ -15,6 +17,7 @@ class SlugField(forms.CharField):
         
 class LoadCxtForm(forms.Form):
     title = forms.CharField(max_length=200);
+    
     cxtfile = forms.FileField(
         label='Select a file',
         help_text='max. 42 megabytes'

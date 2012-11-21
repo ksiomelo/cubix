@@ -1,0 +1,8 @@
+ <ul>
+			    {% for data_source in contexts %}
+			        <li><a href ="/{{ workspace.title_slug }}/context/select?id={{ data_source.id }}">{{ data_source.title }}</a> <a href="/{{ workspace.title_slug }}/context/delete?id={{ data_source.id }}">Delete</a>
+			        </li>
+			    {% empty %}
+			         <li>No contexts yet.</li>
+			    {% endfor %}
+			    </ul>

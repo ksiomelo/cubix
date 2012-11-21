@@ -4,6 +4,7 @@
 from fca.concept import Concept
 from fca.concept_system import ConceptSystem
 from fca.concept_lattice import ConceptLattice
+from fca.concept_link import ConceptLink
 from fca.context import Context
 from fca.mvcontext import ManyValuedContext
 from fca.scale import Scale

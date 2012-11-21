@@ -31,26 +31,37 @@ def compute_istability(lattice):
     >>> print st
 
     """
-    concepts = ConceptSystem(lattice)
+    
+    # HACK TO FIX BUG OF MONGO DB ENGINE
+    top_idx = lattice.index(lattice._top_concept)
+    bottom_idx = lattice.index(lattice._bottom_concept)
+    for cpt in lattice._concepts: 
+        cpt.fix_set_field_bug()
+    lattice._top_concept = lattice._concepts[top_idx]
+    lattice._bottom_concept = lattice._concepts[bottom_idx]
+    #end hack
+        
+    concepts = ConceptSystem(lattice) #bottom concept is wrong
     count = {}
     subsets = {}
     stability = {}
 
     for concept in concepts:
-        count[concept] = len([c for c in concepts if c.extent < concept.extent])
-        subsets[concept] = 2 ** len(concept.extent)
+        count[concept.concept_id] = len([c for c in concepts if c.extent < concept.extent])
+        subsets[concept.concept_id] = 2 ** len(concept.extent)
+        
 
     bottom_concepts = set([concepts.bottom_concept])
     while not len(concepts) == 0:
         bottom_concept = bottom_concepts.pop()
-        stability[str(bottom_concept.concept_id)] = subsets[bottom_concept] / \
+        stability[bottom_concept.concept_id] = subsets[bottom_concept.concept_id] / \
             (2 ** len(bottom_concept.extent))
         concepts.remove(bottom_concept)
         for c in concepts:
             if bottom_concept.intent > c.intent:
-                subsets[c] -= subsets[bottom_concept]
-                count[c] -= 1
-                if count[c] == 0:
+                subsets[c.concept_id] -= subsets[bottom_concept.concept_id]
+                count[c.concept_id] -= 1
+                if count[c.concept_id] == 0:
                     bottom_concepts.add(c)
     return stability
 
@@ -72,6 +83,14 @@ def compute_estability(lattice):
     >>> print st
 
     """
+    # HACK TO FIX BUG OF MONGO DB ENGINE
+    top_idx = lattice.index(lattice._top_concept)
+    bottom_idx = lattice.index(lattice._bottom_concept)
+    for cpt in lattice._concepts: 
+        cpt.fix_set_field_bug()
+    lattice._top_concept = lattice._concepts[top_idx]
+    lattice._bottom_concept = lattice._concepts[bottom_idx]
+    #end hack
 
     concepts = ConceptSystem(lattice)
     count = {}
@@ -79,20 +98,20 @@ def compute_estability(lattice):
     stability = {}
 
     for concept in concepts:
-        count[concept] = len([c for c in concepts if c.intent < concept.intent])
-        subsets[concept] = 2 ** len(concept.intent)
+        count[concept.concept_id] = len([c for c in concepts if c.intent < concept.intent])
+        subsets[concept.concept_id] = 2 ** len(concept.intent)
 
     bottom_concepts = set([concepts.top_concept])
     while not len(concepts) == 0:
         bottom_concept = bottom_concepts.pop()
-        stability[bottom_concept] = subsets[bottom_concept] / \
+        stability[bottom_concept.concept_id] = subsets[bottom_concept.concept_id] / \
             (2 ** len(bottom_concept.intent))
         concepts.remove(bottom_concept)
         for c in concepts:
             if bottom_concept.intent < c.intent:
-                subsets[c] -= subsets[bottom_concept]
-                count[c] -= 1
-                if count[c] == 0:
+                subsets[c.concept_id] -= subsets[bottom_concept.concept_id]
+                count[c.concept_id] -= 1
+                if count[c.concept_id] == 0:
                     bottom_concepts.add(c)
     return stability
 

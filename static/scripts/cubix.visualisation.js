@@ -7,418 +7,160 @@ var size_type = 'default';
 var color_type = 'default';
 var highlightPath = true;
 
-var currentVis = 'lattice';
-var previousVis = 'lattice';
+var color = mapColor;//d3.scale.category20c();
+
+var currentVis = 'dagre';
+var previousVis = 'dagre';
 
 var w = DEFAULT_WIDTH;
 var h = DEFAULT_HEIGHT;
+var trans=[0,0];
+var scale=1;
 
 var force;
 var vis;
-    
 
-function redrawVis(){
-	if (currentVis != 'lattice')
-	changeVis(currentVis);
+var dragging = false;
+
+var noLinks = ["sunburst", "icicle", "sankey"];
+    
+function resetZoom(){
+	scale=1;
+	//d3.event.scale = 1;
+	
+	d3.behavior.zoom()
+    .scale(1);
+
+	vis.attr("transform",
+       "scale(" + scale + ")");
+      
+   $( "#zoom_level" ).val("100%");
+}
+
+function redraw() {
+	//if (dragging) return;
+	
+  trans=d3.event.translate;
+  scale=d3.event.scale;
+  
+  $( "#zoom_level" ).val( Math.round(scale*100)+"%");
+
+  vis.attr("transform",
+      "translate(" + trans + ")"
+      + " scale(" + scale + ")");
 }
 
 
+
+function redrawCurVis() { // redraw current visualisation (used e.g. when resizing window)
+	d3.select("#chart").html("");
+	
+	if (currentVis == 'lattice') initFDLattice();
+	else if (currentVis == 'sankey') sankeyVis.run(); //initSankey();
+	//else if (currentVis == 'parsets') initParsets();
+	else if (currentVis == 'dagre') dagreVis.run();
+    else if (currentVis == 'sunburst') sunburstVis.run();
+    else if (currentVis == 'icicle') initIcicle();
+	else if (currentVis == 'treemap') treemap();
+	else if (currentVis == 'tree') initTree();
+	
+	else if (currentVis == 'matrixview') { initARView(); createRulesList();}
+	else if (currentVis == 'radiagram') { initDiagonalARView(); createRulesList();}
+	else if (currentVis == 'gg_ar_plot') { init_gg_plot(); createRulesList(); }
+}
+
 function changeVis(visType){
 	prevIndex=-1;
-	//$("#rules_container").css("display","none");
   	
-  	d3.select("#chart").html("");
+  	currentVis = visType;
 
-	if (visType == 'lattice') initLattice();
-	else if (visType == 'static-lattice') initThisLattice();//initStaticLattice2();
-    else if (visType == 'sunburst') initSunburst();
-    else if (visType == 'icicle') initIcicle();
-	else if (visType == 'treemap') treemap();
-	else if (visType == 'tree') initTree();
-	
-	else if (visType == 'matrixview') { initARView(); createRulesList();}
-	else if (visType == 'radiagram') { initDiagonalARView(); createRulesList();}
-	else if (visType == 'gg_ar_plot') { init_gg_plot(); createRulesList(); }
+	redrawCurVis(); // init visualisation
 
-	currentVis = visType;
+	setPreferredVis(visType); // save preference in the session
 }
 
 
 function updateVis(){
 	
-	redrawVis();
+	//redrawVis();
+	redrawCurVis();
+	//d3.select("#chart").html("");
 	
-	if (currentVis == 'lattice')  updateLattice();
-	else if (currentVis == 'static-lattice')  updateStaticLattice();
-    else if (currentVis == 'sunburst')  updateSunburst();
-    else if (currentVis == 'icicle')  updateIcicle();
-	else if (currentVis == 'treemap')  tm_updateTree(getTree0);//treemap();
-	else if (currentVis == 'tree')  updateTree(getTree0());
+	// if (currentVis == 'lattice')  updateFDLattice();
+	// else if (currentVis == 'sankey') sankeyVis.run();//updateSankey();
+	// else if (currentVis == 'dagre')  dagreVis.run();
+    // else if (currentVis == 'sunburst')  sunburstVis.run();
+    // else if (currentVis == 'icicle')  updateIcicle();
+	// else if (currentVis == 'treemap')  tm_updateTree();//treemap();
+	// else if (currentVis == 'tree')  updateTree();
 }
 
-
-
-/*
- * Drawing options
- */
-	
-
-function getNodeSize(d){ // TODO generalize
-	
-	// if (size_type == SIZE_SUPPORT) {
-		// var radius = Math.round(d["support"]*(NODE_MAX_SIZE-NODE_MIN_SIZE)) + NODE_MIN_SIZE;
-		// return radius;//(radius < NODE_MIN_SIZE) ? NODE_MIN_SIZE : radius;
-	// } else if (size_type == SIZE_STABILITY) {
-		// var radius = Math.round(d["stability"]*(NODE_MAX_SIZE-NODE_MIN_SIZE)) + NODE_MIN_SIZE;
-		// return radius;//(radius < NODE_MIN_SIZE) ? NODE_MIN_SIZE : radius;
-	// }
-	
-	//else return DEFAULT_NODE_RADIUS;
-	if (size_type == 'default') return DEFAULT_NODE_RADIUS;
-	else return Math.round(d[size_type]*(NODE_MAX_SIZE-NODE_MIN_SIZE)) + NODE_MIN_SIZE;
-	
-}
-
-
-function changeNodeSize(type){
-	size_type = type;
-	if (currentVis=='treemap') {
-		console.log("changin");
-		tm_updateTree(getTree0);
-	} else { 
-		vis.selectAll("circle").attr("r", function(d) { // TODO 
-			return getNodeSize(d);
-		});
-	}
-}
-
-function changeNodeColor(type){
-	size_type = type;
-	if (currentVis=='treemap') {
-		console.log("changin");
-		tm_updateTree(getTree0);
-	}
-	else { 
-		vis.selectAll("circle").attr("r", function(d) { // TODO
-			return getNodeSize(d);
-		});
-	}
-}
-
-
-
-function changeNodeVisibility(criteria, minValue, maxValue, toShow){
-	vis.selectAll("circle").style("fill", function(d) {
-
-		if(maxValue == null || typeof(maxValue) == 'undefined') { // single slider
-			if((d[criteria])*100 >= minValue) {
-				
-				return "#ff0000";
-			}
-		} else {// range slider
-			if((d[criteria])*100 >= minValue && (d[criteria])*100 <= maxValue) {
-				return "#ff0000";
-			}
-		}
-	});
-}
-
-
-
-/*
- * Static Lattice
- */
-
-
-function initStaticLattice(){
-	//calcInitialPlacement();
-	new MinIntersect().run();
-}
-
-
-
-function initStaticLattice2(){
-	vis = d3.select("#chart").append("svg:svg")
-	.attr("width", "100%")
-    .attr("height", "100%")
-    .attr("viewBox", "0 0 "+w+" "+h);
-    
-    
-     var nodes = lattice.concepts,
-      links = data.links;
-	
-	
-	
-	 // Update the links…
-	  clink = vis.selectAll("line.link")
-	      .data(links);
-	
-	  // Enter any new links.
-	  clink.enter().insert("svg:line", ".node")
-	      .attr("class", "link")
-	      .attr("x1", function(d) { return d.source.x; })
-	      .attr("y1", function(d) { return d.source.y; })
-	      .attr("x2", function(d) { return d.target.x; })
-	      .attr("y2", function(d) { return d.target.y; })
-	      .attr("source_id", function(d) { return d.source.id; })
-          .attr("target_id", function(d) { return d.target.id; });
-	
-	  // Exit any old links.
-	  clink.exit().remove();
-	
-	  // Update the nodes…
-	  cnode = vis.selectAll("circle.node")
-	      .data(nodes, function(d) { return d.id; });
-	
-	  // Enter any new nodes.
-	  cnode.enter().append("svg:circle")
-	      .attr("class", "node")
-	      .attr("cx", function(d) { return d.x; })
-	      .attr("cy", function(d) { return d.y; })
-	      .attr("r", DEFAULT_NODE_RADIUS)
-	      .attr("intent", function(d) { return d.intent; })
-		  .attr("extent", function(d) { return d.extent; })
-		  .attr("id", function(d) { return  d.id; })
-		  .attr("children", function(d) { return d.children; })
-	      .on("click", nodeClick)
-		  .on("mouseover", nodeMouseOver)
-		  .on("mouseout", nodeMouseOut);
-	
-	  // Exit any old nodes.
-	  cnode.exit().remove();
-    
-	
-	
-}
-
-
-
-
-function tickStatic(e) {
-	
-	return;
-	
-	 
-     var k = .1 * e.alpha;
-	  	lattice.concepts.forEach(function(o, i) {
-	    o.y += (foci[o.id].y - o.y) * k;
-	    o.x += (foci[o.id].x - o.x) * k;
-	  });
-   
-	
-      
-  clink.attr("x1", function(d) { return d.source.x; })
-      .attr("y1", function(d) { return d.source.y; })
-      .attr("x2", function(d) { return d.target.x; })
-      .attr("y2", function(d) { return d.target.y; });
-  
-  // first version
-  cnode.attr("cx", function(d) { return d.x; })
-      .attr("cy", function(d) { return d.y; });
-  
-  // clabel.attr("cx", function(d) { return d.x; })
-      // .attr("cy", function(d) { return d.y; });
-
-   // other version
-  // node.attr("transform", function(d) {
-    // return "translate(" + d.x + "," + d.y + ")";
-  // });
-// 
-   ulabel.attr("transform", function(d) {
-     return "translate(" + d.x + "," + d.y + ")";
-   });
-  
-  llabel.attr("transform", function(d) {
-     return "translate(" + d.x + "," + d.y + ")";
-   });
-   
-   // var k = .5 * e.alpha;
-   // cnode.each(function(d) {
-   			// d.y += ((d.depth) * 100 - d.y) * k;
-   // });    
-   
- 
-   
-   
-      
-}
-
-
-/*
- * Sunburst
- */
-
-
-var partition;
-var path;
-var sbLabel;
-
-var p = 5;
-var arc = d3.svg.arc()
-	    .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
-	    .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
-	    .innerRadius(function(d) { return Math.max(0, y(d.y)); })
-	    .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
-
-var r,x,y,color;
-
-
-function initSunburst(){
-	
-	// w = 960;
-    // h = 500;
-    r = Math.min(w, h) / 2;
-    x = d3.scale.linear().range([0, 2 * Math.PI]);
-    y = d3.scale.sqrt().range([0, r]);
-    color = d3.scale.category20c();
-	
-	
-	vis = d3.select("#chart").append("svg:svg")
-	    .attr("width", w)
-	    .attr("height", h)
-	  .append("svg:g")
-	    .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")");
-	    
-	 partition = d3.layout.partition()
-     .sort(null)
-     //.size([2 * Math.PI, radius * radius])
-     .value(function(d) { return 1; });
-	    
-	  updateSunburst();
-	
-}
-
-function updateSunburst() {
-		
-       
-       //	treeTransform();
-       
-       	
-        var json = getTree0();// lattice.concepts[0]; //  no need to transform :)
-        
-        //labelizeThis(json, true);
-       	//$("body").html(JSON.stringify(json))
-       	
-       	vis.data([json]);
-       
-        var sbnodes = partition.nodes(json);
-        
-        path = vis.selectAll("path.sb")
-	      .data(partition.nodes, function(d){ return d.id});
-	      
- 		path.enter().append("svg:path")
- 			.attr("class", "sb")
- 			.attr("id", function(d, i) { return "path-" + i; })
-	     	.attr("d", arc)
-	      	.style("fill", function(d) { return color((d.children ? d : d.parent).name); })
-	      	.on("mouseover", nodeMouseOver)
-		  	.on("mouseout", nodeMouseOut)
-		  	.on("click", nodeClick)
-	   		.on("dblclick", sbclick);
-	   		
-	   	 // Exit any old nodes.
-	  		path.exit().remove();
-	  		
-	  		
-	  	sbLabel = vis.selectAll("text").data(sbnodes);
-	  var textEnter = sbLabel.enter().append("svg:text")
-	      .style("opacity", 1)
-	      .style("fill", "#000")
-	      .attr("text-anchor", function(d) {
-	        return x(d.x + d.dx / 2) > Math.PI ? "end" : "start";
-	      })
-	      .attr("dy", ".2em")
-	      .attr("transform", function(d) {
-	        var multiline = (d.name || "").split(" ").length > 1,
-	            angle = x(d.x + d.dx / 2) * 180 / Math.PI - 90,
-	            rotate = angle + (multiline ? -.5 : 0);
-	        return "rotate(" + rotate + ")translate(" + (y(d.y) + p) + ","+(x(d.x)+20*d.depth)+")rotate(" + (angle > 90 ? -180 : 0) + ")";
-	      })
-	      .on("click", nodeClick)
-	      .on("dblclick", sbclick);
-	  textEnter.append("svg:tspan")
-	      .attr("x", 0)
-	      .text(function(d) { return d.depth ? d.name.split(" ")[0] : ""; });
-	  textEnter.append("svg:tspan")
-	      .attr("x", 0)
-	      .attr("dy", "1em")
-	      .text(function(d) { return d.depth ? d.name.split(" ")[1] || "" : ""; });		
-	  
-	
-       ///// ORIGINAL
-        // path = vis.data([json]).selectAll("path")
-	      // .data(partition.nodes)
-	    // .enter().append("svg:path")
-	      // .attr("d", arc)
-	      // .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
-	      // .on("click", sbclick);
-	
-}
-
-// function sbclick(d) {
-	    // path.transition()
-	      // .duration(750)
-	      // .attrTween("d", arcTween(d));
+// function isTree(){
+	// if (currentVis == 'sunburst' || currentVis == 'icicle' || currentVis == 'treemap' || currentVis == 'tree' )
+		// return true;
+	// else return false;
 // }
-function isParentOf(p, c) {
-  if (p === c) return true;
-  if (p.children) {
-    return p.children.some(function(d) {
-      return isParentOf(d, c);
-    });
-  }
-  return false;
+
+function setPreferredVis(visType){
+	var thetoken = $('input[name=csrfmiddlewaretoken]').val(); // TODO move the fucking token to the header
+	
+	$.post("/"+WORKSPACE_SLUG+"/fca/set_preferred_vis", {pref_vis : visType, csrfmiddlewaretoken:  thetoken}, function(data){});
+	
+}
+
+function setOverwhelmingOff(){
+	var thetoken = $('input[name=csrfmiddlewaretoken]').val(); // TODO move the fucking token to the header
+	
+	$.post("/"+WORKSPACE_SLUG+"/fca/set_overwhelming_off", {csrfmiddlewaretoken:  thetoken}, function(data){});
+	
 }
 
 
-function sbclick(d) {
-    path.transition()
-      .duration(750)
-      .attrTween("d", arcTween(d));
+function exportCurVis(){
 
-    // Somewhat of a hack as we rely on arcTween updating the scales.
-    sbLabel
-      .style("visibility", function(e) {
-        return isParentOf(d, e) ? null : d3.select(this).style("visibility");
-      })
-      .transition().duration(750)
-      .attrTween("text-anchor", function(d) {
-        return function() {
-          return x(d.x + d.dx / 2) > Math.PI ? "end" : "start";
-        };
-      })
-      .attrTween("transform", function(d) {
-        var multiline = (d.name || "").split(" ").length > 1;
-        return function() {
-          var angle = x(d.x + d.dx / 2) * 180 / Math.PI - 90,
-              rotate = angle + (multiline ? -.5 : 0);
-          return "rotate(" + rotate + ")translate(" + (y(d.y) + p) + ")rotate(" + (angle > 90 ? -180 : 0) + ")";
-        };
-      })
-      .style("opacity", function(e) { return isParentOf(d, e) ? 1 : 1e-6; })
-      .each("end", function(e) {
-        d3.select(this).style("visibility", isParentOf(d, e) ? null : "hidden");
-      });
-  }
+ // var sgvel = $("#chart").children()[0];
+         // $(sgvel).attr("version", 1.1);
+      	 // $(sgvel).attr("xmlns", "http://www.w3.org/2000/svg");
+// 
+// 
+ // var $container = $('#chart'),
+        // // Canvg requires trimmed content
+        // content = $container.html().trim(),
+        // canvas = document.getElementById('svg-canvas');
+// 
+    // // Draw svg on canvas
+    // canvg(canvas, content);
+// 
+    // // Change img be SVG representation
+    // var theImage = canvas.toDataURL('image/png');
+    // //$('#svg-img').attr('src', theImage);
+//     
+    // document.write('<img src="'+theImage+'"/>');
+	
+	
+	
+	
+	
+	var html2 = d3.select("svg")
+      .attr("version", 1.1)
+      .attr("xmlns", "http://www.w3.org/2000/svg")
+      .node().parentNode.innerHTML;
+
+  d3.select("#export-link")
+      .attr("title", "file.svg")
+      .attr("target", "_blank")
+      .attr("href-lang", "image/svg+xml")
+      .attr("href", "data:image/svg+xml;base64,\n" + btoa(html2))
+      .text("Download");
 
 
-// function click(d) {
-    // path.transition()
-      // .duration(750)
-      // .attrTween("d", arcTween(d));
-  // }
-
-// Interpolate the scales!
-function arcTween(d) {
-  var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
-      yd = d3.interpolate(y.domain(), [d.y, 1]),
-      yr = d3.interpolate(y.range(), [d.y ? 20 : 0, r]);
-  return function(d, i) {
-    return i
-        ? function(t) { return arc(d); }
-        : function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
-  };
 }
+
+
+
+
+
+
 
 /*
  * Icicle
@@ -445,9 +187,7 @@ function initIcicle(){
 
 function updateIcicle(){
 	
-		var json = getTree0();
-		
-		
+		var json = lattice.getTree();
        	
        	vis.data([json]);
        
@@ -550,7 +290,7 @@ function initTree(){
   .append("svg:g")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
     
-  root = getTree0();//json;
+  root = lattice.getTree();//json;
   root.x0 = h / 2;
   root.y0 = 0;
   
@@ -992,176 +732,3 @@ vis.append("rect")
   }
 
 }
-
-/*
-*
-* Scatter Plot
-*
-*/
-
-function init_scatter_plot(){
-
-//initializing environement
-
-var m = [20, 120, 20, 120]; // margins
-var matrix=[];
-var n=0;
-var attr_list=[];
-
-
-for (a in context.attributeNames) {
-for(i=0;i<context.attributeNames[a].length;i++){
-if ( (context.attributeNames[a])[i][0]=="yes") attr_list.push( a.toString());
-else
-if ( (context.attributeNames[a])[i][0]=="no") continue;
-else
-attr_list.push( a.toString()+"-"+(context.attributeNames[a])[i][0]);
-}
-}
-n=attr_list.length;
-
-//get association rules
-
-var myjson_text='[{"confidence":0.75,"conclusion_supp":6,"premise_supp":8,"premise":[],"conclusion":["US-citizen"]},{"confidence":0.375,"conclusion_supp":3,"premise_supp":8,"premise":[],"conclusion":["age-30to<40"]},{"confidence":0.375,"conclusion_supp":3,"premise_supp":8,"premise":[],"conclusion":["employment-Managerial"]},{"confidence":0.25,"conclusion_supp":2,"premise_supp":8,"premise":[],"conclusion":["employment-Clerical"]},{"confidence":0.5,"conclusion_supp":4,"premise_supp":8,"premise":[],"conclusion":["sex-Female"]},{"confidence":0.5,"conclusion_supp":3,"premise_supp":6,"premise":["US-citizen"],"conclusion":["education-Bachelors"]},{"confidence":0.5,"conclusion_supp":3,"premise_supp":6,"premise":["US-citizen"],"conclusion":["age->=50"]},{"confidence":0.6666666666666666,"conclusion_supp":4,"premise_supp":6,"premise":["US-citizen"],"conclusion":["sex-Male"]},{"confidence":0.6666666666666666,"conclusion_supp":2,"premise_supp":3,"premise":["age-30to<40"],"conclusion":["US-citizen","sex-Male"]},{"confidence":0.3333333333333333,"conclusion_supp":1,"premise_supp":3,"premise":["age-30to<40"],"conclusion":["employment-Managerial","education-Masters","sex-Female"]},{"confidence":0.6666666666666666,"conclusion_supp":2,"premise_supp":3,"premise":["employment-Managerial"],"conclusion":["sex-Female"]},{"confidence":0.6666666666666666,"conclusion_supp":2,"premise_supp":3,"premise":["employment-Managerial"],"conclusion":["US-citizen","age->=50"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["employment-Clerical"],"conclusion":["education-Bachelors","US-citizen","sex-Male","age-30to<40"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["employment-Clerical"],"conclusion":["age-40to<50","sex-Female"]},{"confidence":0.5,"conclusion_supp":2,"premise_supp":4,"premise":["sex-Female"],"conclusion":["US-citizen","education-Bachelors"]},{"confidence":0.5,"conclusion_supp":2,"premise_supp":4,"premise":["sex-Female"],"conclusion":["employment-Managerial"]},{"confidence":0.25,"conclusion_supp":1,"premise_supp":4,"premise":["sex-Female"],"conclusion":["employment-Clerical","age-40to<50"]},{"confidence":0.3333333333333333,"conclusion_supp":1,"premise_supp":3,"premise":["US-citizen","education-Bachelors"],"conclusion":["sex-Male","employment-Clerical","age-30to<40"]},{"confidence":0.6666666666666666,"conclusion_supp":2,"premise_supp":3,"premise":["US-citizen","education-Bachelors"],"conclusion":["sex-Female"]},{"confidence":0.6666666666666666,"conclusion_supp":2,"premise_supp":3,"premise":["US-citizen","age->=50"],"conclusion":["employment-Managerial"]},{"confidence":0.6666666666666666,"conclusion_supp":2,"premise_supp":3,"premise":["US-citizen","age->=50"],"conclusion":["sex-Male"]},{"confidence":0.5,"conclusion_supp":2,"premise_supp":4,"premise":["US-citizen","sex-Male"],"conclusion":["age-30to<40"]},{"confidence":0.5,"conclusion_supp":2,"premise_supp":4,"premise":["US-citizen","sex-Male"],"conclusion":["employment-Unskilled"]},{"confidence":0.5,"conclusion_supp":2,"premise_supp":4,"premise":["US-citizen","sex-Male"],"conclusion":["age->=50"]},{"confidence":0.5,"conclusion_supp":2,"premise_supp":4,"premise":["US-citizen","sex-Male"],"conclusion":["education-HS-grad"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Male","age-30to<40"],"conclusion":["education-Bachelors","employment-Clerical"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Male","age-30to<40"],"conclusion":["education-HS-grad","employment-Unskilled"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["sex-Female","employment-Managerial"],"conclusion":["education-Bachelors","US-citizen","age->=50"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["sex-Female","employment-Managerial"],"conclusion":["age-30to<40","education-Masters"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","employment-Managerial"],"conclusion":["education-Bachelors","sex-Female"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","employment-Managerial"],"conclusion":["education-HS-grad","sex-Male"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Female","education-Bachelors"],"conclusion":["age->=50","employment-Managerial"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Female","education-Bachelors"],"conclusion":["employment-Professional","age-<30"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["sex-Female","employment-Managerial"],"conclusion":["education-Bachelors","US-citizen","age->=50"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["sex-Female","employment-Managerial"],"conclusion":["age-30to<40","education-Masters"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Female","education-Bachelors"],"conclusion":["age->=50","employment-Managerial"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Female","education-Bachelors"],"conclusion":["employment-Professional","age-<30"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","employment-Managerial"],"conclusion":["education-Bachelors","sex-Female"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","employment-Managerial"],"conclusion":["education-HS-grad","sex-Male"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","sex-Male"],"conclusion":["employment-Unskilled","education-11th"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","sex-Male"],"conclusion":["education-HS-grad","employment-Managerial"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Male","age-30to<40"],"conclusion":["education-Bachelors","employment-Clerical"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Male","age-30to<40"],"conclusion":["education-HS-grad","employment-Unskilled"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Male","employment-Unskilled"],"conclusion":["education-HS-grad","age-30to<40"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","sex-Male","employment-Unskilled"],"conclusion":["education-11th","age->=50"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","sex-Male"],"conclusion":["employment-Unskilled","education-11th"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["US-citizen","age->=50","sex-Male"],"conclusion":["education-HS-grad","employment-Managerial"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["education-HS-grad","US-citizen","sex-Male"],"conclusion":["employment-Unskilled","age-30to<40"]},{"confidence":0.5,"conclusion_supp":1,"premise_supp":2,"premise":["education-HS-grad","US-citizen","sex-Male"],"conclusion":["age->=50","employment-Managerial"]}]';
-var myobject=eval('('+myjson_text+')');
-
-//initialize scatter plot
-
-var size = 150,
-        padding = 19.5,
-        n = myobject.length;
-
-//Position scales
-var traits=['confidence','conclusion_supp','premise_supp','lift'];
-
-var x = {}, y = {};
-myobject.forEach(function(trait){trait['lift']=trait['confidence']/trait['conclusion_supp'];});
-
-var Ololobject = {'traits':traits};
-
-Ololobject['values'] = myobject;
-
-  Ololobject.traits.forEach(function(trait) {
-    var value = function(d) { return d[trait]; },
-        domain = [d3.min(Ololobject.values, value), d3.max(Ololobject.values, value)],
-        range = [padding / 2, size - padding / 2];
-    x[trait] = d3.scale.linear()
-    .domain(domain)
-    .range(range);
-
-    y[trait] = d3.scale.linear()
-    .domain(domain)
-    .range(range.slice().reverse());
-  });
-
-  // Axes.
-  var axis = d3.svg.axis()
-      .ticks(5)
-      .tickSize(size * traits.length);
-
-  // Brush.
-  var brush = d3.svg.brush()
-  
-      .on("brushstart", brushstart)
-      .on("brush", brush)
-      .on("brushend", brushend);
-  // Root panel.
-  var svg = d3.select("#chart").append("svg")
-      .attr("width", size * traits.length + padding)
-      .attr("height", size * traits.length + padding);
-
-  // X-axis.
-  svg.selectAll("g.x.axis")
-      .data(Ololobject.traits)
-    .enter().append("g")
-      .attr("class", "x axis")
-      .attr("transform", function(d, i) { return "translate(" + i * size + ",0)"; })
-      .each(function(d) { d3.select(this).call(axis.scale(x[d]).orient("bottom")); });
-
-  // Y-axis.
-  svg.selectAll("g.y.axis")
-      .data(Ololobject.traits)
-    .enter().append("g")
-      .attr("class", "y axis")
-      .attr("transform", function(d, i) { return "translate(0," + i * size + ")"; })
-      .each(function(d) { d3.select(this).call(axis.scale(y[d]).orient("right")); });
-
-  // Cell and plot.
-  var cell = svg.selectAll("g.cell")
-      .data(cross(Ololobject.traits, Ololobject.traits))
-    .enter().append("g")
-      .attr("class", "cell")
-      .attr("transform", function(d) { return "translate(" + d.i * size + "," + d.j * size + ")"; })
-      .each(plot);
-
-  // Titles for the diagonal.
-  cell.filter(function(d) { return d.i == d.j; }).append("text")
-      .attr("x", padding)
-      .attr("y", padding)
-      .attr("dy", ".71em")
-      .text(function(d) { return d.x; });
-
-  function plot(p) {
-    var cell = d3.select(this);
-
-    // Plot frame.
-    cell.append("rect")
-        .attr("class", "frame")
-        .attr("x", padding / 2)
-        .attr("y", padding / 2)
-        .attr("width", size - padding)
-        .attr("height", size - padding);
-
-    // Plot dot
-    cell.selectAll("circle")
-        .data(Ololobject.values)
-      .enter().append("circle")
-        .attr("class", function(d) { return 1; })
-        .attr("cx", function(d) { return x[p.x](d[p.x]); })
-        .attr("cy", function(d) { return y[p.y](d[p.y]); })
-        .attr("r",function(d){return 3;})
-        .on("mouseover", Matrix_View_MouseOver)
-        .on("mouseout", Matrix_View_MouseOut);
-
-    // Plot brush.
-    cell.call(brush.x(x[p.x]).y(y[p.y]));
-  d3.selectAll("rect.background").data([]).exit().remove();
-  }
-
-  // Clear the previously-active brush, if any.
-  function brushstart(p) {
-    if (brush.data !== p) {
-      cell.call(brush.clear());
-      brush.x(x[p.x]).y(y[p.y]).data = p;
-    }
- // d3.select("g.brush").select(".extent").style("display", "block");
-  }
-
-  // Highlight the selected circles.
-  function brush(p) {
-    var e = brush.extent();
-    svg.selectAll("circle").attr("class", function(d) {
-      return e[0][0] <= d[p.x] && d[p.x] <= e[1][0]
-          && e[0][1] <= d[p.y] && d[p.y] <= e[1][1]
-          ? 1 : "spl";
-    });
-  }
-
-  // If the brush is empty, select all circles.
-  function brushend() {
-    if (brush.empty()) svg.selectAll("circle").attr("class", function(d) {
-      return 1;
-    });
-    d3.select("g.brush").style("pointer-events","all").selectAll(".resize").style("display", "none");
-        d3.select("g.brush").select(".extent").style("display", "none");
-        d3.select("body").style("cursor", null);
-    d3.selectAll("rect.background").data([]).exit().remove();
-  }
-
-  function cross(a, b) {
-    var c = [], n = a.length, m = b.length, i, j;
-    for (i = -1; ++i < n;) for (j = -1; ++j < m;) c.push({x: a[i], i: i, y: b[j], j: j});
-    return c;
-  }
-  
- }

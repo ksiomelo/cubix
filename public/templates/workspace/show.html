@@ -1,0 +1,31 @@
+
+
+{% extends "shared/base.html" %}
+
+{% block js %}
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery-1.7.2.min.js"></script>
+<script type="text/javascript">
+	$(function() {
+	
+		$('ul.nav > li.active').removeClass("active");
+		$('li#workspace').addClass("active"); 
+		
+	});
+</script>
+{% endblock js %}
+
+
+{% block content %}
+
+
+    <div class="span8">
+		<h3>Workspace {{ workspace.title }}</h3>
+		
+		       {% include 'context/_list.html' %}
+		   
+	</div>
+	
+	
+
+
+{% endblock content %}

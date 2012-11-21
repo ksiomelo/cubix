@@ -3,12 +3,48 @@
 {% load util_tags %}
 
 {% block js %}
-<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery-1.7.2.min.js"></script>
+<link type="text/css" href="{{STATIC_URL}}styles/jquery-ui-1.8.20.custom.css" rel="stylesheet" />
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery-ui-1.8.20.custom.min.js"></script>
+
 <script type="text/javascript">
 	$(function() {
 	
 		$('ul.nav > li.active').removeClass("active");
 		$('li#context').addClass("active"); 
+		$('#n_concepts').popover({placement: "bottom"});
+		$('a.filter-attr').click(filterValues);
+		
+		$('input.disable-attr').click(function(e){
+			disableAttr(e.target.value, !e.target.checked);
+			$(e.target).closest('tr').toggleClass("disabled-row");
+		}); 
+		
+		$('a.attr-link').click(function(e){
+			$('h3.attr-header').html(e.target.name);
+			
+			
+			//var attr_list = $('a[name^="'+e.target.name+ '_"]');
+			var valueNames = $('#'+e.target.name+'_values').text();
+			
+			$('#values_list').html(valueNames);
+			
+		    $('#attr-modal').modal({
+				keyboard: true,
+				show: true,
+			});
+		});
+		
+		
+		$( "#slider-similarity" ).slider({
+			min: 0,
+			max: 100,
+			value: [ 50 ],
+			slide: function( event, ui ) {
+				$( "#similarity_value" ).val( ui.value + "%");
+				//changeNodeVisibility("stability", ui.value, null, false);
+			}
+		});
+		
 		
 		// activate dropdown
 		
@@ -32,48 +68,181 @@
 		
 		
 	});
+	
+	
+	function updateNConcepts(){
+		$.getJSON('/api/v1/context/n_concepts', { csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]')[0].value, context_id: "{{context_file.context.id}}" }, function(data) {
+		  alert(data.number_of_concepts);
+		});
+	}
+	
+	
+	function disableAttr(attrName, disableit){
+		// updateNConcepts();
+		//updateNConcepts();
+		$.post('/'+WORKSPACE_SLUG+'/context/disable_attr', { csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]')[0].value, attribute_name: attrName, disable: disableit }, function(data) {
+		  //alert(data);
+		 
+		});
+	}
+	
+	
+	function filterValues(e){
+		
+		var attrName = $('h3.attr-header').text();
+		var valueNames = $('#'+attrName+'_values').text();
+		var valueArray = valueNames.split(',');
+		var query = $('input[name=query-attr]').val();
+		var keep = '';
+		for (var i=0; i < valueArray.length; i++) {
+		  
+		  var curVal = $.trim(valueArray[i]);
+		  if ((new RegExp(query)).test(curVal)) {
+		  	keep += curVal + ',';
+		  }
+		};
+		
+		$('#'+attrName+'_values').html(keep);
+		
+
+	}
+	
 </script>
 {% endblock js %}
 
 
 {% block content %}
+<div id="cluster-modal" class="modal hide fade" style="width: 640px">
+	<form action="/{{workspace_slug}}/context/cluster" method="POST" >
+		{% csrf_token %}
+        <div class="modal-header">
+          <a href="#" class="close" data-dismiss="modal" aria-hidden="true">&times;</a>
+          <h3>Cluster</h3>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="similarity_value" name="similarity_value"  style="border:0; color:#f6931f; font-weight:bold; width: 70px; float:left" value="50%" />
+			<div id="slider-similarity" style="width: 100px; margin: 8px 40px 8px 20px; float: left"></div>
+          	<select id="cluster_type" name="cluster_type">
+          		<option value="attr">Attributes</option>
+          		<option value="obj">Objects</option>
+          	</select>
+        </div>
+        <div class="modal-footer">
+          <input type="submit" class="btn primary compare" value="OK">
+          
+          <!--
+          <a href="#" class="btn secondary">Secondary</a>
+          -->
+        </div>
+   </form>
+</div>
 
+
+
+<div id="attr-modal" class="modal hide fade" style="width: 640px">
+	<form>
+		{% csrf_token %}
+        <div class="modal-header">
+          <a href="#" class="close"  data-dismiss="modal" aria-hidden="true">&times;</a>
+          <h3 class="attr-header"></h3>
+        </div>
+        <div class="modal-body">
+        	<form>
+	        	<label> Filter values: </label>
+	          	<input type="text" name="query-attr" /><a href="#" class="btn btn-primary filter-attr">OK</a>
+          	</form>
+          		<div id="values_list" style="float:left">
+          			
+          		</div>
+          		<div id="objects_list" style="float:left">
+          			
+          		</div>
+        </div>
+        <div class="modal-footer">
+        	<a href="#" class="btn btn-danger" style="float: left;">Remove attribute</a>
+          	<a href="#" class="btn" data-dismiss="modal" aria-hidden="true">Cancel</a>
+          	<input type="submit" class="btn btn-primary compare" value="Save">
+          
+          <!--
+          <a href="#" class="btn secondary">Secondary</a>
+          -->
+        </div>
+   </form>
+</div>
 
    
     <div class="row">
 	
 	<div>
 		
-		<h3>Context: {{context_file.title}} </h3>
-		<span>{{context_file.cxtfile.name}}</span>
 		
+		 <div class="row">
+			 <div class="span6">
+				<h3>Context: {{context_file.title}} </h3>
+				<span>{{context_file.cxtfile.filename}}</span>
+			</div>
+			 <div class="span6" style="text-align: right;">
+			 	<a href="#">Translate context</a>
+			 	<a href="#" style="margin-left: 20px" id="n_concepts" 
+			 	class="btn large primary" rel="popover" 
+			 	data-content="Concept lattices become quickly cluttered if the number of concepts exceeds a few dozens.
+			 	 Make sure you have filtered the attributes and values of interest and eliminated 'noise' using the clustering option below." 
+			 	data-original-title="Number of Concepts">Number of concepts: <strong>1245</strong></a>
+			 </div>
+		 </div>
 		
 		<table class="table table-bordered">
 			<tr>
+			<th></th>
 			<th>Attribute</th>
 			<th>Values</th>
-			<th>Type</th>
 			<th>Objects</th>
 			</tr>
 			
 			
 			{% for tkey,value in attr_values.items %}
-			<tr>
-			<td>{{tkey}}</td>
-			<td>
-					{{value|commify}}
-			</td>
-			<td></td>
-			<td>
+			
+				{% if tkey in context_file.disabled_attrs %}
+				<tr class="disabled-row">
+				{% else %}	
+				<tr>	
+				{% endif %}
 				
-					{{attr_objects|get_item:tkey|commify}}
-			</td>
-			</tr>
+				<td>
+					
+				{% if tkey in context_file.disabled_attrs %}
+				<input type="checkbox" name="disable_{{tkey}}" value="{{tkey}}" class="disable-attr">
+				{% else %}	
+				<input type="checkbox" name="disable_{{tkey}}" value="{{tkey}}" class="disable-attr" checked="TRUE">	
+				{% endif %}
+					
+					
+					
+				</td>
+				<td><a href="#" class="attr-link" name="{{tkey}}">{{tkey}}</a></td>
+				
+				<td id="{{tkey}}_values">
+					
+					{% for val in value %}
+					<a href="#" name="{{tkey}}_{{val}}">{{val}} </a>,
+					{% endfor %}
+					
+						
+				</td>
+				<td>
+					
+						{{attr_objects|get_item:tkey|commify}}
+				</td>
+				</tr>
 			{% endfor %}
 			
 		</table>
 		
-		<a class="btn btn-large btn-primary" id="gen_lattice_btn" href="/{{workspace_slug}}/fca/generate/">Generate Lattice</a>
+		<a class="btn btn-primary" id="gen_lattice_btn" href="/{{workspace_slug}}/fca/generate/">Generate Lattice</a>
+		
+		<a class="btn btn-primary" id="cluster_btn" href="#cluster-modal" data-toggle="modal" data-backdrop="true" data-keyboard="true">Cluster</a>
+		
+						
 		
 	</div>
 	

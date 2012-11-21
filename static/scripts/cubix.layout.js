@@ -1,16 +1,31 @@
 
+
+
+var followScroll = true;			// visualisation follows scroll
+
 // visualisations options for lattice
 var latticeVisOpts = [
 	{ 
 		name: "Hasse diagram",
+		val: "dagre",
+		tooltip: "A layered graph diagram"
+	}, 
+	{ 
+		name: "Force Directed graph",
 		val: "lattice",
 		tooltip: "A Hasse diagram with dynamic arrangement"
 	}, 
+	
 	// { 
-		// name: "Static Lattice",
-		// val: "static-lattice",
-		// tooltip: "A static Hasse diagram"
+		// name: "Parallel sets",
+		// val: "parsets",
+		// tooltip: "Parallel sets"
 	// }, 
+	{ 
+		name: "Sankey",
+		val: "sankey",
+		tooltip: "Snakey"
+	},
 	{ 
 		name: "Tree",
 		val: "tree",
@@ -46,30 +61,59 @@ var ARVisOpts = [
 		val: "radiagram",
 		tooltip: "Association rules interdependence"
 	}, 
-	{ 
-		name: "Grouped circles",
-		val: "gg_ar_plot",
-		tooltip: "Grouped graph of association rules"
-	}, 
+	// { 
+		// name: "Grouped circles",
+		// val: "gg_ar_plot",
+		// tooltip: "Grouped graph of association rules"
+	// }, 
 ];
 
 
 // size and color options 
 // when a metric is calculated the corresponding option becomes available
-var colorAndSizeOpts = [
+var sizeOpts = [
 	{ 
 		name: "Default",
 		val: "default",
 		tooltip: "Default option"
-	}, 
+	}
+];
+
+var colorOpts = [
 	{ 
-		name: "Support", // support is the only metric pre-calculated
-		val: "support",
-		tooltip: "Support"
-	}, 
+		name: "Default",
+		val: "default",
+		tooltip: "Default option"
+	},
+	{ 
+		name: "IDs",
+		val: "ids",
+		tooltip: "Assign colors according to node id, making easier to identify the same concept across the visualisations"
+	},
+	
 ];
 
 
+var LabelOpts = [
+	{ 
+		name: "Multi-label",
+		val: "multi-label",
+		tooltip: "Labels are not repeated down in the hierarchy"
+	},
+	{ 
+		name: "Repetitive",
+		val: "repetitive",
+		tooltip: "Labels are repeated for each node"
+	}
+];
+
+var edgeOpts = [
+	{ 
+		name: "Default",
+		val: "default",
+		tooltip: "Default edge"
+	}
+];
 
 
 /*
@@ -98,8 +142,10 @@ $(function() {
 	
 	 $(window).scroll(function() {
 	 	
+	 	if (!followScroll) return;
+	 	
 	 	// association rules
-	 	if (currentVis == "matrixview" || currentVis == "radiagram" || currentVis == "gg_ar_plot" ) {
+	 	if (currentVis == "matrixview" /*|| currentVis == "radiagram" || currentVis == "gg_ar_plot" */) {
 	 		scroller_object.css( { position: "absolute", top: "128px" } );
 	 		return;
 	 	}
@@ -121,6 +167,36 @@ $(function() {
 				scroller_object.css( { position: "absolute", top: "128px" } );
 			}
     });
+    
+    /**
+	 * TOOLTIPS
+	 */
+	
+	// $('option.explain').tooltip({
+		// title: 'data-tooltip',
+		// placement: "right",
+		// delay: 600
+	// });
+	$('body').tooltip({
+    	selector: '[rel=tooltip]',
+    	delay: { show: 300, hide: 100 }
+	});
+
+	// $('li.explain').tooltip({
+		// title: 'data-tooltip',
+		// placement: "right",
+		// delay: 800
+	// });
+	// $('span.explain').tooltip({
+		// live: true,
+		// title: 'data-tooltip',
+		// placement: "top",
+		// offset: 10,
+		// delay: 600
+	// });
+	
+	
+	
  	
  	
  	/*
@@ -142,12 +218,8 @@ $(function() {
 	 	 $(".toolbarPanel").hide();
 	 	 $("#metricPanel").show();
 	 });
-	 
-	 $('li.explain').tooltip({
-		title: 'data-tooltip',
-		placement: "right",
-		delay: 800
-	});
+	
+	
 	
 		// Lattice / AR toggle
 	$("input:radio[name='toggle']").change(function(){
@@ -162,13 +234,15 @@ $(function() {
 			fetchAssociationRules(initARView);
 			currentVis="matrixview";
 			buildOptionsForSelect(ARVisOpts, "select-vis", "matrixview");
+			disableDrawingOptionsForAR(true);
 		
 		} else { // lattice
 			$('#dashboard_ar').hide();
 			$('#toolbar').show();
 			$('#dashboard_lattice').show();
-			changeVis('lattice'); // TODO back to the previous selected vis
+			changeVis('dagre'); // TODO back to the previous selected vis
 			buildOptionsForSelect(latticeVisOpts, "select-vis", "matrix");
+			disableDrawingOptionsForAR(false);
 		}
 		
 	});
@@ -176,52 +250,41 @@ $(function() {
 	
 	
 	// TOOLBAR - VISUALISATIONS
-	buildOptionsForSelect(latticeVisOpts, "select-vis", "lattice");
+	buildOptionsForSelect(latticeVisOpts, "select-vis", "dagre");
+	
+	// EDGES OPTIONS
+	buildOptionsForSelect(edgeOpts,"select-edge", "default");
 	
 	// TOOLBAR COLOR AND SIZE OPTIONS
-	buildOptionsForSelect(colorAndSizeOpts,"select-size", "default");
-	buildOptionsForSelect(colorAndSizeOpts,"select-color", "default");
+	buildOptionsForSelect(sizeOpts,"select-size", "default");
+	buildOptionsForSelect(colorOpts,"select-color", "default");
 	
+	// LABEL OPTIONS
+	buildOptionsForSelect(LabelOpts,"select-label", "multi-label");
 
 	// TOOLBAR - METRICS   
- 	$( "#slider-supp" ).slider({
-			range: true,
-			min: 0,
-			max: 100,
-			values: [ 30, 90 ],
-			slide: function( event, ui ) {
-				$( "#support" ).val( ui.values[ 0 ] + "% - " + ui.values[ 1 ] + '%' );
-				changeNodeVisibility("support", ui.values[ 0 ], ui.values[ 1 ], false);
-				
-			}
-		});
+	metrics.addLinkListener(addLinkMetricComponentsCallback);
+ 	metrics.addListener(addMetricComponentsCallback);
+	metrics.addListener(appendMetricFilterCallback);
 	
-	$( "#slider-stab" ).slider({
-			min: 0,
-			max: 100,
-			value: [ 50 ],
-			slide: function( event, ui ) {
-				$( "#stability" ).val( ui.value + "%");
-				changeNodeVisibility("stability", ui.value, null, false);
-				
-			}
-		});
-		
-		
-	$( "#slider-conf" ).slider({
-			min: 0,
-			max: 100,
-			value: [ 50 ],
-			slide: function( event, ui ) {
-				$( "#confidence" ).val( ui.value + "%");
-				changeNodeVisibility("stability", ui.value, null, false);
-				
-			}
-	});
 	
 	// TOOLBAR - drawing
+	$("input[name='label-for-attr']").change(function(){
+		displayAttrLabel = $(this).is(':checked');
+		updateVis();
+	});
+	$("input[name='label-for-obj']").change(function(){
+		displayObjLabel = $(this).is(':checked');
+		updateVis();
+	});
+	
+	
 	$( "#select-label" ).change(function(){
-		changeLabel(parseInt($(this).attr('value')));
+		changeLabel($(this).attr('value'));
+	});
+	
+	$( "#select-edge" ).change(function(){
+		changeEdgeThickness($(this).attr('value'));
 	});
 	
  	$( "#select-size" ).change(function(){
@@ -236,23 +299,14 @@ $(function() {
 		changeVis($(this).attr('value'));
 	});
 	
-	$('option.explain').tooltip({
-		title: 'data-tooltip',
-		placement: "right",
-		delay: 600
-	});
-	
-	$('span.explain').tooltip({
-		live: true,
-		title: 'data-tooltip',
-		placement: "top",
-		offset: 10,
-		delay: 600
-	});
 	
 	$( "input[name='highlight_path']" ).change( function(){
 		highlightPath = $(this).is(':checked');
 	});
+ 
+ 	// $( ".tree-transform" ).click(function(){
+// 		
+	// });
  
  
 	/*
@@ -325,6 +379,25 @@ $(function() {
 	/*
 	 * Interface components
 	 */
+		// $( "#slider-zoom" ).slider({
+			// value:100,
+			// min: 10,
+			// max: 200,
+			// step: 10,
+			// slide: function( event, ui ) {
+// 				
+				// zoomInOut(ui.value);
+// 				
+				// $( "#zoom_level" ).val( ui.value + "%");
+// 				
+				// //inflateDiv(ui.value);
+			// }
+		// });
+// 		
+		// $( "#zoom_level" ).val( "100%");	
+		$( "#zoom_level" ).click( function(){
+			resetZoom();
+		});	
 	
 		$( "#slider-layout" ).slider({
 			value:2,
@@ -357,19 +430,28 @@ $(function() {
 		
 		// hover box
 		$("#hoverbox").hover(
-		  function () {
-		  	mouseOverHoverBox = true;
-		  	//hoverbox.style("display", "block");
-			//hoverbox.style("opacity", 1);
-		  }, 
-		  function () {
-			mouseOverHoverBox = false;
-				// hide hoverbox
-			hoverbox.transition()
-		  		.duration(200)
-		  		.delay(800)
-	      		.style("opacity", 0);
-			  }
+			  function () {
+			  	mouseOverHoverBox = true;
+			  	//hoverbox.style("display", "block");
+				//hoverbox.style("opacity", 1);
+			  }, 
+		  	function () {
+				mouseOverHoverBox = false;
+				
+				setTimeout(function(){
+					if(!mouseOverHoverBox){
+						// hide hoverbox
+						hoverbox.transition()
+				  		.duration(200)
+				  		//.delay(1800)
+			      		.style("opacity", 0)
+			      		.style("display", "none");
+					};
+					
+				}, 1800);
+				
+		      		
+			}
 		);
 
 		
@@ -425,14 +507,7 @@ $(function() {
 		 
 		
 		
-		// calculate stability (test)
-		 $("#calc-stab").change(function(){
-			//$.get("/lattice/compute",  { metric: "stability"}, function(data) {
-		    //    alert(data);
-		   // });
-		   calculate("stability");
-		   
-		 });
+		
 		 
 		 // link clear selection
 		 $("a.clear-sel").click(function(){
@@ -444,11 +519,6 @@ $(function() {
 		 	resetFilters();
 		 });
 		
-		// Transformations
-		$("a.transf-tree").click(function(){
-		 	//getTree();
-		 	treeize();
-		 });
 		
 		
 		// DASHBOARD
@@ -458,7 +528,7 @@ $(function() {
 		 });
 		 
     	
-    	createDistributionChart();
+    	initDashboard();
 		 
 		
 		
@@ -508,6 +578,13 @@ function inflateDiv(layoutType){
 		//$("#showFiltersPanel").show("normal").animate({height:"20px", opacity:1}, 200);
 		$("#chart").animate({width:"1040px"}, 400 );
 		
+		followScroll = false;
+		
+		w = 1040;
+		h = 1040;//$("#chart").height();
+		
+		redrawCurVis();
+		
 		// var aspect = w/h;
 		// var chart = $("#chart");
 		// chart.attr("width", 1040);
@@ -516,10 +593,19 @@ function inflateDiv(layoutType){
 
 
 	} else {
+		
+		followScroll = true;
+		
+		w = DEFAULT_WIDTH;
+		h = $("#chart").height();
+		
+		redrawCurVis();
+		
 		$("#chart").animate({width:"570px"}, 400 );
 		$("#columns").show();
 		$("#columns").animate({width:"570px", opacity:1}, 400 );
 		
+
 		//$("#showFiltersPanel").show("normal").animate({height:"20px", opacity:1}, 200);
 		
 	}	
@@ -611,8 +697,7 @@ function buildOptionsForSelect(options, selectId, defaultVal) {
     var $option;
 
 	for (var i=0; i < options.length; i++) {
-	  
-	   $option = $('<option value="' + options[i].val + '" class="explain"  data-tooltip="'+options[i].tooltip+'">' + options[i].name + '</option>');
+	   $option = $('<option value="' + options[i].val + '" rel="tooltip"  data-trigger="hover" data-placement="right" data-title="'+options[i].tooltip+'">' + options[i].name + '</option>');
         if (options[i].val == defaultVal) {
             $option.attr('selected', 'selected');
         }
@@ -620,6 +705,14 @@ function buildOptionsForSelect(options, selectId, defaultVal) {
 	  
 	};
     
+}
+
+function appendOptionForSelect(name, val, tooltip, selectId) {
+    
+    var $option = $('<option value="' + val + '" rel="tooltip"  data-trigger="hover" data-placement="right" data-title="'+tooltip+'">' + name + '</option>');
+    
+    $('#'+selectId).append($option);
+	  
 }
 
 
@@ -683,10 +776,184 @@ function updateEntityList(){
       
 }
 
-// Updates all dashboards with current data
-function updateLayout(){
+
+/**
+ * Filter by Metric
+ */
+
+function addMetricComponentsCallback(metric, metricHumanName, scores){
+	
+	var tooltip= "Nodes are drawn according to this metric value";
+	
+	appendOptionForSelect(metricHumanName, metric, tooltip, "select-label");
+	appendOptionForSelect(metricHumanName, metric, tooltip, "select-size");
+}
+
+function addLinkMetricComponentsCallback(metric, metricHumanName, scores){
+	
+	var tooltip= "Edge thickness are drawn according to this metric value";
+	
+	appendOptionForSelect(metricHumanName, metric, tooltip, "select-edge");
+}
+
+function appendMetricFilterCallback(metric, metricHumanName, scores){
+	
+	
+	
+	var label = $('<label for="'+metric+'" style="text-align: left; ">'+metricHumanName+':</label>');
+	var input = $('<input type="text" id="'+metric+'-value" class="metric-value" name="'+metricHumanName+'"  />');
+	var sliderMetric = $('<div id="slider-'+metric+'" class="slider"></div>');
+	
+	
+	var containermetric = $("<div></div>");
+	
+	$(containermetric).append(label);
+	$(containermetric).append(input);
+	$(containermetric).append(sliderMetric);
+	
+	$("#metric-filter-content").append(containermetric);
+	
+	if (metric == 'esupport') { // range selection for support
+			$( "#slider-"+metric ).slider({
+			range: true,
+			min: 0,
+			max: 100,
+			values: [ 0, 100 ],
+			slide: function( event, ui ) {
+				$( "#"+metric+"-value" ).val( ui.values[ 0 ] + "% - " + ui.values[ 1 ] + '%' );
+				filterConceptsByMetric(metric, ui.values[ 0 ], ui.values[ 1 ]);
+			}
+		});
+	
+		
+	} else { 
+		$( "#slider-"+metric).slider({
+				min: 0,
+				max: 100,
+				value: [ 0 ],
+				slide: function( event, ui ) {
+					$( "#"+metric+"-value" ).val( ui.value + "%");
+					filterConceptsByMetric(metric, ui.value, null);
+				}
+		});
+	}
 	
 }
 
 
-   
+
+
+
+/*
+ * Utils
+ */
+
+// Hoverbox
+
+function wrapperElementsInList(ul,array){
+	
+	ul.empty();
+	//var ul = $('<ul>').appendTo('body');
+	$(array).each(function(index, item) {
+	    ul.append(
+	        $(document.createElement('li')).text(item)
+	    );
+	});
+}
+
+/*
+ * Add metrics to the hover box
+ */
+function wrapperMetricsinTable(containerId, metric_values) { 
+	$("#"+containerId).html("");
+	
+	var table = $('<table></table>');
+	var table = $('<table></table>');
+	var table = $('<table></table>');
+	
+	var content = "<table><tr><th>Metric</th><th>Value</th></tr>";
+	
+	for(var metricName in metric_values){
+	    content += '<tr><td>' + metrics.getHumanName(metricName) + '</td><td>' + Math.round(metric_values[metricName]*100) + '%</td></tr>';
+	}
+	content += "</table>"
+	
+	$("#"+containerId).append(content);
+}
+
+
+function showHoverbox(d){
+	mouseOverHoverBox= true;
+	
+	// show hoverbox
+		hoverbox.style("display", "block");
+		//hoverbox.style("opacity", 1);
+		hoverbox.transition()
+		  .delay(800)
+	      .duration(300)
+	      .style("opacity", 1);
+	      
+	    
+	    hoverbox
+	      .style("left", (d3.event.pageX + 20) + "px")
+	      .style("top", (d3.event.pageY - 20) + "px");
+	     
+	    $(".attr-count-concept").text(d.intent.length);
+	    $(".obj-count-concept").text(d.extent.length);
+	    
+	    
+		wrapperElementsInList($('ul.hb_attr_list'), d.intent)
+		wrapperElementsInList($('ul.hb_obj_list'), d.extent)
+		
+		wrapperMetricsinTable("metrics-table", metrics.getScores(d.id));
+		
+}
+
+
+function hideHoverbox(){
+	
+	mouseOverHoverBox= false;
+	
+	setTimeout(function(){
+		if(!mouseOverHoverBox){
+			// hide hoverbox
+			hoverbox.transition()
+	  		.duration(200)
+	  		//.delay(1800)
+      		.style("opacity", 0)
+      		.style("display", "none");
+		};
+		
+	}, 1800);
+}
+
+
+
+/*
+ * Node mouse events 
+ * 
+ */
+function nodeMouseOver(d){
+		
+	showHoverbox(d);
+	
+	// Dashboard
+	updateDistributionChart(d);
+	
+}
+
+function nodeMouseOut(d){
+	
+	hideHoverbox();
+	
+}
+
+
+function nodeClick(d){ // select node	
+	
+	clearSearch(); // if I made a click node to add/remove selection, the search is no longer valid
+	updateSelectionList();
+	
+	$("#sel-count").text("("+numberSelected+")"); // update counter
+}
+

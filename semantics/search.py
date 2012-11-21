@@ -15,7 +15,7 @@ import urllib
 import urllib2
 from xml.dom.minidom import parseString
 import httplib2
-
+import simplejson
 from fca.context import Context
 
 
@@ -61,7 +61,7 @@ class Semantic(object):
     
     @staticmethod
     def search_sparqlwrapper(prefix, query):
-        sparql = SPARQLWrapper("http://127.0.0.1:8080/openrdf-sesame/repositories/test")
+        sparql = SPARQLWrapper("http://127.0.0.1:8080/openrdf-sesame/repositories/hwu")
         #sparql = SPARQLWrapper("http://dbpedia.org/sparql")
         
         sparql.setQuery(prefix + """ """ + query)
@@ -105,6 +105,99 @@ class Semantic(object):
                 attr_value = attr_value[1]
             
             attr_val = attr_name + "-" + attr_value
+            
+            # add obj
+            if not obj_name in objs :
+                objs.append(obj_name)
+            obj_idx = objs.index(obj_name)
+            
+            #add attr
+            if not attr_val in attrs :
+                attrs.append(attr_val)
+            attr_idx = attrs.index(attr_val)
+            
+#                if len(table) <= obj_idx:
+#                    table.insert(obj_idx, [])
+                
+            #table[obj_idx].insert(attr_idx,True)
+            if not obj_name in tempRel:
+                tempRel[obj_name] = []
+            tempRel[obj_name].append(attr_idx)
+            
+            
+        # FILTER OBJECTS WITH LOW SUPP # TODO to it in the context class TODO fazer para attr supp tbm
+        
+        for obj_name in tempRel.keys():
+            if len(tempRel[obj_name]) < 2:
+                del tempRel[obj_name]
+                objs.remove(obj_name)
+                
+                
+        
+        
+        
+        table = [None]*len(objs)
+        
+        
+        for obj_name in tempRel.keys():
+            
+            row = [False]*len(attrs)
+            
+            for attr_idx in tempRel[obj_name]:
+                row[attr_idx] = True
+            obj_idx = objs.index(obj_name)
+            table[obj_idx] = row
+                
+            
+        
+        return Context(_table=table, _attributes=attrs, _objects=objs)
+    
+    
+    @staticmethod
+    def sparql2context2(results_table, col_types, hide_prefix): #TODO min supp
+        
+        results_table = simplejson.loads(results_table)
+        col_types = simplejson.loads(col_types)
+        
+        objs = []
+        attrs = []
+        table = []
+        tempRel = dict([])
+        
+        obj_column = 'subj'
+        attr_column = 'prop'
+        attrval_column = None#'obj'
+        
+        for x in col_types:
+            if col_types[x] == 'obj':
+                obj_column = x
+            elif col_types[x] == 'attr':
+                attr_column = x
+            elif col_types[x] == 'attrval':
+                attrval_column = x
+        
+        
+        for binding in results_table[u'results'][u'bindings'] :
+            
+            obj_name = binding[obj_column][u"value"]
+            attr_name = binding[attr_column][u"value"]
+            attr_value = None
+            
+            if attrval_column:
+                attr_value = binding[attrval_column][u"value"]
+            
+            if hide_prefix:
+                if '#' in obj_name: 
+                    obj_name = obj_name.split("#")[1]
+                if '#' in attr_name: 
+                    attr_name = attr_name.split("#")[1]
+                if attr_value and '#' in attr_value: 
+                    attr_value = attr_value.split("#")[1]
+            
+            if attr_value:
+                attr_val = attr_name + "-" + attr_value
+            else:
+                attr_val = attr_name
             
             # add obj
             if not obj_name in objs :

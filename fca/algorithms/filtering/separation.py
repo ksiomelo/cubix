@@ -21,9 +21,9 @@ def compute_separation_index(lattice):
             crossed += len(context.get_object_intent(obj))
         crossed -= square
         if square == 0:
-            cross_index[c] = 1.0
+            cross_index[c.concept_id] = 1.0
         else:
-            cross_index[c] = square/crossed
+            cross_index[c.concept_id] = square/crossed
             
     return cross_index
 

@@ -60,7 +60,7 @@ def compute_probability(lattice):
     context = lattice.context
     n = len(context)
     p_m = {}
-    for attr in context.attributes:
+    for attr in context._attributes:
         m_ = 0
         for i in range(n):
             o = context.get_object_intent_by_index(i)
@@ -70,7 +70,7 @@ def compute_probability(lattice):
         
     probability = {}
     for concept in lattice:
-        probability[concept] = get_intent_probability(concept.intent, p_m, n)
+        probability[concept.concept_id] = get_intent_probability(concept.intent, p_m, n)
         
     return probability
 

@@ -93,6 +93,10 @@ class Concept(models.Model):
             return result
         return not result
     
+    def fix_set_field_bug(self):
+        self.extent = set(self.extent)
+        self.intent = set(self.intent)
+    
     def to_dict(self, is_list=False):
         concept = {}
         concept["intent"] = self.intent

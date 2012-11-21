@@ -1,0 +1,13 @@
+table tr.disabled-row {
+	color: #CCC;
+}
+
+table tr.disabled-row :hover {
+	background:#ffffff;
+}
+
+table tr.disabled-row td a {
+	color: #CCC;
+	text-decoration:none;
+}
+

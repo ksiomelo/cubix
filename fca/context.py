@@ -321,6 +321,76 @@ class Context(models.Model):
             table.append(row)
         
         return table
+    
+    def get_graph_of_attributes(self):
+        
+        nodes = []
+        links = []
+        
+        for i,attr1 in enumerate(self._attributes):
+            nodes.append({"name": attr1})
+            for j,attr2 in enumerate(self._attributes):
+                if attr1 != attr2: 
+                    count = self._count_co_occurence_of_attributes(attr1, attr2)
+                    if (count > 0):
+                        links.append({"source":i, "target": j, "count": count, "total":len(self._objects)})
+                        
+        return (nodes,links)
+            
+                    
+                    
+    def _count_co_occurence_of_attributes(self, attr1, attr2):
+        idx1 = self._attributes.index(attr1);
+        idx2 = self._attributes.index(attr2);
+        
+        count = 0
+        for i in range(len(self._table)):
+            if self._table[i][idx1] and self._table[i][idx2]:
+                count += 1
+        return count
+    
+    
+    def extract_subcontext_containing_attributes(self, attribute_names):
+        attribute_indices = [self._attributes.index(a) for a in attribute_names]
+        table = []
+        tobjects =[]
+        for i in range(len(self)):
+            for aidx in attribute_indices: #row contains any of the attributes
+                if self[i][aidx]:
+                    table.append(self[i])
+                    tobjects.append(self._objects[i])
+                    break
+        
+        cols_for_removal = []
+        tattributes = [] # filter attributes that are not marked
+        for j in range(len(table[0])):
+            has_mark = False
+            for i in range(len(table)):
+                if table[i][j]:
+                    has_mark = True
+                    break
+            if not has_mark:
+                cols_for_removal.append(j)
+            else:
+                tattributes.append(self._attributes[j])
+        
+        if cols_for_removal:
+            table = self._remove_columns(table, cols_for_removal)
+        
+        return Context(_table=table,
+                       _objects=tobjects,
+                       _attributes=tattributes)
+        
+    
+    def _remove_columns(self, table, col_idxs):
+        ret = []
+        for i in range(len(table)):
+            row = []
+            for j in range(len(table[i])):
+                if j not in col_idxs:
+                    row.append(table[i][j])
+            ret.append(row)
+        return ret
         
     def _extract_subtable_by_condition(self, condition):
         """Extract a subtable containing only rows that satisfy the condition.

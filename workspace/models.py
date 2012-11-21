@@ -5,18 +5,19 @@ Created on Jul 18, 2012
 '''
 from django import forms
 from django.db import models
-from djangotoolbox.fields import SetField, ListField,EmbeddedModelField
+from djangotoolbox.fields import SetField, ListField,EmbeddedModelField, DictField
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
-from fca import Context
+from fca import Context,ConceptLattice
 import os.path
+
 
 class Workspace(models.Model):
     title = models.CharField(max_length=70)
     title_slug = models.SlugField(unique=True,blank=True)
     #owner = models.CharField(max_length=200)
     owner = models.ForeignKey(User, editable=False,blank=True, null=True)
-    contexts = ListField(EmbeddedModelField('ContextFile'))
+    contexts = ListField(EmbeddedModelField('ContextFile')) #ListField()#
     
 #    def save(self, *args, **kwargs):
 #        try: 
@@ -41,10 +42,14 @@ class Workspace(models.Model):
 class ContextFile(models.Model):
     cxtfile = models.FileField(upload_to='contexts/%Y/%m/%d')
     
+    
     title = models.CharField(max_length=200)
     owner = models.ForeignKey(User, editable=False,blank=True, null=True)
     workspace = models.ForeignKey(Workspace, editable=False,blank=True, null=True)
     context = models.ForeignKey(Context, editable=False,blank=True, null=True)
+    lattice = models.ForeignKey(ConceptLattice, editable=False,blank=True, null=True)
+    
+    disabled_attrs = ListField()
     #meta.DateTimeField('create_date', 'date created'),
     
     def filename(self):

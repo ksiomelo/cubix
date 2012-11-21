@@ -11,9 +11,12 @@ var SEPARATOR = "-";
 var DEFAULT_WIDTH = 570; //960
 var DEFAULT_HEIGHT = 500; // 600
 
+// sunburst label strategy
+var MIN_ANGLE_FOR_LABELS = 6; // 10
+
 
 // lattice
-var MAX_ENTITY_SIZE = 2; // max numer of attributes or objects
+var MAX_ENTITY_SIZE = 15; // max numer of attributes or objects
 
 
 // size
@@ -21,14 +24,18 @@ var DEFAULT_NODE_RADIUS = 8;
 var NODE_MAX_SIZE = 16;
 var NODE_MIN_SIZE = 6;
 
+var DEFAULT_EDGE_THICKNESS = 4;
+var EDGE_MAX_THICK = 21;
+var EDGE_MIN_THICK = 1;
+
+
 var SIZE_STABILITY = 2;
 var SIZE_SUPPORT = 2;
 var SIZE_DEFAULT = 1;
 
 // labels
-var LABEL_REPETITIVE = 1;
-var LABEL_MULTILABEL = 2;
-var LABEL_SUPPORT = 3;
+var LABEL_REPETITIVE = "repetitive";
+var LABEL_MULTILABEL = "multi-label";
 
 // colors
 var SELECTED_FILL_COLOR = "#FF0000";

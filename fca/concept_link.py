@@ -24,8 +24,8 @@ class ConceptLink(models.Model):
     
     def to_dict(self, is_list=False):
         conceptLink = {}
-        conceptLink["parent"] = self._parent
-        conceptLink["child"] = self._child
+        conceptLink["source"] = self._parent
+        conceptLink["target"] = self._child
         if (self.confidence):
             conceptLink["confidence"] = self.confidence
         
