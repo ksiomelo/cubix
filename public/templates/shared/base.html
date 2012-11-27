@@ -63,67 +63,68 @@
     </div>
    -->
     
-     <div class="navbar navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>
-          <a class="brand" href="./">Cubix</a>
-          <div class="nav-collapse">
-            <ul class="nav">
-              	<li><a href="/home/" class="home">Home</a></li>
-              	 <li class="dropdown" id="workspace">
-					<a class="dropdown-toggle" data-toggle="dropdown" href="#menu1">
-						
-						{% if request.session.cur_workspace_slug %}
-							{{ request.session.cur_workspace_slug }}  
+    {% if not request.session.cubist %}
+	     <div class="navbar navbar-fixed-top">
+	      <div class="navbar-inner">
+	        <div class="container">
+	          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	          </a>
+	          <a class="brand" href="./">Cubix</a>
+	          <div class="nav-collapse">
+	            <ul class="nav">
+            	
+	              	<li><a href="/home/" class="home">Home</a></li>
+	              	 <li class="dropdown" id="workspace">
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#menu1">
 							
-							{% if request.session.cur_context_slug  %}
-								:: {{ request.session.cur_context_slug }}  
+							{% if request.session.cur_workspace_slug %}
+								{{ request.session.cur_workspace_slug }}  
+								
+								{% if request.session.cur_context_slug  %}
+									:: {{ request.session.cur_context_slug }}  
+								{% endif %}
+								
+							{% else %}
+			    				Workspace
 							{% endif %}
 							
-						{% else %}
-		    				Workspace
-						{% endif %}
-						
-						
-						
-					<b class="caret"></b>
-					</a>
-					<ul class="dropdown-menu">
-						{% for context in request.session.cur_workspace.contexts %}
-						<li>
-							<a href ="/{{ workspace_slug }}/context/select?id={{ context.id }}">{{ context.title }}</a> 
-						</li>
-						{% endfor %}
-						
-						<li class="divider"></li>
-						<li>
-							<a href="#new-data-modal" class="new-data" data-toggle="modal" data-backdrop="true" data-keyboard="true">New data</a> 
-						</li>
-					</ul>
-				</li>
-				
-				{% if request.session.cur_context_id  %}
-				<!--				
-				<li><a href="#" id="cxt-file">File</a></li>
-				-->
-				<li id="semantics"><a href="/{{ request.session.cur_workspace_slug }}/semantics">Semantics</a></li>
-	            <li id="context"><a href="/{{ request.session.cur_workspace_slug }}/context">Context</a></li>
-	            <li id="analysis" class="active"><a href="/{{ request.session.cur_workspace_slug }}/fca">Analysis</a></li>
+							
+							
+						<b class="caret"></b>
+						</a>
+						<ul class="dropdown-menu">
+							{% for context in request.session.cur_workspace.contexts %}
+							<li>
+								<a href ="/{{ workspace_slug }}/context/select?id={{ context.id }}">{{ context.title }}</a> 
+							</li>
+							{% endfor %}
+							
+							<li class="divider"></li>
+							<li>
+								<a href="#new-data-modal" class="new-data" data-toggle="modal" data-backdrop="true" data-keyboard="true">New data</a> 
+							</li>
+						</ul>
+					</li>
+					
+					{% if request.session.cur_context_id  %}
+						<!--				
+						<li><a href="#" id="cxt-file">File</a></li>
+						-->
+						<li id="semantics"><a href="/{{ request.session.cur_workspace_slug }}/semantics">Semantics</a></li>
+			            <li id="context"><a href="/{{ request.session.cur_workspace_slug }}/context">Context</a></li>
+			            <li id="analysis" class="active"><a href="/{{ request.session.cur_workspace_slug }}/fca">Analysis</a></li>
+		            {% endif %}
 	            
-				{% endif %}
-	            
-	            
-            </ul>
-          </div><!--/.nav-collapse -->
-          <div class="pull-right" style="margin-top: 10px;">Logged in as <span style="color:#EEE">{{user.username}}</span> | <a href="/logout">logout</a></div>
-        </div>
-      </div>
-    </div>
+	            </ul>
+	          </div><!--/.nav-collapse -->
+	          <div class="pull-right" style="margin-top: 10px;">Logged in as <span style="color:#EEE">{{user.username}}</span> | <a href="/logout">logout</a></div>
+	        </div>
+	      </div>
+	    </div>
+    {% endif %}
     
     
 
