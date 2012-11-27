@@ -14,7 +14,7 @@ class Concept(models.Model):
 #    formal_objects = models.ManyToManyField("FormalObject")
 #    formal_attributes = models.ManyToManyField("FormalAttribute")
     # metric_set
-   # parents = models.ManyToManyField("self", through='LatticeEdge', symmetrical=False)
+    # parents = models.ManyToManyField("self", through='LatticeEdge', symmetrical=False)
     #children = models.ManyToManyField(self, through='ConceptLink', symmetrical=False)
     
     

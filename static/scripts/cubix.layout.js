@@ -16,11 +16,11 @@ var latticeVisOpts = [
 		tooltip: "A Hasse diagram with dynamic arrangement"
 	}, 
 	
-	// { 
-		// name: "Parallel sets",
-		// val: "parsets",
-		// tooltip: "Parallel sets"
-	// }, 
+	{ 
+		name: "Matrix",
+		val: "matrix",
+		tooltip: "matrix"
+	}, 
 	{ 
 		name: "Sankey",
 		val: "sankey",

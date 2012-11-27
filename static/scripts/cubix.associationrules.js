@@ -52,7 +52,7 @@ function fetchAssociationRules(callback){
 		
 		return;
 	}
-	flashAlert("Calculating assotiation rules, this may take some minutes...");
+	flashAlert("Calculating association rules, this may take some minutes...");
 	
 	var thetoken = $('input[name=csrfmiddlewaretoken]').val();
 	var arlink = "/api/v1/association_rules/";

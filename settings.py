@@ -7,6 +7,9 @@ PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
 #import djcelery
 #djcelery.setup_loader()
 
+CUBIST = True
+
+
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG

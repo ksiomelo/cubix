@@ -16,7 +16,7 @@ var MIN_ANGLE_FOR_LABELS = 6; // 10
 
 
 // lattice
-var MAX_ENTITY_SIZE = 15; // max numer of attributes or objects
+var MAX_ENTITY_SIZE = 35; // max numer of attributes or objects
 
 
 // size

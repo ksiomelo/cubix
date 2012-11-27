@@ -57,7 +57,7 @@ function redrawCurVis() { // redraw current visualisation (used e.g. when resizi
 	
 	if (currentVis == 'lattice') initFDLattice();
 	else if (currentVis == 'sankey') sankeyVis.run(); //initSankey();
-	//else if (currentVis == 'parsets') initParsets();
+	else if (currentVis == 'matrix') matrixVis.run();
 	else if (currentVis == 'dagre') dagreVis.run();
     else if (currentVis == 'sunburst') sunburstVis.run();
     else if (currentVis == 'icicle') initIcicle();

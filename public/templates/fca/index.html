@@ -33,7 +33,7 @@
 <script type="text/javascript" src="{{STATIC_URL}}scripts/rgbcolor.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/canvg.js"></script>
 -->
-<!-- CUBIX  
+<!-- CUBIX  -->
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.a.defaults.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.utils.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.drawing.js"></script>
@@ -41,6 +41,7 @@
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.visualisation.lattice.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.visualisation.dagre.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.visualisation.sankey.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.visualisation.matrix.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.visualisation.sunburst.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.associationrules.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.layout.js"></script>
@@ -51,11 +52,12 @@
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.context.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.compare.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.metrics.js"></script>
--->
+<!--
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.min.js"></script>
+-->
 
 <script type="text/javascript">
-	var PREF_VIS = {% if "pref_vis" in request.session %} "{{ request.session.pref_vis }}" {% else %} "lattice" {% endif %}; // preferred visualisation from the session
+	var PREF_VIS = {% if "pref_vis" in request.session %} "{{ request.session.pref_vis }}" {% else %} "dagre" {% endif %}; // preferred visualisation from the session
 	
 	var OVERWHELMING = {% if "overwhelming" in request.session %} false {% else %} true {% endif %}; // flag to ask or not the user to transform the vis
 	
