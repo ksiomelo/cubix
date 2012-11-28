@@ -4,9 +4,6 @@
  */
 
  
-var numberSelected = 0;
-
-
 /*
  * Init Lattice
  */
@@ -106,8 +103,8 @@ function loadData(data){
     	loadAttributeLattices(JSON.parse(data.attribute_lattices));
     
     // Attribute graph
-    if (data.attribute_graph)
-    	loadAttributeGraph(JSON.parse(data.attribute_graph));
+    if (lattice.attr_graph)
+    	loadAttributeGraph(lattice.attr_graph);
 	
 }
 
@@ -125,6 +122,8 @@ function Lattice(data) {
 	this.initialEdges = data.links.slice(0);
 	// _data_nodes = lattice.concepts.slice(0);
 	// _data_links = lattice.edges.slice(0);
+	
+	this.attr_graph = JSON.parse(data.attribute_graph);
 	
 	this.concepts = data.nodes;
 	this.edges = data.links

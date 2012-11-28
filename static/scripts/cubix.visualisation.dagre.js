@@ -302,6 +302,17 @@ var dagreVis = new function() {
 	 * 
 	 */
 	this.nodeMouseOver = function(d){
+		//var oi = d3.select(this).select("circle");
+		d3.select(this).transition()
+	            .duration(250)
+		    .attr("r", function(d,i) { 
+		    	return 2*getNodeSize(d);
+		    	//if(d.id==focalNodeID) {return 65;} else {return 15;} 
+		    	} );
+		// d3.select(this).select("text").transition()
+	            // .duration(250)
+	    // .style("font", "bold 20px Arial")
+	    // .attr("fill", "Blue");
 		
 		nodeMouseOver(d);
 		
@@ -317,6 +328,13 @@ var dagreVis = new function() {
 	
 	this.nodeMouseOut = function(d){
 		
+		d3.select(this).transition()
+	            .duration(250)
+		    .attr("r", function(d,i) { 
+		    	return getNodeSize(d);
+		    	//if(d.id==focalNodeID) {return 65;} else {return 15;} 
+		    	} );
+		
 		nodeMouseOut(d);
 		
 		d3.select(this).classed("hover", false);
@@ -328,18 +346,19 @@ var dagreVis = new function() {
 	
 	this.nodeClick = function(d){ // select node	
 		
-		nodeClick(d);
+		d3.select(this).classed("selected", !nodeClick(d));
 		
-		d3.select(this).classed("selected", function(){ 
-			if (this.classList.contains("selected")) {
-				numberSelected--;
-				return false;
-			} else {
-				numberSelected++;
-				return true
-			}
-			
-		});
+		
+		
+		
+		// d3.select(this).classed("selected", function(){ 
+			// if (this.classList.contains("selected")) {
+				// return false;
+			// } else {
+				// return true
+			// }
+// 			
+		// });
 		
 	}
 

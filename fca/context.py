@@ -333,7 +333,7 @@ class Context(models.Model):
                 if attr1 != attr2: 
                     count = self._count_co_occurence_of_attributes(attr1, attr2)
                     if (count > 0):
-                        links.append({"source":i, "target": j, "count": count, "total":len(self._objects)})
+                        links.append({"source_idx":i, "target_idx": j, "count": count, "total":len(self._objects)})
                         
         return (nodes,links)
             

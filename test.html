@@ -1,0 +1,107 @@
+
+<html>
+  <head>
+    <title>Radial Graph</title>
+    <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js"></script>
+   
+  </head>
+  <body>
+
+    <div id="chart"></div>
+
+    <script type="text/javascript">
+
+    
+var data = {"nodes": [{"name": "preying"}, {"name": "mammal"}, {"name": "flying"}, {"name": "bird"}], "links": [{"count": 1, "source_idx": 0, "total": 6, "target_idx": 1}, {"count": 1, "source_idx": 0, "total": 6, "target_idx": 2}, {"count": 1, "source_idx": 0, "total": 6, "target_idx": 3}, {"count": 1, "source_idx": 1, "total": 6, "target_idx": 0}, {"count": 1, "source_idx": 2, "total": 6, "target_idx": 0}, {"count": 2, "source_idx": 2, "total": 6, "target_idx": 3}, {"count": 1, "source_idx": 3, "total": 6, "target_idx": 0}, {"count": 2, "source_idx": 3, "total": 6, "target_idx": 2}]};
+
+//var data = JSON.parse( json );
+
+ var width = 500,
+        height = 500;
+        
+
+        
+    var links = data.links;
+    var nodes = data.nodes;
+        
+    var rx = width / 2,
+    ry = width / 2,
+    m0,
+    s=n=data.nodes.length,
+    rotate = 0;
+    
+  
+
+
+    for (var i=0; i < nodes.length; i++) {
+          var a = nodes[i];
+      
+          a.x=(width/2-50)*(Math.cos(i*2*Math.PI/n));
+        a.y=(width/2-50)*(Math.sin(i*2*Math.PI/n));
+        a.parent = parent;
+        
+    };
+   
+    
+    links.forEach(function(l) {
+            l.source = nodes[l.source_idx];
+            l.target = nodes[l.target_idx];
+    });
+        
+        
+
+
+   
+    
+    var svg = d3.select("#chart").append("svg:svg")
+    .attr("width",width)
+    .attr("height",height)
+    .attr("viewBox", "0 0 "+width+" "+height)
+    .attr("preserveAspectRatio", "xMidYMid")
+      .append("svg:g")
+           .attr("transform", "translate(" + width/2 + "," + height/2 + ")");
+    
+    //Drawing links
+    svg.selectAll("line.attr-graph")
+        .data(links)
+        .enter().append("line")
+            .attr("class", "attr-graph")
+            .style("stroke-width", function(d){if (d.total != 0) return Math.round(10*(d.count/d.total));})
+            .style("fill", "none")
+            //.attr("d", line) // TODO fazer belzier
+            .attr("x1", function(d){ return d.source.x; })
+            .attr("y1", function(d){ return d.source.y; })
+            .attr("x2", function(d){ return d.target.x; })
+            .attr("y2", function(d){ return d.target.y; })
+            .style("stroke",function(d,i){
+                return "#000000";
+                
+                
+                });
+             
+      var circle = svg.selectAll("g.node")
+        .data(nodes)
+      .enter().append("svg:line")
+          .attr("x1",function(d){return d.x-Math.max(1,(width/2-100)*(Math.PI/(2*n)));})
+          .attr("y1",function(d){return d.y;})
+          .attr("x2",function(d){return d.x+Math.max(1,(width/2-100)*(Math.PI/(2*n)));})
+          .attr("y2",function(d){return d.y;})
+          .attr("transform",function(d){return "rotate("+Math.atan((-1)*d.x/d.y)*180/Math.PI+" "+d.x+" "+d.y+")";})
+          .style("stroke",function(d){ return "#000000";}); 
+
+      var text = svg.selectAll("g.node")
+        .data(nodes)
+      .enter().append("svg:text")
+        .attr("dx", function(d){return d.x>0 ? "1em": "-1em";})
+        .attr("dy","0.31em")
+        .style("pointer-events","none")
+        .attr("text-anchor", function(d){return d.x>0 ? "start": "end";})
+          .text(function(d){return d.name;})
+          .style("stroke",function(d){return "#000000";}) //color_set(d.family-1);})
+          .attr("transform",function(d){return "translate("+d.x+","+d.y+")rotate("+Math.atan(d.y/d.x)*180/Math.PI+")";});
+
+    </script>
+
+  </body>
+
+</html>​

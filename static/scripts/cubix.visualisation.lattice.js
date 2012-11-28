@@ -429,8 +429,8 @@ function translateEdge(e, dx, dy) {
  **********************************************/
 
 function loadAttributeGraph(data) {
-	var width = 500,
-	    height = 600;
+	var width = DEFAULT_ATTR_GRAPH_WIDTH,
+	    height = DEFAULT_ATTR_GRAPH_HEIGHT;
 	
 	
 	var links = data.links;
@@ -438,8 +438,8 @@ function loadAttributeGraph(data) {
 	
 		// Compute the distinct nodes from the links.
 	links.forEach(function(link) {
-	  link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
-	  link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
+	  link.source = nodes[link.source_idx] || (nodes[link.source_idx] = {name: link.source});
+	  link.target = nodes[link.target_idx] || (nodes[link.target_idx] = {name: link.target});
 	});
 	
 	
@@ -518,6 +518,402 @@ function loadAttributeGraph(data) {
 	    return "translate(" + d.x + "," + d.y + ")";
 	  });
 	}
+}
+
+
+
+
+function radialAttributeGraph(data){
+	var width = DEFAULT_ATTR_GRAPH_WIDTH,
+	    height = DEFAULT_ATTR_GRAPH_HEIGHT;
+	    
+	    
+	var links = data.links;
+	var nodes = data.nodes;
+	    
+	var rx = width / 2,
+    ry = width / 2,
+    m0,
+    s=n=data.nodes.length,
+    rotate = 0;
+    
+	
+    var line = function (d) { 
+     	 return d3.svg.line()
+        .x(function(d){return d.x;})
+        .y(function(d){return d.y;})
+        .interpolate("linear")([{x : d.source.x, y: d.source.y}, {x : d.target.x, y: d.target.y}]); 
+     }
+    
+    var belzier = function(d) {
+			    var dx = d.target.x - d.source.x,
+			        dy = d.target.y - d.source.y,
+			        dr = Math.sqrt(dx * dx + dy * dy);
+			    return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+			  }
+
+	for (var i=0; i < nodes.length; i++) {
+	  	var a = nodes[i];
+	  
+	  	a.x=(width/2-50)*(Math.cos(i*2*Math.PI/n));
+		a.y=(width/2-50)*(Math.sin(i*2*Math.PI/n));
+	};
+	
+	
+	links.forEach(function(l) {
+			l.source = nodes[l.source_idx];
+			l.target = nodes[l.target_idx];
+	});
+		
+		
+
+
+    
+    var svg = d3.select("#attr-graph").append("svg:svg")
+	.attr("width",width)
+	.attr("height",height)
+	.attr("viewBox", "0 0 "+width+" "+height)
+	.attr("preserveAspectRatio", "xMidYMid")
+ 	//.attr("viewBox",((-1)*(m[0]+0*rx))+" "+((-1)*(m[0]+0*ry))+" "+(2*rx+0*m[0])+" "+(2*ry+0*m[0]))
+  	.append("svg:g")
+   		.attr("transform", "translate(" + width/2 + "," + height/2 + ")");
+    
+    //Drawing links
+    svg.selectAll("path.attr-graph")
+    	.data(links)
+	    .enter().append("path")
+	    	.attr("class", "attr-graph")
+		    .style("stroke-width", function(d){if (d.total != 0) return Math.round(10*(d.count/d.total));})
+		    .style("fill", "none")
+		    .attr("d", (curvedEdgesAttrGraph) ? belzier : line) 
+	    	.attr("x1", function(d){ return d.source.x; })
+	    	.attr("y1", function(d){ return d.source.y; })
+	    	.attr("x2", function(d){ return d.target.x; })
+	    	.attr("y2", function(d){ return d.target.y; })
+		    .style("stroke",function(d,i){
+		    	return "#000000";
+	    		});
+	    	 
+	  var circle = svg.selectAll("g.node")
+		.data(nodes)
+	  .enter().append("svg:line")
+	  	.attr("x1",function(d){return d.x-Math.max(1,(width/2-100)*(Math.PI/(2*n)));})
+	  	.attr("y1",function(d){return d.y;})
+	  	.attr("x2",function(d){return d.x+Math.max(1,(width/2-100)*(Math.PI/(2*n)));})
+	  	.attr("y2",function(d){return d.y;})
+	  	.attr("transform",function(d){return "rotate("+Math.atan((-1)*d.x/d.y)*180/Math.PI+" "+d.x+" "+d.y+")";})
+	  	.style("stroke",function(d){ return "#000000";}); //color_set(d.family-1);})
+	  	
+      var text = svg.selectAll("g.node")
+		.data(nodes)
+	  .enter().append("svg:text")
+	    .attr("dx", function(d){return d.x>0 ? "1em": "-1em";})
+	    .attr("dy","0.31em")
+	    .style("pointer-events","none")
+	    .attr("text-anchor", function(d){return d.x>0 ? "start": "end";})
+      	.text(function(d){return d.name;})
+      	.style("stroke",function(d){return "#000000";}) //color_set(d.family-1);})
+      	.attr("transform",function(d){return "translate("+d.x+","+d.y+")rotate("+Math.atan(d.y/d.x)*180/Math.PI+")";});
+
+		
+}
+
+
+$(function() {
+	$("#attr-graph-layout").change(function(){
+		changeAttributeGraphLayout($(this).attr('value'));
+	});
+	
+	$("#attr-graph-curved-edges").change(function(){
+		curvedEdgesAttrGraph = $(this).attr('checked');
+		changeAttributeGraphLayout("radial");
+	})
+});
+
+var curvedEdgesAttrGraph = false;
+
+
+function changeAttributeGraphLayout(type){
+	
+	$("#attr-graph").html("");
+	
+	if (type == "fd") loadAttributeGraph(lattice.attr_graph);
+	else if (type == "radial") radialAttributeGraph(lattice.attr_graph);
+	
+}
+
+
+var radarChart = new function(){
+	
+	var width = 500, height = 400;
+	
+	var series, 
+    hours,
+    minVal,
+    maxVal,
+    vizPadding = {
+        top: 10,
+        right: 0,
+        bottom: 15,
+        left: 0
+    },
+    radius,
+    radiusLength,
+    ruleColor = "#CCC";
+	
+	
+	this.init = function(){
+		// loadData();
+		// buildBase();
+		// setScales();
+		// addAxes();
+		// draw();
+	}
+	
+	this.updateSeries = function(concepts) {
+		
+		var getSeries = function getSeries(concept){ // TODO cache this info in the data
+			var serie = [];
+			
+			var subcontext = context.getSubcontextForExtent(concept.extent, true);
+			for (var j=0; j < subcontext.attributes.length; j++) {
+				var sum = 0;
+				
+			 	for (var k=0; k < subcontext.objects.length; k++) {
+			  		if (subcontext.rel[k][j]) { 
+			  			sum += 1;
+			  		}
+			 	}
+			 	
+			 	serie.push(sum);
+			};
+			
+			return serie;
+			
+	    };
+	    
+		series = [];
+		
+		for (var i=0; i < concepts.length; i++) {
+			series.push(getSeries(concepts[i]));
+		};
+		
+		hours = context.attributes;
+		
+		mergedArr = [];
+		for (var i=0; i < series.length; i++) {
+		  mergedArr = mergedArr.concat(series[i]);
+		};
+	
+	    minVal = d3.min(mergedArr);
+	    maxVal = d3.max(mergedArr);
+	    //give 25% of range as buffer to top
+	    maxVal = maxVal + ((maxVal - minVal) * 0.25);
+	    minVal = 0;
+	
+	    //to complete the radial lines
+	    for (i = 0; i < series.length; i += 1) {
+	        series[i].push(series[i][0]);
+	    }
+		
+		
+		buildBase();
+		setScales();
+		addAxes();
+		draw();
+		
+		
+	}
+	
+	var loadData = function(){
+	    var randomFromTo = function randomFromTo(from, to){
+	       return Math.floor(Math.random() * (to - from + 1) + from);
+	    };
+	
+	    series = [
+	      [],
+	      []
+	    ];
+	
+	    hours = [];
+	
+	    for (i = 0; i < 24; i += 1) {
+	        series[0][i] = randomFromTo(0,20);
+	        series[1][i] = randomFromTo(5,15);
+	        hours[i] = i; //in case we want to do different formatting
+	    }
+	
+	    mergedArr = series[0].concat(series[1]);
+	
+	    minVal = d3.min(mergedArr);
+	    maxVal = d3.max(mergedArr);
+	    //give 25% of range as buffer to top
+	    maxVal = maxVal + ((maxVal - minVal) * 0.25);
+	    minVal = 0;
+	
+	    //to complete the radial lines
+	    for (i = 0; i < series.length; i += 1) {
+	        series[i].push(series[i][0]);
+	    }
+	};
+
+	var buildBase = function(){
+		
+		$("#polar-chart").html("");
+		
+	    var viz = d3.select("#polar-chart")
+	        .append('svg:svg')
+	        .attr('width', width)
+	        .attr('height', height)
+	        .attr('class', 'vizSvg');
+	
+	    viz.append("svg:rect")
+	        .attr('id', 'axis-separator')
+	        .attr('x', 0)
+	        .attr('y', 0)
+	        .attr('height', 0)
+	        .attr('width', 0)
+	        .attr('height', 0);
+	    
+	    vizBody = viz.append("svg:g")
+	        .attr('id', 'body');
+	};
+
+	setScales = function () {
+	  var heightCircleConstraint,
+	      widthCircleConstraint,
+	      circleConstraint,
+	      centerXPos,
+	      centerYPos;
+	
+	  //need a circle so find constraining dimension
+	  heightCircleConstraint = height - vizPadding.top - vizPadding.bottom;
+	  widthCircleConstraint = width - vizPadding.left - vizPadding.right;
+	  circleConstraint = d3.min([
+	      heightCircleConstraint, widthCircleConstraint]);
+	
+	  radius = d3.scale.linear().domain([minVal, maxVal])
+	      .range([0, (circleConstraint / 2)]);
+	  radiusLength = radius(maxVal);
+	
+	  //attach everything to the group that is centered around middle
+	  centerXPos = widthCircleConstraint / 2 + vizPadding.left;
+	  centerYPos = heightCircleConstraint / 2 + vizPadding.top;
+	
+	  vizBody.attr("transform",
+	      "translate(" + centerXPos + ", " + centerYPos + ")");
+	};
+
+	addAxes = function () {
+	  var radialTicks = radius.ticks(5),
+	      i,
+	      circleAxes,
+	      lineAxes;
+	
+	  vizBody.selectAll('.circle-ticks').remove();
+	  vizBody.selectAll('.line-ticks').remove();
+	
+	  circleAxes = vizBody.selectAll('.circle-ticks')
+	      .data(radialTicks)
+	      .enter().append('svg:g')
+	      .attr("class", "circle-ticks");
+	
+	  circleAxes.append("svg:circle")
+	      .attr("r", function (d, i) {
+	          return radius(d);
+	      })
+	      .attr("class", "circle")
+	      .style("stroke", ruleColor)
+	      .style("fill", "none");
+	
+	  circleAxes.append("svg:text")
+	      .attr("text-anchor", "middle")
+	      .attr("dy", function (d) {
+	          return -1 * radius(d);
+	      })
+	      .text(String);
+	
+	  lineAxes = vizBody.selectAll('.line-ticks')
+	      .data(hours)
+	      .enter().append('svg:g')
+	      .attr("transform", function (d, i) {
+	          return "rotate(" + ((i / hours.length * 360) - 90) +
+	              ")translate(" + radius(maxVal) + ")";
+	      })
+	      .attr("class", "line-ticks");
+	
+	  lineAxes.append('svg:line')
+	      .attr("x2", -1 * radius(maxVal))
+	      .style("stroke", ruleColor)
+	      .style("fill", "none");
+	
+	  lineAxes.append('svg:text')
+	      .text(String)
+	      .attr("text-anchor", "middle")
+	      .attr("transform", function (d, i) {
+	          return (i / hours.length * 360) < 180 ? null : "rotate(180)";
+	      });
+	};
+
+	var draw = function () {
+	  var groups,
+	      lines,
+	      linesToUpdate;
+	
+	  highlightedDotSize = 4;
+	
+	  groups = vizBody.selectAll('.series')
+	      .data(series);
+	  groups.enter().append("svg:g")
+	      .attr('class', 'series')
+	      .style('fill', function (d, i) { return mapColor(context.attributes[i]); })
+	      .style('stroke', function (d, i) { return mapColor(context.attributes[i]); });
+	  groups.exit().remove();
+	
+	  lines = groups.append('svg:path')
+	      .attr("class", "line")
+	      .attr("d", d3.svg.line.radial()
+	          .radius(function (d) {
+	              return 0;
+	          })
+	          .angle(function (d, i) {
+	              if (i === 24) {
+	                  i = 0;
+	              } //close the line
+	              return (i / 24) * 2 * Math.PI;
+	          }))
+	      .style("stroke-width", 3)
+	      .style("fill", "none");
+	
+	  groups.selectAll(".curr-point")
+	      .data(function (d) {
+	          return [d[0]];
+	      })
+	      .enter().append("svg:circle")
+	      .attr("class", "curr-point")
+	      .attr("r", 0);
+	
+	  groups.selectAll(".clicked-point")
+	      .data(function (d) {
+	          return [d[0]];
+	      })
+	      .enter().append("svg:circle")
+	      .attr('r', 0)
+	      .attr("class", "clicked-point");
+	
+	  lines.attr("d", d3.svg.line.radial()
+	      .radius(function (d) {
+	          return radius(d);
+	      })
+	      .angle(function (d, i) {
+	          if (i === 24) {
+	              i = 0;
+	          } //close the line
+	          return (i / 24) * 2 * Math.PI;
+	      }));
+	};
+	
+	
 }
 
 

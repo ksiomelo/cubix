@@ -737,19 +737,7 @@ function addOrReplaceToSelectionList(nodeList, replace) {
 }
 
 
-function updateSelectionList(){
-	// $(nodes).each(function(){
-        // $(this).attr("fill", SELECTED_FILL_COLOR);
-      // });
-      
-      $('#selection_list').empty();
-      
-      vis.selectAll("circle.selected").each(function(d) { // TODO para cada selecao atualiza a lista inteira?
-      	var li = $('<li>').appendTo('#selection_list');
-      	li.html("Attributes: <span>"+d.intent.join(', ') + "</span><BR/> Objects: <span>"+d.extent.join(', ')+"</span>")
-      	
-      });
-}
+
 
 function updateEntityList(){
       
@@ -949,11 +937,36 @@ function nodeMouseOut(d){
 }
 
 
+
+var selection = [];
 function nodeClick(d){ // select node	
 	
 	clearSearch(); // if I made a click node to add/remove selection, the search is no longer valid
-	updateSelectionList();
 	
-	$("#sel-count").text("("+numberSelected+")"); // update counter
+	var idx = selection.indexOf(d);
+	if (idx < 0) selection.push(d);
+	else selection.splice(idx, 1);
+	
+	$("#sel-count").text("("+selection.length+")"); // update counter
+	
+	
+	// update polar chart
+	radarChart.updateSeries(selection);
+	
+	
+	 var exists = $('li#sel-'+d.id);
+      if (exists.length) {
+      	exists.remove();
+      	return true;
+      } else {
+      	var li = $('<li id="sel-'+d.id+'">').appendTo('#selection_list');
+      	li.html("Attributes: <span>"+d.intent.join(', ') + "</span><BR/> Objects: <span>"+d.extent.join(', ')+"</span>")
+      	return false;
+      }
+	
+	
 }
+
+
+
 

@@ -295,6 +295,7 @@ a:hover {
   width: 6.382978723%;
 }
 .container {
+  margin-bottom: 80px;
   margin-left: auto;
   margin-right: auto;
   *zoom: 1;

@@ -11,6 +11,10 @@ var SEPARATOR = "-";
 var DEFAULT_WIDTH = 570; //960
 var DEFAULT_HEIGHT = 500; // 600
 
+
+var DEFAULT_ATTR_GRAPH_WIDTH = 500;
+var DEFAULT_ATTR_GRAPH_HEIGHT = 600;
+
 // sunburst label strategy
 var MIN_ANGLE_FOR_LABELS = 6; // 10
 

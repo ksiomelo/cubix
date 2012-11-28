@@ -290,9 +290,15 @@ circle.node.concept.hover {
 
 
 circle.selected {
-	fill: #ff0000;
-	opacity: 1;
+	/*fill: #ff0000;*/
+	stroke: #FF0000;
 }
+
+circle.selected{
+	/*fill: #ff0000;*/
+	stroke-dasharray: none !important;
+}
+
 
 circle.opaque {
 	fill: #aaaaff;
@@ -423,7 +429,7 @@ a.facetSel {
 /*
  * search sidebar
  */
-#colleft   { height: 80%; overflow-y:auto; width:0px; margin-bottom:40px; position:fixed; right: 0; top: 60px; overflow:hidden; background:#333; padding: 8px; opacity:0}
+#colleft   { z-index: 1031; height: 80%; overflow-y:auto; width:0px; margin-bottom:40px; position:fixed; right: 0; top: 60px; overflow:hidden; background:#333; padding: 8px; opacity:0}
 #colleft h1 {color: #606060;}
 #showPanel { border-radius: 12px 0 0 0; position:fixed; z-index:2; right:0; top: 90px; width:40px; height:40px; cursor:pointer; padding:10px 0 10px 10px; background: #333; }
 /*#showPanel div {color: #606060; display:block; height:30px; padding:10px 0 10px 10px; width:20px; background: #333;} */

@@ -213,7 +213,7 @@ function updateDistributionChart(d){
 	
 			var sumData = [];
 			
-			var subcontext = context.getSubcontextForExtent(d.extent);
+			var subcontext = context.getSubcontextForExtent(d.extent, false);
 			for (var j=0; j < subcontext.attributes.length; j++) {
 				var sum = 0;
 				

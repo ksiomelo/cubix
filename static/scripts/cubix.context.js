@@ -103,7 +103,7 @@ function Context(objs, attrs, rels, attrNames) {
 		return -1;
 	}
 	
-	this.getSubcontextForExtent = function (objsList) {
+	this.getSubcontextForExtent = function (objsList, includeEmptyAttributes) {
 		
 		var objs = [];
 		var attrs = [];
@@ -112,20 +112,29 @@ function Context(objs, attrs, rels, attrNames) {
 		for (var i=0; i < objsList.length; i++) {
 			
 			objs.push(objsList[i]);
-			rels[i] = new Array();
 			
 			var j = this.getObjectIndex(objsList[i]);
 			
-			for (var k=0; k < this.rel[j].length; k++) {
-				if (this.rel[j][k]) {
-					var attrIdx = attrs.indexOf(this.attributes[k]);
-					if (attrIdx < 0)
-						attrs.push(this.attributes[k]);
-					attrIdx = attrs.indexOf(this.attributes[k]);
-					rels[i][attrIdx] = true;
+			
+			if (includeEmptyAttributes) { // copy the entire row
+				rels.push(this.rel[j]);
+			} else { 
+			
+				rels[i] = new Array();
+				for (var k=0; k < this.rel[j].length; k++) {
+					   // select only the attributes having relation with the object
+						if (this.rel[j][k]) {
+							var attrIdx = attrs.indexOf(this.attributes[k]);
+							if (attrIdx < 0)
+								attrs.push(this.attributes[k]);
+							attrIdx = attrs.indexOf(this.attributes[k]);
+							rels[i][attrIdx] = true;
+						}
 				}
 			}
 		}
+		
+		if (includeEmptyAttributes) attrs = this.attributes;
 		
 		return new Context(objs, attrs,rels, attrs);
 		
