@@ -15,7 +15,7 @@ var sankeyVis = new function() {
 
 	this.run = function(){
 		
-		svg = d3.select("#chart").append("svg")
+		vis = d3.select("#chart").append("svg")
 	    .attr("width", w)
 	    .attr("height", h)
 	    .append("g");
@@ -33,18 +33,24 @@ var sankeyVis = new function() {
 	      .links(lattice.edges)
 	      .layout(32);
 
-	  link = svg.append("g").selectAll(".sklink")
+	  link = vis.append("g").selectAll(".sklink")
 	      .data(lattice.edges)
 	    .enter().append("path")
 	      .attr("class", "sklink")
+	      .attr("source_id", function(d) { return d.source_id;})
+	      .attr("target_id", function(d) { return d.target_id;})
 	      .attr("d", skpath)
-	      .style("stroke-width", function(d) { return Math.max(1, d.dy); })
+	      .style("stroke-width", function(d) { return getEdgeThickness(d)*1.5;  }) //Math.max(1, d.dy);
 	      .sort(function(a, b) { return b.dy - a.dy; });
 	
 	  link.append("title")
-	      .text(function(d) { return d.source.name + " → " + d.target.name + "\n" ; });
+	      .text(function(d) { 
+	      	var val = getEdgeValue(d);
+	      	if (val < 0)  return d.source.name + " → " + d.target.name + "\n";
+	      	else return edge_type+": "+ val*100 + "%";
+	      	}); 
 	
-	  var node = svg.append("g").selectAll(".sknode")
+	  var node = vis.append("g").selectAll(".sknode")
 	      .data(lattice.concepts)
 	    .enter().append("g")
 	      .attr("class", "sknode")
@@ -58,10 +64,12 @@ var sankeyVis = new function() {
 	      .on("drag", this.dragmove));
 	
 	  node.append("rect")
+	  	  .attr("class", "concept")
+	  	  .attr("id", function(d) { return "node-"+d.id})
 	      .attr("height", function(d) { return d.dy; })
 	      .attr("width", sankey.nodeWidth())
-	      .style("fill", function(d) { return d.color = color(d.name.replace(/ .*/, "")); })
-	      .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
+	      .style("fill", function(d) { return d.color = getNodeColor(d);  }) //color(d.name.replace(/ .*/, ""));
+	      //.style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
 	    .append("title")
 	      .text(function(d) { return d.name + "\n" ; });
 	
@@ -96,7 +104,7 @@ var sankeyVis = new function() {
 
 		if (highlightPath) {
 			visitEdgesDown(d,function(l) {
-				d3.select("path.dedge[source_id=\""+l.source.id+"\"][target_id=\""+l.target.id+"\"]").classed("highlighted", true);
+				d3.select("path.sklink[source_id=\""+l.source.id+"\"][target_id=\""+l.target.id+"\"]").classed("highlighted", true);
 			});
 		}
 		
@@ -108,7 +116,7 @@ var sankeyVis = new function() {
 		
 		d3.select(this).classed("hover", false);
 		
-		d3.selectAll("path.dedge.highlighted").classed("highlighted", false);
+		d3.selectAll("path.sklink.highlighted").classed("highlighted", false);
 	
 	}
 	
@@ -117,16 +125,16 @@ var sankeyVis = new function() {
 		
 		nodeClick(d);
 		
-		d3.select(this).classed("selected", function(){ 
-			if (this.classList.contains("selected")) {
-				numberSelected--;
-				return false;
-			} else {
-				numberSelected++;
-				return true
-			}
-			
-		});
+		// d3.select(this).classed("selected", function(){ 
+			// if (this.classList.contains("selected")) {
+				// numberSelected--;
+				// return false;
+			// } else {
+				// numberSelected++;
+				// return true
+			// }
+// 			
+		// });
 		
 	}
   	

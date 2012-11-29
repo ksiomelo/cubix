@@ -7,10 +7,17 @@ $(function() {
 	 $("input[name='metric']").change(function(){
 	   calculate($(this).val());
 	 });
+	 
+	 
+	 	 // metric clustering
+	 $(".clustering-ok").click(function(){
+	 	//$(".modal").hide();
+	 	calculate("cluster",$("#n_clusters").val() );
+	 });
 });
 
 
-function calculate(metric){
+function calculate(metric, p){
 	if (typeof lattice.id == "undefined" || lattice.id == null) { // no lattice id
 		flashAlert("The current concept lattice is not saved in the server - could not compute metric.","error");
 		return;
@@ -20,16 +27,30 @@ function calculate(metric){
 		return;
 	}
 	//showLoading();
-	$("input[name='metric'][value='"+metric+"']").parent().append("<img name='"+metric+"' src='"+STATIC_URL+"/images/loading-trans.gif'/>"); 
+	if (metric == "cluster") showLoading();
+	else $("input[name='metric'][value='"+metric+"']").parent().append("<img name='"+metric+"' src='"+STATIC_URL+"/images/loading-trans.gif'/>"); 
 	
 	var thetoken = $('input[name=csrfmiddlewaretoken]').val();
 	var arlink = "/api/v1/metrics/";
-	$.getJSON(arlink,{ lattice_id: lattice.id, metric: metric, csrfmiddlewaretoken:  thetoken}, function(data) {
+	
+	var params = { lattice_id: lattice.id, metric: metric, csrfmiddlewaretoken:  thetoken};
+	if (p) {
+		params["param"] = p;
+	}
+	
+	$.getJSON(arlink, params, function(data) {
 	 		
 	 		// That's asynchronous!
 	 			// disable the checkbox
-	 			$("img[name='"+metric+"']").remove();
-	 			$("input[name='metric'][value='"+metric+"']").prop('disabled', true);
+	 			
+	 			if (metric == "cluster") { 
+	 				hideLoading();
+	 				data["human_name"] = "Cluster";
+	 			}
+	 			else {
+		 			$("img[name='"+metric+"']").remove();
+		 			$("input[name='metric'][value='"+metric+"']").prop('disabled', true);
+	 			}
 	 			
 	 			if (data.link_score) 
 	 				metrics.appendLinkMetric(data.name, data.human_name, data.scores);
@@ -39,6 +60,7 @@ function calculate(metric){
 	});
 	
 }
+
 
 var metrics = new function() { // hashmap do filter (with excluded nodes from origin) : {"bird:yes", [n1, n2,..]}
     var metricTable = {}; // {"conceptId": {"metric1" : value, "metric2": value2}}

@@ -10,11 +10,11 @@ var latticeVisOpts = [
 		val: "dagre",
 		tooltip: "A layered graph diagram"
 	}, 
-	{ 
-		name: "Force Directed graph",
-		val: "lattice",
-		tooltip: "A Hasse diagram with dynamic arrangement"
-	}, 
+	// { 
+		// name: "Force Directed graph",
+		// val: "lattice",
+		// tooltip: "A Hasse diagram with dynamic arrangement"
+	// }, 
 	
 	{ 
 		name: "Matrix",
@@ -31,11 +31,11 @@ var latticeVisOpts = [
 		val: "tree",
 		tooltip: "A concept in a tree has only one parent and no edges crossings"
 	}, 
-	{ 
-		name: "Treemap",
-		val: "treemap",
-		tooltip: "A treemap subdivides area into rectangles each of them is sized according to some metric"
-	}, 
+	// { 
+		// name: "Treemap",
+		// val: "treemap",
+		// tooltip: "A treemap subdivides area into rectangles each of them is sized according to some metric"
+	// }, 
 	{ 
 		name: "Sunburst",
 		val: "sunburst",
@@ -218,7 +218,8 @@ $(function() {
 	 	 $(".toolbarPanel").hide();
 	 	 $("#metricPanel").show();
 	 });
-	
+	 
+
 	
 	
 		// Lattice / AR toggle
@@ -379,50 +380,65 @@ $(function() {
 	/*
 	 * Interface components
 	 */
-		// $( "#slider-zoom" ).slider({
-			// value:100,
-			// min: 10,
-			// max: 200,
-			// step: 10,
-			// slide: function( event, ui ) {
-// 				
-				// zoomInOut(ui.value);
-// 				
-				// $( "#zoom_level" ).val( ui.value + "%");
-// 				
-				// //inflateDiv(ui.value);
-			// }
-		// });
-// 		
-		// $( "#zoom_level" ).val( "100%");	
+		$( "#slider-zoom" ).slider({
+			value:100,
+			min: 10,
+			max: 500,
+			step: 10,
+			slide: function( event, ui ) {
+				
+				zoomInOut(ui.value);
+				
+				//$( "#zoom_level" ).val( ui.value + "%");
+				//redraw();
+				//inflateDiv(ui.value);
+			}
+		});
+		
+		$( "#zoom_level" ).val( "100%");	
 		$( "#zoom_level" ).click( function(){
 			resetZoom();
 		});	
 	
-		$( "#slider-layout" ).slider({
-			value:2,
-			min: 1,
-			max: 2,
-			step: 1,
-			slide: function( event, ui ) {
-				
-				var layout_txt = "";
-				
-				if(ui.value == 1) {
-					layout_txt = "Viewer";
-				} else if(ui.value == 2) {
-					layout_txt = "Dashboard"; // explorer
-				} else if(ui.value == 3) {
-					layout_txt = "Dashboard";
-				}
-				$( "#layout_type" ).val( layout_txt);
-				
-				inflateDiv(ui.value);
-				
-			}
-		});
+		// $( "#slider-layout" ).slider({
+			// value:2,
+			// min: 1,
+			// max: 2,
+			// step: 1,
+			// slide: function( event, ui ) {
+// 				
+				// var layout_txt = "";
+// 				
+				// if(ui.value == 1) {
+					// layout_txt = "Viewer";
+				// } else if(ui.value == 2) {
+					// layout_txt = "Dashboard"; // explorer
+				// } else if(ui.value == 3) {
+					// layout_txt = "Dashboard";
+				// }
+				// $( "#layout_type" ).val( layout_txt);
+// 				
+				// inflateDiv(ui.value);
+// 				
+			// }
+		// });
+		//$( "#layout_type" ).val( "Dashboard");
 		
-		$( "#layout_type" ).val( "Dashboard");	
+		
+		$( "a.collapse-dashboard" ).click(function(){
+			inflateDiv(1); // viewer
+			$("#expand-dashboard").show();
+		}); 
+		
+		$( "a.expand-dashboard" ).click(function(){
+			inflateDiv(2); // viewer
+			$("#expand-dashboard").hide();
+		}); 
+		
+		
+		
+		
+			
 		
 		
 		// drawing
@@ -580,8 +596,8 @@ function inflateDiv(layoutType){
 		
 		followScroll = false;
 		
-		w = 1040;
-		h = 1040;//$("#chart").height();
+		w = MAXIMIZED_WIDTH;
+		h = MAXIMIZED_HEIGHT;//$("#chart").height();
 		
 		redrawCurVis();
 		
@@ -648,7 +664,7 @@ function getAttributeValuesPairs(){ // TODO refatorar || eg output: [{name : "ag
 
 
 
-function selectionAdded(elem) {
+function searchInput(elem) {
 	//var xs = $("input.search");
 	//alert();
 
@@ -663,23 +679,24 @@ function selectionAdded(elem) {
 
 	//alert(query);
 
-	if(isBlank(query)) {// if search string is empty, invalidate previous searchs
-		showNodes();
-		vis.selectAll(".selected").classed("selected", false);
-		return;
-	}
+	// if(isBlank(query)) {// if search string is empty, invalidate previous searchs
+		// showNodes();
+		// vis.selectAll(".selected").classed("selected", false);
+		// return;
+	// }
 
-	var selections = searchFacet(query, true); // TODO passar data e nao nodes
+	searchConcept(query);
+	//var selections = searchFacet(query, true); // TODO passar data e nao nodes
 	//var nodes = selections[0];
 
 	// add results to the selection
-	addOrReplaceToSelectionList(selections[0], true); // TODO passar data?
+	//addOrReplaceToSelectionList(selections[0], true); // TODO passar data?
 
 	// highlight selected nodes (also in case they were hidden by previous selections)
-	highlightNodes(selections[0]);
+	//highlightNodes(selections[0]);
 
 	// hide other nodes
-	hideNodes(selections[1]);
+	//hideNodes(selections[1]);
 }
 
 
@@ -773,8 +790,12 @@ function addMetricComponentsCallback(metric, metricHumanName, scores){
 	
 	var tooltip= "Nodes are drawn according to this metric value";
 	
-	appendOptionForSelect(metricHumanName, metric, tooltip, "select-label");
-	appendOptionForSelect(metricHumanName, metric, tooltip, "select-size");
+	if (metric == "cluster") {
+		appendOptionForSelect(metricHumanName, metric, tooltip, "select-color");
+	} else { 
+		appendOptionForSelect(metricHumanName, metric, tooltip, "select-label");
+		appendOptionForSelect(metricHumanName, metric, tooltip, "select-size");
+	}
 }
 
 function addLinkMetricComponentsCallback(metric, metricHumanName, scores){
@@ -786,7 +807,7 @@ function addLinkMetricComponentsCallback(metric, metricHumanName, scores){
 
 function appendMetricFilterCallback(metric, metricHumanName, scores){
 	
-	
+	if (metric == "cluster") return;
 	
 	var label = $('<label for="'+metric+'" style="text-align: left; ">'+metricHumanName+':</label>');
 	var input = $('<input type="text" id="'+metric+'-value" class="metric-value" name="'+metricHumanName+'"  />');
@@ -943,6 +964,7 @@ function nodeClick(d){ // select node
 	
 	clearSearch(); // if I made a click node to add/remove selection, the search is no longer valid
 	
+	// update selection if not there
 	var idx = selection.indexOf(d);
 	if (idx < 0) selection.push(d);
 	else selection.splice(idx, 1);
@@ -954,15 +976,17 @@ function nodeClick(d){ // select node
 	radarChart.updateSeries(selection);
 	
 	
+	// update selection list
 	 var exists = $('li#sel-'+d.id);
       if (exists.length) {
       	exists.remove();
-      	return true;
       } else {
       	var li = $('<li id="sel-'+d.id+'">').appendTo('#selection_list');
       	li.html("Attributes: <span>"+d.intent.join(', ') + "</span><BR/> Objects: <span>"+d.extent.join(', ')+"</span>")
-      	return false;
       }
+      
+      // select class
+      d3.select("#node-"+d.id).classed("selected", !(exists.length));
 	
 	
 }

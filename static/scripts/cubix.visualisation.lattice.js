@@ -319,8 +319,8 @@ function createMiniLattice(nodes, links, container_id){
   
   // We need width and height for layout.
   dnodes.each(function(d) {
-    var bbox = this.getBBox();
-    d.bbox = bbox;
+    //var bbox = d3.select(this).node().getBBox();
+    //d.bbox = bbox;
     d.width = 10;//bbox.width + 2 * nodePadding;
     d.height = 10;//bbox.height + 2 * nodePadding;
   });
@@ -357,8 +357,8 @@ function createMiniLattice(nodes, links, container_id){
    // svg.attr("viewBox", "0 0 "+svgBBox.width+" "+height);
    
     var svg2 = d3.select("#"+container_id).select("svg");
-	  var svgBBox2 = svg2.node().getBBox();
-	  svg2.attr("viewBox", "0 0 "+svgBBox2.width+" "+150);
+	  // var svgBBox2 = svg2.node().getBBox();
+	  // svg2.attr("viewBox", "0 0 "+svgBBox2.width+" "+150);
    
   // svg.attr("width", svgBBox.width + 10);
   // svg.attr("height", svgBBox.height + 10);
@@ -465,9 +465,11 @@ function loadAttributeGraph(data) {
 	    .attr("viewBox", "0 -5 10 10")
 	    .attr("refX", 15)
 	    .attr("refY", -1.5)
-	    .attr("markerWidth", 6)
-	    .attr("markerHeight", 6)
+	    .attr("markerWidth", 10)
+	    .attr("markerHeight", 10)
+	    .attr("markerUnits", "userSpaceOnUse")
 	    .attr("orient", "auto")
+	    .style("stroke-width", 1)
 	  .append("svg:path")
 	    .attr("d", "M0,-5L10,0L0,5");
 	
@@ -476,7 +478,15 @@ function loadAttributeGraph(data) {
 	  .enter().append("svg:path")
 	    .attr("class", function(d) { return "aglink " + "suit"; })
 	    .attr("marker-end", function(d) { return "url(#" + "suit" + ")"; })
-	    .style("stroke-width", function(d) { if (d.total != 0) return Math.round(10*(d.count/d.total)); });
+	    //.attr("marker-style", )
+	    .style("stroke-width", function(d) { if (d.total != 0) { 
+	    	
+	    	var min = 2;
+	    	var max = 16;
+	    	var val = Math.round((max-min)*(d.count/d.total))+min;
+	    	
+	    	return val ;
+	    	} });
 	
 	var circle = svg.append("svg:g").selectAll("circle")
 	    .data(force.nodes())
@@ -628,7 +638,27 @@ $(function() {
 		curvedEdgesAttrGraph = $(this).attr('checked');
 		changeAttributeGraphLayout("radial");
 	})
+	
+	
+	
+	$("#distribution-chart-type").change(function(){
+		changeDistributionChartType($(this).attr('value'));
+	});
+	
+	
+	
 });
+
+
+function changeDistributionChartType(type){
+	
+	$("#distribution-chart").html("");
+	
+	if (type == "bar") createDistributionChart();
+	else if (type == "pie") createDistributionPieChart();
+	
+}
+
 
 var curvedEdgesAttrGraph = false;
 

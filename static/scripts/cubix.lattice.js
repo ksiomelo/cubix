@@ -45,8 +45,8 @@ function loadData(data){
               preventDuplicates: false,
               hintText:"Type an attribute name",
               theme: "facebook",
-              onAdd: selectionAdded,
-              onDelete: selectionAdded
+              onAdd: searchInput,
+              onDelete: searchInput
               });
     
     // load clustering slider
@@ -382,104 +382,89 @@ function Lattice(data) {
  * Ends lattice layout drawing
  */
 
+// 
+// 
+// function filterNodes(query){
+// 
+    // // remove links that are connected to descendants
+    // link.filter(function(d) {
+      // for (d = d.source; d; d = d.parent) {
+        // if (d === p) return true;
+      // }
+    // }).remove();
+// 
+    // // remove all descendants
+    // node.filter(function(d) {
+      // while (d = d.parent) {
+        // if (d === p) return true;
+      // }
+    // }).remove();
+// }
+// 
+// 
+// 
+// // clear 'hidden' styles (used e.g. for clear previous selections)
+// function showNodes() {
+	// vis.selectAll(".opaque").classed("opaque", false);
+// }
+// 
+// 
+// function hideNodes(nodelist){
+// 	
+	// //var inverseNodes = ArraySubtract(vis.selectAll("circle"), nodelist);
+// 	
+	// for (var i=0; i < nodelist.length; i++) {
+		// var anode = nodelist[i];
+		// //anode.style("opacity", DEFAULT_OPACITY);
+		// //anode.style("fill", DEFAULT_FILL_COLOR);
+		// anode.classed("selected", false);
+		// anode.classed("opaque", true);
+// 		
+// 		
+		// getIncomingEdges(anode, function(){
+			// //d3.select(this).style("opacity", DEFAULT_OPACITY);
+			// var thisInEdge = d3.select(this);
+			// thisInEdge.classed("selected",false);
+			// thisInEdge.classed("opaque",true);
+// 			
+		// });
+		// getOutgoingEdges(anode, function(){
+			// //d3.select(this).style("opacity", DEFAULT_OPACITY);
+			// //d3.select(this).classed("hidden");
+			// var thisOutEdge = d3.select(this);
+			// thisOutEdge.classed("opaque",false);
+			// thisOutEdge.classed("selected",true);
+		// });
+	// }
+// }
+// 
+// function highlightNodes(nodelist, color) {
+	// for (var i=0; i < nodelist.length; i++) {
+	  // var anode = nodelist[i];
+		// //anode.style("opacity", 1); // TODO preferir trocar classes css
+		// //anode.style("fill", SELECTED_FILL_COLOR);
+		// anode.classed("selected", true);
+		// anode.classed("opaque", false);
+// 		
+// 		
+		 // getIncomingEdges(anode, function(){
+			 // //d3.select(this).style("opacity", 1);
+			// var thisInEdge = d3.select(this);
+			// thisInEdge.classed("opaque",false);
+			// thisInEdge.classed("selected",true);
+		 // });
+		 // getOutgoingEdges(anode, function(){
+			// // d3.select(this).style("opacity", 1);
+			// var thisOutEdge = d3.select(this);
+			// thisOutEdge.classed("opaque",false);
+			// thisOutEdge.classed("selected",true);
+		 // });
+	// };
+// }
 
 
-function filterNodes(query){
-
-    // remove links that are connected to descendants
-    link.filter(function(d) {
-      for (d = d.source; d; d = d.parent) {
-        if (d === p) return true;
-      }
-    }).remove();
-
-    // remove all descendants
-    node.filter(function(d) {
-      while (d = d.parent) {
-        if (d === p) return true;
-      }
-    }).remove();
-}
 
 
-
-// clear 'hidden' styles (used e.g. for clear previous selections)
-function showNodes() {
-	vis.selectAll(".opaque").classed("opaque", false);
-}
-
-
-function hideNodes(nodelist){
-	
-	//var inverseNodes = ArraySubtract(vis.selectAll("circle"), nodelist);
-	
-	for (var i=0; i < nodelist.length; i++) {
-		var anode = nodelist[i];
-		//anode.style("opacity", DEFAULT_OPACITY);
-		//anode.style("fill", DEFAULT_FILL_COLOR);
-		anode.classed("selected", false);
-		anode.classed("opaque", true);
-		
-		
-		getIncomingEdges(anode, function(){
-			//d3.select(this).style("opacity", DEFAULT_OPACITY);
-			var thisInEdge = d3.select(this);
-			thisInEdge.classed("selected",false);
-			thisInEdge.classed("opaque",true);
-			
-		});
-		getOutgoingEdges(anode, function(){
-			//d3.select(this).style("opacity", DEFAULT_OPACITY);
-			//d3.select(this).classed("hidden");
-			var thisOutEdge = d3.select(this);
-			thisOutEdge.classed("opaque",false);
-			thisOutEdge.classed("selected",true);
-		});
-	}
-}
-
-function highlightNodes(nodelist, color) {
-	for (var i=0; i < nodelist.length; i++) {
-	  var anode = nodelist[i];
-		//anode.style("opacity", 1); // TODO preferir trocar classes css
-		//anode.style("fill", SELECTED_FILL_COLOR);
-		anode.classed("selected", true);
-		anode.classed("opaque", false);
-		
-		
-		 getIncomingEdges(anode, function(){
-			 //d3.select(this).style("opacity", 1);
-			var thisInEdge = d3.select(this);
-			thisInEdge.classed("opaque",false);
-			thisInEdge.classed("selected",true);
-		 });
-		 getOutgoingEdges(anode, function(){
-			// d3.select(this).style("opacity", 1);
-			var thisOutEdge = d3.select(this);
-			thisOutEdge.classed("opaque",false);
-			thisOutEdge.classed("selected",true);
-		 });
-	};
-}
-
-
-
-
-/*
- * Search
- */
-
-function clearSearch(){ // show hidden nodes/edges from previous search
-	$('#search').val('');
-	showNodes();
-}
-
-function clearSelection(){ // remove selection
-	clearSearch();
-	vis.selectAll(".selected").classed("selected", false);
-	$('#selection_list').empty();
-	
-}
 
 
 /*

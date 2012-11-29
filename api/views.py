@@ -19,6 +19,7 @@ from fca.algorithms import implication_fuzz
 from fca.algorithms.filtering import stability
 
 from fca.metric import Metric
+from fca.clustering import spectral
 
 from semantics.search import Semantic
 import pymongo.json_util  
@@ -120,9 +121,14 @@ def calculate_metric(request):
     lattice = ConceptLattice.objects.get(id=lattice_id)
     metric = request.GET.get('metric')
     
-    link_score = False
+    if "param" in request.GET:
+        param = request.GET.get('param')
+        
     
-    if (metric == 'istability'):
+    link_score = False
+    if (metric == 'cluster'):
+        scores = spectral.spectral(lattice, param)
+    elif (metric == 'istability'):
         scores = compute_istability(lattice)
     elif (metric == 'estability'):
         scores = compute_estability(lattice)

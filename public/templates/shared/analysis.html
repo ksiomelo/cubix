@@ -75,32 +75,32 @@
 			<h1>Metrics</h1>
 			<div style="display: inline">
 				<input type="checkbox" name="metric" value="istability"  style="margin-right: 10px" />
-				<span>Stability (Intent)</span>
+				<span rel="tooltip" data-trigger="hover" data-placement="right" data-title="Stability">Stability (Intent)</span>
 			</div>
 			<br/>
 			<div style="display: inline">
 				<input type="checkbox" name="metric" value="esupport" style="margin-right: 10px" />
-				<span>Support (Extent)</span>
+				<span rel="tooltip" data-trigger="hover" data-placement="right" data-title="It shows how frequent the objects of a concept appear in other concepts. High support means that the concept covers a high number of objects, usually more generic concepts.">Support (Extent)</span>
 			</div>
 			<br/>
 			<div style="display: inline">
 				<input type="checkbox" name="metric" value="separation"  style="margin-right: 10px" />
-				<span>Separation</span>
+				<span rel="tooltip" data-trigger="hover" data-placement="right" data-title="Stability">Separation</span>
 			</div>
 			<br/>
 			<div style="display: inline">
 				<input type="checkbox"  name="metric" value="probability"style="margin-right: 10px" />
-				<span>Probability</span>
+				<span rel="tooltip" data-trigger="hover" data-placement="right" data-title="Stability">Probability</span>
 			</div>
 			<br/>
 			<div style="display: inline">
 				<input type="checkbox"  name="metric" value="confidence"style="margin-right: 10px" />
-				<span>Confidence</span>
+				<span rel="tooltip" data-trigger="hover" data-placement="right" data-title="It tells how likely it is to a concept imply another">Confidence</span>
 			</div>
 			<br/>
 			<div style="display: inline">
 				<input type="checkbox"  name="metric" value="similarity"style="margin-right: 10px" />
-				<span>Similarity</span>
+				<span rel="tooltip" data-trigger="hover" data-placement="right" data-title="It means how similar two concepts are based on their properties and objects in common">Similarity</span>
 			</div>
 			<h1>Transformation</h1>
 			<div style="margin-top: 10px;">
@@ -274,6 +274,7 @@
               <a href="#" class="close"  data-dismiss="modal" aria-hidden="true">&times;</a>
               <h3>Clustering</h3>
             </div>
+            <!--
            <form action="/{{workspace_slug}}/fca/cluster" method="GET">
            <div class="modal-body">
         	
@@ -286,6 +287,17 @@
               <input type="submit" class="btn primary clustering-ok" value="OK">
             </div>
             </form>
+            -->
+           <div class="modal-body">
+        	
+	        	<label> Numer of Clusters: </label>
+	        	
+          		<input type="text" id="n_clusters" name="n_clusters" style="width: 75px; border:0; color:#f6931f; font-weight:bold; background-color: transparent;" />
+				<div id="slider-clustering" class="slider clustering"></div>
+        	</div>
+            <div class="modal-footer">
+            	<a href="#" class="btn primary clustering-ok"  data-dismiss="modal">OK</a>
+            </div>
      </div>
 
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.dashboard.onload.js"></script>

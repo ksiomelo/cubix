@@ -5,6 +5,7 @@ Created on Oct 7, 2012
 '''
 import time
 import rpy2.robjects as robjects
+from fca.algorithms.filtering.similarity import compute_similarity
 #import numpy as np
 #from sklearn import preprocessing
 #
@@ -12,6 +13,12 @@ import rpy2.robjects as robjects
 #from sklearn.metrics import euclidean_distances
 #from sklearn.neighbors import kneighbors_graph
 #from sklearn.preprocessing import Scaler
+
+
+def spectral(lattice, n_clusters):
+    sim_matrix = compute_similarity(lattice)
+    clusters = compute_spectral_clustering(sim_matrix, n_clusters)
+    return clusters
 
 def compute_spectral_clustering(sim_matrix, n_clusters):
     
@@ -64,7 +71,6 @@ def compute_spectral_clustering(sim_matrix, n_clusters):
     cl = spectral(a,n_clusters)
     #print(cl.names)
     clusters = cl.rx2('cluster')
-    print clusters
     
     
     ret = {}

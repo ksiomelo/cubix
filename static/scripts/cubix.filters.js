@@ -208,7 +208,7 @@ function removeFilter(aname, avalue){
     		//$("input.search").tokenInput("clear"); // removes also string in search // update: already removed when added filter
     	}
     	
-    	labelize2();
+    	labelizeData();
 	    //updateLattice();
 	    updateVis();
 }
@@ -499,7 +499,7 @@ function filterAttributes(){
 	
 	attrFilterCt++;
 	
-	labelize2();
+	labelizeData();
     //updateLattice();
     updateVis();
 	

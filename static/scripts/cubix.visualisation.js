@@ -32,10 +32,28 @@ function resetZoom(){
     .scale(1);
 
 	vis.attr("transform",
-       "scale(" + scale + ")");
+      "translate(" + w/2 + ","+ h/2+")"
+      + " scale(" + scale + ")");
       
    $( "#zoom_level" ).val("100%");
 }
+
+function zoomInOut(value){
+	
+	var scale = Math.round((value/100)*100)/100;
+	
+	d3.behavior.zoom()
+    .scale(1);
+
+	
+       vis.attr("transform",
+      "translate(" + w/2 + ","+ h/2+")"
+      + " scale(" + scale + ")");
+       
+				
+	 $( "#zoom_level" ).val( value + "%");
+}
+
 
 function redraw() {
 	//if (dragging) return;
@@ -201,7 +219,7 @@ function updateIcicle(){
 		      .attr("y", function(d) { return y(d.y); })
 		      .attr("width", function(d) { return x(d.dx); })
 		      .attr("height", function(d) { return y(d.dy); })
-		      .attr("fill", function(d) { return color((d.children ? d : d.parent).name); })
+		      .attr("fill", getNodeColor)
 		      .on("mouseover", nodeMouseOver)
 		  	  .on("mouseout", nodeMouseOut)
 		  	  .on("click", nodeClick)
@@ -332,7 +350,10 @@ function updateTree(source) {
       .on("dblclick", clickCollapse);
 
   nodeEnter.append("svg:circle")
+  	  .attr("class", "node concept")
+  	  .attr("id", function(d) { return "node-"+d.id})
       .attr("r", getNodeSize)//1e-6)
+      .style("fill", getNodeColor)
       .on("click", nodeClick)
       .on("mouseover", nodeMouseOver)
 	  .on("mouseout", nodeMouseOut);
@@ -385,6 +406,8 @@ function updateTree(source) {
   // Enter any new links at the parent's previous position.
   link.enter().insert("svg:path", "g")
       .attr("class", "treelink")
+      .attr("source_id", function(d) { return d.source_id;})
+	  .attr("target_id", function(d) { return d.target_id;})
       .attr("d", function(d) {
         var o = {x: source.x0, y: source.y0};
         return diagonal({source: o, target: o});

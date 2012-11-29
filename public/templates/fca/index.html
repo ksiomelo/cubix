@@ -24,8 +24,6 @@
 <!-- autosuggest -->
 <link type="text/css" href="{{STATIC_URL}}styles/token-input-facebook.css" rel="stylesheet" />
 <script type="text/javascript" src="{{STATIC_URL}}scripts/jquery.tokeninput.js"></script>
-<!-- PARALLEL SETS-->
-<script type="text/javascript" src="{{STATIC_URL}}scripts/d3.modparsets.js"></script>
 <!--
 <link type="text/css" href="{{STATIC_URL}}styles/d3.parsets.css" rel="stylesheet" />
 -->
@@ -46,7 +44,7 @@
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.associationrules.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.layout.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.filters.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.facets.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.search.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.lattice.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.dashboard.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.context.js"></script>
@@ -151,16 +149,14 @@
 	<div style="float: left;">
 		<!--
 		<label for="layout_type">Layout:</label>
-		-->
+		
 		<input type="text" id="layout_type" style="border:0; color:#f6931f; font-weight:bold; width: 70px; float:left" />
-		<div id="slider-layout" style="width: 100px; margin: 8px 40px 8px 20px; float: left"></div>
-	</div>
-	<div style="float: left;">
-		<input type="text" value="100%" id="zoom_level" rel="tooltip"  data-trigger="hover" data-placement="bottom" data-title="Use the mouse scroll to zoom in and out. Click to reset." />
-		<!--
-		<div id="slider-zoom"  style="width: 100px; margin: 8px 40px 8px 20px; float: left"></div>
 		-->
+		<input type="text" value="100%" id="zoom_level" rel="tooltip"  data-trigger="hover" data-placement="bottom" data-title="Use the mouse scroll to zoom in and out. Click to reset." />
+		
+		<div id="slider-zoom" style="width: 100px; margin: 8px 40px 8px 20px; float: left"></div>
 	</div>
+	
 	<div style="margin-left: 20px; float: left;">
 		<input type="text" id="search" style="width: 300px;" class="search"/>
 		<input type="button" class="filter-search" value="Filter"/>
@@ -186,7 +182,14 @@
 	<div class="span6" style="">&nbsp;</div>
 	-->
 	
+	<div id="expand-dashboard" style="display:none;">
+		<a href="#" class="expand-dashboard">&laquo; Expand</a>
+	</div>
+	
 	<div id="columns" class="span6">
+		
+		<a href="#" class="collapse-dashboard">Collapse &raquo;</a>
+		
 		<ul id="dashboard_lattice" class="column">
             <!--
             <li class="widget color-green" id="intro">
@@ -207,7 +210,11 @@
                 </div>
                 
                 <div class="edit-box" style="display:none">
-					No config available for this chart.
+					<label for="distribution-chart-type">Chart: </label>
+					<select id="distribution-chart-type" name="distribution-chart-type[]" style="width: 120px; font-size: 10px;">
+						<option value="bar" selected="selected">Bar</option>
+						<option value="pie">Pie</option>
+					</select>
 				</div>
 
                 <div class="widget-content">
@@ -267,8 +274,8 @@
                 <div class="edit-box" style="display:none">
 					<label for="attr-graph-layout">Layout: </label>
 					<select id="attr-graph-layout" name="attr-graph-layout[]" style="width: 120px; font-size: 10px;">
-						<option value="fd" checked="checked">Force Directed</option>
-						<option value="radial" checked="checked">Radial</option>
+						<option value="fd" selected="selected">Force Directed</option>
+						<option value="radial">Radial</option>
 					</select>
 					
 					<input type="checkbox" id="attr-graph-curved-edges" /> Curved edges

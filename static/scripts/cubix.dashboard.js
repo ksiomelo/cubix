@@ -197,6 +197,50 @@ function createVerticalBarChart(renderTo, title, thecategories, thedata){
 	});
 }
 
+function createDistributionPieChart(){
+	createPieChart("distribution-chart", "Distribution", []);
+}
+
+
+function createPieChart(renderTo, title, thedata){
+	distributionChart = new Highcharts.Chart({
+            chart: {
+                renderTo: renderTo,
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false
+            },
+            title: {
+                text: title
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage}%</b>',
+                percentageDecimals: 1
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: true,
+                        color: '#000000',
+                        connectorColor: '#000000',
+                        formatter: function() {
+                            return '<b>'+ this.point.name +'</b>: '+ Math.round(this.percentage*100)/100 +' %';
+                        }
+                    }
+                }
+            },
+            series: 
+            [{
+                type: 'pie',
+                name: 'Attributes',
+                data: thedata
+            }]
+            
+        });
+}
+
 
 /*
  * DISTRIBUTION CHART
@@ -208,6 +252,12 @@ function createDistributionChart(){
 }
 
 function updateDistributionChart(d){
+	
+	
+	var selected = $("#distribution-chart-type").val();
+	if (selected == "bar") { 
+	
+	
 			if (typeof d == "undefined")
 				return;
 	
@@ -225,7 +275,29 @@ function updateDistributionChart(d){
 			
 			distributionChart.series[0].setData(sumData);
 			distributionChart.xAxis[0].setCategories(subcontext.attributeNames);
-			//distributionChart.redraw();
+			
+	} else if (selected=="pie") {
+		
+		if (typeof d == "undefined")
+				return;
+	
+			var sumData = [];
+			
+			var subcontext = context.getSubcontextForExtent(d.extent, false);
+			for (var j=0; j < subcontext.attributes.length; j++) {
+				var sum = 0;
+				
+				for (var k=0; k < subcontext.objects.length; k++) {
+			  		if (subcontext.rel[k][j] == true) sum++;
+			 	}
+			 	sumData.push([ subcontext.attributes[j] ,sum]);
+			};
+			
+			distributionChart.series[0].setData(sumData);
+			//distributionChart.xAxis[0].setCategories(subcontext.attributeNames);
+		
+	}
+			
 	
 }
 
@@ -323,7 +395,7 @@ function createRulesList() {
 	a2 = [];
 	for( i = 0; i < association_rules.length; i++) {
 		a1.push(association_rules[i].id);
-		a2.push(association_rules[i].confidence);
+		a2.push(Math.round(association_rules[i].confidence*100)/100);
 	}
 	
 	var new_height = 50 + (association_rules.length * 20);

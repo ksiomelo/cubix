@@ -24,17 +24,20 @@ var dagreVis = new function() {
 		    .attr("height", h)
 		    .attr("viewBox", "0 0 "+w+" "+h)
 	    	.attr("preserveAspectRatio", "xMidYMid")
-		    .attr("pointer-events", "all")
+		    //.attr("pointer-events", "all")
 		  .append('svg:g')
-		    .call(d3.behavior.zoom().on("zoom", redraw));
+		    //.call(d3.behavior.zoom().on("zoom", redraw));
 		    
-		vis.append('svg:g');
+		//vis.append('svg:g');
+		
+		
+		/// not used:
 		
 		// vis.append('svg:rect')
 		    // .attr('width', w)
 		    // .attr('height', h)
 		    // .attr('fill', 'white');
-	// 	    
+// 		    
 		    
 		// reset edges info (e.g. in case of filtering)
 		lattice.concepts.forEach(function(d) {
@@ -143,7 +146,16 @@ var dagreVis = new function() {
 			    .attr("x", 4) // TODO verify the bbox.width of the text to position it
 		    	.attr("y", dagreVis.config.paddingToNode)
 		    	.text(get_lower_label);
-
+		
+		// lowerLabelbox
+			    // .selectAll("tspan .extent")
+			    // .data(d.extent)
+			    // .enter()
+			    // .append('tspan')
+			    // .attr("class", "extent")
+			    // //.attr("x", 4) // TODO verify the bbox.width of the text to position it
+		    	// //.attr("y", dagreVis.config.paddingToNode);
+		    	// .text(d);
 	
 	
 	  // We need width and height for layout.
@@ -346,7 +358,9 @@ var dagreVis = new function() {
 	
 	this.nodeClick = function(d){ // select node	
 		
-		d3.select(this).classed("selected", !nodeClick(d));
+		
+		nodeClick(d);
+		//d3.select(this).classed("selected", !nodeClick(d));
 		
 		
 		

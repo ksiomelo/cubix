@@ -383,7 +383,7 @@ function initARView(){
       .attr("class", "column")
       .attr("transform", function(d, i) {if (d[i]) return "translate(" + i*(w-m[1]-1)/n + ")rotate(-90)"; else return "translate(0)rotate(-90)"});
   column.append("line")
-      .attr("x1",-association_rules.length*10) 
+      .attr("x1",Math.min(-association_rules.length*10,-h)) 
       .attr("transform", function(d, i) { return "translate(0," + i*(w-m[1]-1)/n + ")"; })
       .attr("class","matrix_view_separator");
   column.append("text")

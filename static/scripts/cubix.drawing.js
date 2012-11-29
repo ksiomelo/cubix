@@ -23,6 +23,14 @@ function getEdgeThickness(e){
 	}
 }
 
+function getEdgeValue(e){
+	if (edge_type == 'default') return -1;
+	else { 
+		var metricValue = metrics.getLinkScore(e.source.id, e.target.id, edge_type)
+		return Math.round(metricValue*100)/100;
+	}
+}
+
 function changeEdgeThickness(type){
 	edge_type = type;
 	
@@ -62,7 +70,7 @@ function changeNodeColor(type){
 	color_type = type;
 	
 	vis.selectAll(".concept").style("fill", function(d) { // TODO
-			return getNodeColor(d);
+		return getNodeColor(d);
 	});
 	
 	// size_type = type;
@@ -79,6 +87,22 @@ function changeNodeColor(type){
 
 function getNodeColor(d) {
 	if (color_type == 'ids') return mapColor(d.id);
+	else if (color_type == 'cluster') {
+		
+		var p=d3.scale.category10();
+		p.domain();
+		// console.log(p(0));
+		// console.log(p(1));
+		// console.log(p(2));
+		
+		var metricValue = metrics.getScore(d.id,color_type)
+		console.log(metricValue + "-" + p(metricValue));
+		
+		//return(p(metricValue+i));
+		
+		//return d3.scale.category20c()(metricValue*13);
+		return mapColor(""+metricValue*13);
+	}
 	else return DEFAULT_FILL_COLOR;
 }
 
@@ -307,29 +331,34 @@ function labelizeData(){
 	}
 	
 	
-	// extent labels
-	nodelist = getBottomMostConcepts();
+	if ($("input[name='label-for-attr']").is(':checked')) {
 	
-	for (var i=0; i < nodelist.length; i++) {
-		var cur = nodelist[i];
+		// extent labels
+		nodelist = getBottomMostConcepts();
 		
-		var childrenList = getChildrenData(cur);
-		
-		var curExtent = cur.extent;
-		
-		for (var j=0; j < childrenList.length && curExtent.length > 0; j++) {
-		  var childExtent = childrenList[j].extent;
-		  
-		     curExtent = ArraySubtract(curExtent,childExtent);
-		};
-		
-		var extLabel = curExtent.join(", ");
-	//	vis.select('text[id="extent_'+cur.id+'"]').text(extLabel); 
-		cur.lowerLabel = extLabel;
-		//nodelist.addAll(getParentsData(cur));
-		ArrayAddAll(getParentsData(cur), nodelist);
+		for (var i=0; i < nodelist.length; i++) {
+			var cur = nodelist[i];
+			
+			var childrenList = getChildrenData(cur);
+			
+			var curExtent = cur.extent;
+			
+			for (var j=0; j < childrenList.length && curExtent.length > 0; j++) {
+			  var childExtent = childrenList[j].extent;
+			  
+			     curExtent = ArraySubtract(curExtent,childExtent);
+			};
+			
+			var extLabel;
+			if (curExtent.length > 5) { 
+				var more = curExtent.length-5;
+				extLabel = curExtent.join("\n") + "\n("+more+" more)";
+			} else  extLabel = curExtent.join("\n");
+			
+			cur.lowerLabel = extLabel;
+			ArrayAddAll(getParentsData(cur), nodelist);
+		}
 	}
-	
 	//updateVis();
 	
 }
