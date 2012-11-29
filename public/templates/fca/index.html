@@ -24,14 +24,15 @@
 <!-- autosuggest -->
 <link type="text/css" href="{{STATIC_URL}}styles/token-input-facebook.css" rel="stylesheet" />
 <script type="text/javascript" src="{{STATIC_URL}}scripts/jquery.tokeninput.js"></script>
+
 <!--
-<link type="text/css" href="{{STATIC_URL}}styles/d3.parsets.css" rel="stylesheet" />
+<script type="text/javascript" src="{{STATIC_URL}}scripts/jquery.cx.js"></script>
 -->
 <!-- EXPORT IMAGES  
 <script type="text/javascript" src="{{STATIC_URL}}scripts/rgbcolor.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/canvg.js"></script>
 -->
-<!-- CUBIX  -->
+
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.a.defaults.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.utils.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.drawing.js"></script>
@@ -50,9 +51,9 @@
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.context.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.compare.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.metrics.js"></script>
-<!--
-<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.min.js"></script>
--->
+
+
+
 
 <script type="text/javascript">
 	var PREF_VIS = {% if "pref_vis" in request.session %} "{{ request.session.pref_vis }}" {% else %} "dagre" {% endif %}; // preferred visualisation from the session
