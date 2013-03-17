@@ -531,7 +531,7 @@ function loadAttributeGraph(data) {
 }
 
 
-
+var color20=d3.scale.category20();
 
 function radialAttributeGraph(data){
 	var width = DEFAULT_ATTR_GRAPH_WIDTH,
@@ -601,7 +601,7 @@ function radialAttributeGraph(data){
 	    	.attr("x2", function(d){ return d.target.x; })
 	    	.attr("y2", function(d){ return d.target.y; })
 		    .style("stroke",function(d,i){
-		    	return "#000000";
+		    	return "#888";
 	    		});
 	    	 
 	  var circle = svg.selectAll("g.node")
@@ -622,7 +622,7 @@ function radialAttributeGraph(data){
 	    .style("pointer-events","none")
 	    .attr("text-anchor", function(d){return d.x>0 ? "start": "end";})
       	.text(function(d){return d.name;})
-      	.style("stroke",function(d){return "#000000";}) //color_set(d.family-1);})
+      	.style("fill",function(d){return color20(d.name);}) //color_set(d.family-1);})
       	.attr("transform",function(d){return "translate("+d.x+","+d.y+")rotate("+Math.atan(d.y/d.x)*180/Math.PI+")";});
 
 		
@@ -672,7 +672,7 @@ function changeAttributeGraphLayout(type){
 	
 }
 
-
+//var color20=d3.scale.category20c();
 var radarChart = new function(){
 	
 	var width = 500, height = 400;
@@ -896,8 +896,8 @@ var radarChart = new function(){
 	      .data(series);
 	  groups.enter().append("svg:g")
 	      .attr('class', 'series')
-	      .style('fill', function (d, i) { return mapColor(context.attributes[i]); })
-	      .style('stroke', function (d, i) { return mapColor(context.attributes[i]); });
+	      .style('fill', function (d, i) { return p(context.attributes[i]); })
+	      .style('stroke', function (d, i) { return p(context.attributes[i]); });
 	  groups.exit().remove();
 	
 	  lines = groups.append('svg:path')

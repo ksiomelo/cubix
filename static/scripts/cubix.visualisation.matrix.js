@@ -7,7 +7,7 @@ var matrixVis = new function() {
 	
 	
 	this.config = {
-		margin : {top: 80, right: 0, bottom: 10, left: 80},
+		margin : {top: 80, right: 0, bottom: 10, left: 100},
 		width : 60,
 		height : 12
 	};
@@ -63,8 +63,8 @@ var matrixVis = new function() {
 				   var idxi = context.attributes.indexOf(concept.intent[i]);
 				   var idxe = context.objects.indexOf(concept.extent[j]);
 				   
-				   if (typeof matrix[i][j].concepts == "undefined") matrix[i][j].concepts = [];
-				   matrix[i][j].concepts.push(concept);
+				   if (typeof matrix[idxe][idxi].concepts == "undefined") matrix[idxe][idxi].concepts = [];
+				   matrix[idxe][idxi].concepts.push(concept);
 				   
 				 };
 				 
@@ -93,6 +93,7 @@ var matrixVis = new function() {
 		
 		  vis.append("rect")
 		      .attr("class", "background")
+		      .style("fill", "#FFFFFF")
 		      .attr("width", w)
 		      .attr("height", h);
 		
@@ -132,19 +133,11 @@ var matrixVis = new function() {
 	
 		
 	  this.row = function(row) {
-	    var cell = d3.select(this).selectAll(".cell")
+	    var cell = d3.select(this).selectAll("g.cell")
 	        .data(row)//.filter(function(d) { return (d.z == 1); }))
+	      .attr("class", "cell")
 	      .enter().append("g")
 	   
-	   // cell.append("rect")
-	        // .attr("class", "cell")
-	        // .attr("x", function(d) { return (w/n)*(d.x); }) // TODO x(d.x)
-	        // .attr("width", (w/n))
-	        // .attr("height", (h/m))
-	        // .style("fill-opacity", function(d) { return .2; })
-	        // .style("fill", function(d){ return "#0000FF"; })//function(d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
-	        // .on("mouseover", this.mouseover)
-	        // .on("mouseout", this.mouseout);
 	      .each(function(d){
 	      	
 	        if (typeof d.concepts == "undefined") return;
@@ -152,14 +145,24 @@ var matrixVis = new function() {
 				// d.concepts[idx]
 			 
 		      	d3.select(this).append("rect")
-		        .attr("class", "cell")
+		        //.attr("class", "concept_cell")
+		        .attr("class", function(d){ return "ccel-"+d.concepts[idx].id;})
 		        .attr("x", function(d) { return (w/n)*(d.x); }) // TODO x(d.x)
-		        .attr("width", (w/n))
-		        .attr("height", (h/m))
-		        .style("fill-opacity", function(d) { return .2; })
-		        .style("fill", function(d){ return mapColor(d.concepts[idx].id); })//function(d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
-		        .on("mouseover", this.mouseover)
-		        .on("mouseout", this.mouseout);
+		        .attr("width", (w/n) - idx*20)
+		        .attr("height", (h/m) - idx*20)
+		        //.style("fill-opacity", function(d) { return .4; })
+		        .style("fill", function(d){ return p(d.concepts[idx].id); })//function(d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
+		        .on("click", function(d){ alert("oi"); })
+		        .on("mouseover", function(d){ 
+		        	var ccels = d3.selectAll("rect."+d3.select(this).attr("class"));
+		        	ccels.style("stroke-width", 2);
+		        	ccels.style("stroke", "#FF0000"); 
+		        	})
+		        .on("mouseout", function(d){ 
+		        	//d3.select(this).style("stroke-width", 2);
+		        	var ccels = d3.selectAll("rect."+d3.select(this).attr("class"));
+		        	ccels.style("stroke", null); 
+		        	});
 	        
 	         };
 	      });
@@ -169,8 +172,9 @@ var matrixVis = new function() {
 	  }
 	
 	  this.mouseover = function(p) {
-	    d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
-	    d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
+	  		d3.select(p).style("stroke-width", 2);
+	    //d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
+	    //d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
 	  }
 	
 	  this.mouseout = function() {

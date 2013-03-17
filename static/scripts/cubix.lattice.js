@@ -76,8 +76,8 @@ function loadData(data){
 	checkLatticeConstraints();
 	
     
-    displayAttrLabel = $("input[name='label-for-attr']").is(':checked');
-	displayObjLabel = $("input[name='label-for-attr']").is(':checked');
+    //displayAttrLabel = $("input[name='label-for-attr']").is(':checked');
+	//displayObjLabel = $("input[name='label-for-attr']").is(':checked');
     labelizeData();
 
     

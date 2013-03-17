@@ -68,6 +68,7 @@ class ConceptLattice(models.Model):
 #        self.zero = None
   
     def compute_lattice(self, builder=norris):
+        print "computing lattice.."
         if self._context is None :
             raise Exception("context is not set")
         if builder != "dont" : 
@@ -77,8 +78,11 @@ class ConceptLattice(models.Model):
         #_context = context
         self.one = None
         self.zero = None
+        print "done! computing attribute lattices.."
         self.compute_attribute_lattices()
+        print "done! computing attribute graph.."
         self.compute_attribute_graph()
+        print "done!"
         
     def compute_attribute_graph(self):
         

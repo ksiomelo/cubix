@@ -137,9 +137,8 @@ def updated_basis(intent, basis, attributes):
         for a in attributes - intent:
             aset = set([a])
             new_imp = Implication(imp.premise | aset, imp.conclusion | aset)
-            if (remove_subsumed(new_imp, valid) and
-                remove_subsumed_plus(new_imp, new_valid)):
-               new_valid.append(new_imp)
+            if (remove_subsumed(new_imp, valid) and remove_subsumed_plus(new_imp, new_valid)):
+                new_valid.append(new_imp)
     return valid + new_valid
                     
 

@@ -9,6 +9,9 @@ from workspace.models import Workspace
 class SlugField(forms.CharField):
     def clean(self, request, initial=None):
         field = super(SlugField, self).clean(request)
+        
+#        if not slug:
+#            raise forms.ValidationError("Please enter a workspace title without spaces")
 
         if len(Workspace.objects.filter(title_slug=request)) > 0:
         #slug = Workspace(title_slug=request)

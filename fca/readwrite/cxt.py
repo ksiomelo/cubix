@@ -135,6 +135,10 @@ def read_cxt(path):
     AssertionError: File is not valid cxt
 
     """
+    
+    truncate_at = 80
+    
+    
     input_file = open(path, "r")
     assert input_file.readline().strip() == "B",\
         "File is not valid cxt"
@@ -142,14 +146,21 @@ def read_cxt(path):
     number_of_objects = int(input_file.readline().strip())
     number_of_attributes = int(input_file.readline().strip())
     input_file.readline() # Empty line
-
-    objects = [input_file.readline().strip() for i in xrange(number_of_objects)]
+    
+    
+    objects = []
+    for i in xrange(number_of_objects):
+        objString = input_file.readline().strip()
+        if i < truncate_at:
+            objects.append(objString)
+        
     attributes = [input_file.readline().strip() for i in xrange(number_of_attributes)]
 
     table = []
     for i in xrange(number_of_objects):
         line = map(lambda c: c=="X", input_file.readline().strip())
-        table.append(line)
+        if i < truncate_at:
+            table.append(line)
 
     input_file.close()
 

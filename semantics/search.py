@@ -25,18 +25,28 @@ class Semantic(object):
     @staticmethod
     def search_owlim(prefix, query):
         
-        prefix = """PREFIX :<http://www.cubist_project.eu/HWU#>
+        prefix = """PREFIX :<http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine#>
                  PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                  PREFIX owl:<http://www.w3.org/2002/07/owl#>
                  PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
                  PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>
                  """
         
-        query = prefix + """ select distinct ?o1 ?a1  where {  
-                ?x1 rdf:type :Tissue ; rdfs:label ?o1 .
-                ?x1 :has_theiler_stage :theiler_stage_TS07 .
-                ?x2 rdf:type :Gene  ;    rdfs:label ?a1 .
-                ?ta :in_tissue ?x1 ; :has_involved_gene ?x2  ; :has_strength :level_detected_derived . }"""
+        query = prefix + """ SELECT ?subj ?prop ?obj WHERE { ?o1 a ?class . ?subj a ?o1 .  ?subj ?prop ?obj. }"""
+                
+                
+#        prefix = """PREFIX :<http://www.cubist_project.eu/test#>
+#                 PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+#                 PREFIX owl:<http://www.w3.org/2002/07/owl#>
+#                 PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+#                 PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>
+#                 """
+#        
+#        query = prefix + """ select distinct ?o1 ?a1  where {  
+#                ?x1 rdf:type :Tissue ; rdfs:label ?o1 .
+#                ?x1 :has_theiler_stage :theiler_stage_TS07 .
+#                ?x2 rdf:type :Gene  ;    rdfs:label ?a1 .
+#                ?ta :in_tissue ?x1 ; :has_involved_gene ?x2  ; :has_strength :level_detected_derived . }"""
         
            
     
@@ -61,7 +71,7 @@ class Semantic(object):
     
     @staticmethod
     def search_sparqlwrapper(prefix, query):
-        sparql = SPARQLWrapper("http://127.0.0.1:8080/openrdf-sesame/repositories/hwu")
+        sparql = SPARQLWrapper("http://127.0.0.1:8080/openrdf-sesame/repositories/wine2")
         #sparql = SPARQLWrapper("http://dbpedia.org/sparql")
         
         sparql.setQuery(prefix + """ """ + query)
@@ -83,7 +93,7 @@ class Semantic(object):
         tempRel = dict([])
         
         queryString = "SELECT ?subj ?prop ?obj WHERE { ?o1 a ?class . ?subj a ?o1 .  ?subj ?prop ?obj. }"
-        sparql = SPARQLWrapper2("http://127.0.0.1:8080/openrdf-sesame/repositories/test")
+        sparql = SPARQLWrapper2("http://127.0.0.1:8080/openrdf-sesame/repositories/wine2")
         # add a default graph, though that can also be in the query string
         #sparql.addDefaultGraph("http://www.example.com/data.rdf")
         sparql.setQuery(queryString)

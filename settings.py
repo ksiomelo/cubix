@@ -9,7 +9,9 @@ PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
 
 CUBIST = True
 
+#XS_SHARING_ALLOWED_ORIGINS = "http://127.0.0.1"
 
+#XS_SHARING_ALLOWED_METHODS = ['POST','GET','OPTIONS', 'PUT', 'DELETE']
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -121,6 +123,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'cubix.middlewares.crossdomainxhr.XsSharing'
     #'cubix.middlewares.workspace.ListWorkspacesMiddleware',
 )
 

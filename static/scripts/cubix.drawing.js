@@ -85,23 +85,24 @@ function changeNodeColor(type){
 	// }
 }
 
+var p=d3.scale.category10();
 function getNodeColor(d) {
 	if (color_type == 'ids') return mapColor(d.id);
 	else if (color_type == 'cluster') {
 		
-		var p=d3.scale.category10();
-		p.domain();
+		
+		//p.domain();
 		// console.log(p(0));
 		// console.log(p(1));
 		// console.log(p(2));
 		
 		var metricValue = metrics.getScore(d.id,color_type)
-		console.log(metricValue + "-" + p(metricValue));
+		//console.log(metricValue + "-" + p(metricValue));
 		
-		//return(p(metricValue+i));
+		return(p(metricValue));
 		
 		//return d3.scale.category20c()(metricValue*13);
-		return mapColor(""+metricValue*13);
+		//return mapColor(""+metricValue*13);
 	}
 	else return DEFAULT_FILL_COLOR;
 }
@@ -145,7 +146,7 @@ function mapColor(str) {
 /*
  * LABELS
  */
-var displayAttrLabel, displayObjLabel = true;
+
 	
 function get_upper_label(d){
 	

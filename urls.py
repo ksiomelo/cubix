@@ -21,6 +21,7 @@ urlpatterns += patterns('',
 
 ## API
 urlpatterns += patterns('api.views',
+    (r'^api/v1/rt/search$', 'rt_search'),
     (r'^api/v1/metrics/$', 'calculate_metric'),
     (r'^api/v1/sparql/search$', 'sparql_search'),
     (r'^api/v1/context/$', 'get_context'),

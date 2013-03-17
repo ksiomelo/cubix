@@ -1,7 +1,9 @@
-#Tue Nov 27 18:52:11 CET 2012
+#Thu Dec 13 18:25:18 CET 2012
 eclipse.preferences.version=1
 encoding//fca/__init__.py=utf-8
 encoding//fca/algorithms/filtering/stability.py=utf-8
+encoding//fca/algorithms/implication_covers.py=utf-8
+encoding//fca/algorithms/implication_fuzz.py=utf-8
 encoding//fca/algorithms/incremental.py=utf-8
 encoding//fca/algorithms/norris.py=utf-8
 encoding//fca/algorithms/scaling.py=utf-8

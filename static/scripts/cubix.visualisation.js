@@ -45,7 +45,7 @@ function zoomInOut(value){
 	d3.behavior.zoom()
     .scale(1);
 
-	
+	// TODO only radial vis?
        vis.attr("transform",
       "translate(" + w/2 + ","+ h/2+")"
       + " scale(" + scale + ")");
