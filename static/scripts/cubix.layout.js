@@ -541,6 +541,7 @@ $(function() {
 		// row (dashboard)
 		$(".draw-chart-1a").click(function(){
 			createHorizontalBarChart("box1a-chart", $("#control_1").selectedPairsArray(), $("#control_2").selectedPairsArray());
+		 	$(".edit-box").hide();
 		 });
 		 
     	

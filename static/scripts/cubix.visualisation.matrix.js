@@ -19,6 +19,8 @@ var matrixVis = new function() {
 		    
 	var m; 
 	var n;
+	
+	this.matrix = [];
 
 	this.run = function(){
 		
@@ -37,7 +39,7 @@ var matrixVis = new function() {
 		  
 
 		//d3.json("miserables.json", function(miserables) {
-		  var matrix = []; //,
+		 // var matrix = []; //,
 		  
 		      // nodes = miserables.nodes,
 		      // n = nodes.length;
@@ -46,12 +48,12 @@ var matrixVis = new function() {
 		  context.objects.forEach(function(attr, i) {
 		    //node.index = i;
 		    //node.count = 0;
-		    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
+		    matrixVis.matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
 		  });
 		
 		  for (var i=0; i < context.rel.length; i++) {
 		  	for (var j=0; j < context.rel[i].length; j++) {
-				matrix[i][j].z = (context.rel[i][j]) ? 1 : 0;
+				matrixVis.matrix[i][j].z = (context.rel[i][j]) ? 1 : 0;
 			 };
 		  };
 		  
@@ -63,34 +65,14 @@ var matrixVis = new function() {
 				   var idxi = context.attributes.indexOf(concept.intent[i]);
 				   var idxe = context.objects.indexOf(concept.extent[j]);
 				   
-				   if (typeof matrix[idxe][idxi].concepts == "undefined") matrix[idxe][idxi].concepts = [];
-				   matrix[idxe][idxi].concepts.push(concept);
+				   if (typeof matrixVis.matrix[idxe][idxi].concepts == "undefined") matrixVis.matrix[idxe][idxi].concepts = [];
+				   matrixVis.matrix[idxe][idxi].concepts.push(concept);
 				   
 				 };
 				 
 			  };
 		  });
 		  
-		  // // Convert links to matrix; count character occurrences.
-		  // miserables.links.forEach(function(link) {
-		    // matrix[link.source][link.target].z += link.value;
-		    // matrix[link.target][link.source].z += link.value;
-		    // matrix[link.source][link.source].z += link.value;
-		    // matrix[link.target][link.target].z += link.value;
-		    // nodes[link.source].count += link.value;
-		    // nodes[link.target].count += link.value;
-		  // });
-		
-		  // Precompute the orders.
-		  // var orders = {
-		    // name: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
-		    // count: d3.range(n).sort(function(a, b) { return nodes[b].count - nodes[a].count; }),
-		    // group: d3.range(n).sort(function(a, b) { return nodes[b].group - nodes[a].group; })
-		  // };
-		
-		  // The default sort order.
-		  //x.domain(orders.name);
-		
 		  vis.append("rect")
 		      .attr("class", "background")
 		      .style("fill", "#FFFFFF")
@@ -98,7 +80,7 @@ var matrixVis = new function() {
 		      .attr("height", h);
 		
 		  var row = vis.selectAll(".row")
-		      .data(matrix)
+		      .data(matrixVis.matrix)
 		    .enter().append("g")
 		      .attr("class", "row")
 		      .attr("transform", function(d, i) { return "translate(0," + i*(h/m) + ")"; })
@@ -115,7 +97,7 @@ var matrixVis = new function() {
 		      .text(function(d, i) { return context.objects[i]; });
 		
 		  var column = vis.selectAll(".column")
-		      .data(matrix[0])
+		      .data(matrixVis.matrix[0])
 		    .enter().append("g")
 		      .attr("class", "column")
 		      .attr("transform", function(d, i) { return "translate(" + (w/n)*i + ")rotate(-90)"; });
@@ -152,7 +134,9 @@ var matrixVis = new function() {
 		        .attr("height", (h/m) - idx*20)
 		        //.style("fill-opacity", function(d) { return .4; })
 		        .style("fill", function(d){ return p(d.concepts[idx].id); })//function(d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
-		        .on("click", function(d){ alert("oi"); })
+		        .on("click", function(d){ 
+		        	matrixVis.ordercolumns(d3.select(this).attr("class").split("-")[1]); 
+		        	})
 		        .on("mouseover", function(d){ 
 		        	var ccels = d3.selectAll("rect."+d3.select(this).attr("class"));
 		        	ccels.style("stroke-width", 2);
@@ -170,16 +154,75 @@ var matrixVis = new function() {
 	   
 	    
 	  }
+	  
+	  
+	  var hasConcept = function(d, conceptId) {
+	  	if (typeof d.concepts != 'undefined') { 
+		  	for (var i = 0; i < d.concepts.length; i++) {
+		  		if (d.concepts[i].id == conceptId) return true;
+		  	}
+	  	}
+	  	return false;
+	  };
+	  
+	  this.ordercolumns = function(conceptId){
+	  	//var x = d3.scale.ordinal().rangeBands([0, width]);
+	  	var n = lattice.concepts.length;
+	  	var objCount = context.objects.length;
+	  	var attrCount = context.attributes.length;
+	  	
+	  	
+	  	
+	  	x.domain(d3.range(attrCount).sort(function(a, b) { 
+	  		
+	  		for (var i=0; i< objCount; i++) {
+	  			var hc1 = hasConcept(matrixVis.matrix[i][a], conceptId);
+	  			var hc2 = hasConcept(matrixVis.matrix[i][b], conceptId);
+	  			
+	  			if  (hc1 && hc2) return 0;
+	  		}
+	  		
+	  		return 1; 
+	  	}));
+	  	
+	  	y.domain(d3.range(objCount).sort(function(a, b) { 
+	  		
+	  		for (var j=0; j< attrCount; j++) {
+	  			var hc1 = hasConcept(matrixVis.matrix[a][j], conceptId);
+	  			var hc2 = hasConcept(matrixVis.matrix[b][j], conceptId);
+	  			
+	  			if  (hc1 && hc2) return 0;
+	  		}
+	  		
+	  		return 1; 
+	  	}));
+	  		
+	  
+	    var t = vis.transition().duration(2500);
+	
+	    t.selectAll(".row")
+	        .delay(function(d, i) { return y(i) * 4; })
+	        .attr("transform", function(d, i) { return "translate(0," + y(i) + ")"; })
+	      .selectAll(".cell")
+	        .delay(function(d) { return y(d.x) * 4; })
+	        .attr("x", function(d) { return y(d.x); });
+	
+	
+	    // t.selectAll(".column")
+	        // .delay(function(d, i) { return x(i) * 4; }) 
+	        // .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
+	 
+	  };
 	
 	  this.mouseover = function(p) {
 	  		d3.select(p).style("stroke-width", 2);
 	    //d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
 	    //d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
-	  }
+	  };
 	
 	  this.mouseout = function() {
 	    d3.selectAll("text").classed("active", false);
-	  }
+	  };
 	
 	  // d3.select("#order").on("change", function() {
 	    // clearTimeout(timeout);

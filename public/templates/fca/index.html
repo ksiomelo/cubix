@@ -17,6 +17,7 @@
 <script type="text/javascript" src="{{STATIC_URL}}scripts/highcharts-more.js"></script>
 <!-- dashboard -->
 <link type="text/css" href="{{STATIC_URL}}styles/dashboard.css" rel="stylesheet" />
+<script type="text/javascript" src="{{STATIC_URL}}scripts/radar-chart-min.js"></script>
 <!-- multiselect -->
 <link type="text/css" href="{{STATIC_URL}}styles/jquery.multiSelect.css" rel="stylesheet" />
 <script type="text/javascript" src="{{STATIC_URL}}scripts/jquery.bgiframe.min.js"></script>
@@ -49,7 +50,6 @@
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.lattice.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.dashboard.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.context.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.compare.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.metrics.js"></script>
 
 
@@ -243,7 +243,7 @@
             
              <li class="widget color-silver">  
                 <div class="widget-head">
-                    <h3>Co-occurence</h3>
+                    <h3>Co-occurrence</h3>
                 </div>
                 
                 <div class="edit-box" style="display:block">
@@ -256,7 +256,7 @@
 							<select id="control_2" name="control_2[]" multiple="multiple" size="5" style="width: 120px; font-size: 10px;">
 							</select>
 					</div><div>
-							<a href="#" class="draw-chart-1a">Refresh</a>
+							<a class="draw-chart-1a">Refresh</a>
 						</div>
 				</div>
 
