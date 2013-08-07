@@ -131,7 +131,7 @@ var dagreVis = new function() {
 			    .enter()
 			    .append('text')
 		        .attr("id", function(d) { return "intent-" + d.id })
-			    .attr("class", "intent")
+			    .attr("class", "nlabel intent")
 			    .attr("x", 4) // TODO verify the bbox.width of the text to position it
 		    	.attr("y", -dagreVis.config.paddingToNode)
 		    	.text(get_upper_label);
@@ -142,7 +142,7 @@ var dagreVis = new function() {
 			    .enter()
 			    .append('text')
 		        .attr("id", function(d) { return "extent-" + d.id })
-			    .attr("class", "extent")
+			    .attr("class", "nlabel extent")
 			    .attr("x", 4) // TODO verify the bbox.width of the text to position it
 		    	.attr("y", dagreVis.config.paddingToNode)
 		    	.text(get_lower_label);

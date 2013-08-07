@@ -43,7 +43,7 @@ var SIZE_DEFAULT = 1;
 var LABEL_REPETITIVE = "repetitive";
 var LABEL_MULTILABEL = "multi-label";
 var displayAttrLabel = true;
-var displayObjLabel = true;
+var displayObjLabel = false;
 
 // colors
 var SELECTED_FILL_COLOR = "#FF0000";

@@ -332,7 +332,7 @@ function labelizeData(){
 	}
 	
 	
-	if ($("input[name='label-for-attr']").is(':checked')) {
+	if ($("input[name='label-for-obj']").is(':checked')) {
 	
 		// extent labels
 		nodelist = getBottomMostConcepts();

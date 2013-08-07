@@ -308,8 +308,8 @@ circle.opaque {
  * Labels
  */
 
-text.label {
-  font: 12px sans-serif;
+text.nlabel {
+  font: 14px sans-serif;
   pointer-events: none;
 }
 
@@ -319,6 +319,7 @@ text.highlighted {
 
 text.intent {
   fill: #DD3333;
+  /*stroke:#550000;stroke-width:1px;stroke-opacity:1;*/
 }
 
 text.extent {

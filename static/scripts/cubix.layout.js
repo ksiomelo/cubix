@@ -270,12 +270,14 @@ $(function() {
 	
 	
 	// TOOLBAR - drawing
+	$("input[name='label-for-obj']").prop('checked', false); // default: do not display object labels 
+	
 	$("input[name='label-for-attr']").change(function(){
 		displayAttrLabel = $(this).is(':checked');
 		updateVis();
 	});
 	$("input[name='label-for-obj']").change(function(){
-		displayObjLabel = $(this).is(':checked');
+		displayObjLabel = $(this).is(':checked'); 
 		updateVis();
 	});
 	

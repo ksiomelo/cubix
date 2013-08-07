@@ -52,6 +52,10 @@ function calculate(metric, p){
 		 			$("input[name='metric'][value='"+metric+"']").prop('disabled', true);
 	 			}
 	 			
+	 			if (metrics.isFirst()) {
+	 				$("#metric-filter-content").html(""); // clean "no metrics computed" message
+	 			}
+	 			
 	 			if (data.link_score) 
 	 				metrics.appendLinkMetric(data.name, data.human_name, data.scores);
 	 			else
@@ -71,6 +75,12 @@ var metrics = new function() { // hashmap do filter (with excluded nodes from or
     var linkMetrics = {}; // {"confidence": { "concept1" : { "concept 2": value, "concept 3 ": value} }}
     var linkListeners = [];
     
+    var empty = true; // flag to indicate if the metrics container is empty (display message in this case)
+    
+    
+    this.isFirst = function(){
+    	return empty;
+    }
     
     this.addListener = function(callback){
     	metricListeners.push(callback);
@@ -98,6 +108,8 @@ var metrics = new function() { // hashmap do filter (with excluded nodes from or
 		for (var i=0; i < linkListeners.length; i++) {
 		  linkListeners[i](metric,metricHumanName,scores);
 		};
+		
+		empty = false;
     }
     
     
@@ -117,6 +129,8 @@ var metrics = new function() { // hashmap do filter (with excluded nodes from or
 		for (var i=0; i < metricListeners.length; i++) {
 		  metricListeners[i](metric,metricHumanName,scores);
 		};
+		
+		empty = false;
 	}
 	
 	this.getCalculatedMetrics = function(){
