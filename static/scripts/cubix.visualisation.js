@@ -17,32 +17,41 @@ var h = DEFAULT_HEIGHT;
 var trans=[0,0];
 var scale=1;
 
+
 var force;
 var vis;
 
 var dragging = false;
 
 var noLinks = ["sunburst", "icicle", "sankey"];
+
     
 function resetZoom(){
 	scale=1;
 	//d3.event.scale = 1;
 	
-	d3.behavior.zoom()
-    .scale(1);
+	zoomBehavior.scale(1);
+	zoomBehavior.translate([0, 0]);
+	
+	vis.transition().duration(500).attr('transform', 'translate(' + zoomBehavior.translate() + ') scale(' + zoomBehavior.scale() + ')')
 
-	vis.attr("transform",
-      "translate(" + w/2 + ","+ h/2+")"
-      + " scale(" + scale + ")");
+	// vis.attr("transform",
+      // "translate(" + w/2 + ","+ h/2+")" 
+      // + " scale(" + 1 + ")");
+      
+      
+   // vis.attr("transform",
+      // "scale(" + 1 + ")");
       
    $( "#zoom_level" ).val("100%");
+   
 }
 
 function zoomInOut(value){
 	
 	var scale = Math.round((value/100)*100)/100;
 	
-	d3.behavior.zoom()
+	zoomBehavior.zoom()
     .scale(1);
 
 	// TODO only radial vis?
@@ -58,6 +67,7 @@ function zoomInOut(value){
 function redraw() {
 	//if (dragging) return;
 	
+	
   trans=d3.event.translate;
   scale=d3.event.scale;
   
@@ -66,6 +76,8 @@ function redraw() {
   vis.attr("transform",
       "translate(" + trans + ")"
       + " scale(" + scale + ")");
+      
+      
 }
 
 

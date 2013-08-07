@@ -2,7 +2,7 @@
  *  This class contains LATTICE visualisation algorithms
  */
 
-
+var zoomBehavior = d3.behavior.zoom();
 var dagreVis = new function() {
 	
 	
@@ -18,17 +18,28 @@ var dagreVis = new function() {
 		
 		d3.select("#chart").html("");
 		
-	  	vis = d3.select("#chart")
-		  .append("svg:svg")
-		    .attr("width", w)
-		    .attr("height", h)
-		    .attr("viewBox", "0 0 "+w+" "+h)
-	    	.attr("preserveAspectRatio", "xMidYMid")
-		    //.attr("pointer-events", "all")
-		  .append('svg:g')
-		    //.call(d3.behavior.zoom().on("zoom", redraw));
-		    
-		//vis.append('svg:g');
+		vis = d3.select("#chart")
+		    .on("mousewheel", this.blockScroll)
+		    .on("DOMMouseScroll", this.blockScroll)
+		  .append("svg")
+		    .attr("width", "100%")
+		    .attr("height", 500)
+		    .attr("pointer-events", "all")
+		    .call(zoomBehavior.on("zoom", redraw))
+		    .append("g");
+		
+		
+	  	// vis = d3.select("#chart")
+		  // .append("svg:svg")
+		    // .attr("width", w)
+		    // .attr("height", h)
+		    // .attr("viewBox", "0 0 "+w+" "+h)
+	    	// .attr("preserveAspectRatio", "xMidYMid")
+		    // //.attr("pointer-events", "all")
+		  // .append('svg:g')
+		    // //.call(d3.behavior.zoom().on("zoom", redraw));
+// 		    
+		// //vis.append('svg:g');
 		
 		
 		/// not used:
@@ -133,7 +144,7 @@ var dagreVis = new function() {
 		        .attr("id", function(d) { return "intent-" + d.id })
 			    .attr("class", "nlabel intent")
 			    .attr("x", 4) // TODO verify the bbox.width of the text to position it
-		    	.attr("y", -dagreVis.config.paddingToNode)
+		    	.attr("y", this.getLabelPosition)//-dagreVis.config.paddingToNode)
 		    	.text(get_upper_label);
 
 		var lowerLabelbox = vis
@@ -209,6 +220,7 @@ var dagreVis = new function() {
 	    	//console.log("drag started"); dragging = true;
 	    	vis.on('mousedown.zoom', null);
 	    	vis.on('mousemove.zoom', null);
+	    	d3.event.sourceEvent.stopPropagation();
 	    	//vis.on('mousedown.zoom', null);
 	    })
 	    .on('dragend', function() {
@@ -269,8 +281,13 @@ var dagreVis = new function() {
 	  //dedges.call(edgeDrag);
 	  upperLabelbox.call(labelDrag);
   
-	}
+	};
 	
+	this.getLabelPosition = function() {
+		return -Math.round(Math.random()*(50-10)) + 10;
+	};
+	
+	this.blockScroll = function() { d3.event.preventDefault(); };
 	
 	this.move = function(){
 	    this.parentNode.appendChild(this);

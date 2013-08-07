@@ -10,7 +10,6 @@
 
 var context;
 var lattice;
-//var lattice_id;
 
 var a_rules_concerned_attributes;
 var _data_a_rules_concerned_attributes;
@@ -73,7 +72,7 @@ function loadData(data){
 	
 	labelizeFirst();
 	
-	checkLatticeConstraints();
+	//checkLatticeConstraints();
 	
     
     //displayAttrLabel = $("input[name='label-for-attr']").is(':checked');
@@ -111,17 +110,9 @@ function loadData(data){
 
 function Lattice(data) {
 	
-	//lattice_id = data.id;
-	// copy of initial parameters.. mainly used for reset
-	// _data_nodes = lattice.concepts.slice(0);
-	// _data_links = lattice.edges.slice(0);
-	// _data_attributes = HashClone(data.attributes); // TODO deep copy??
-	//_data_objects = data.objects.slice(0);
 	
 	this.initialConcepts = data.nodes.slice(0);
 	this.initialEdges = data.links.slice(0);
-	// _data_nodes = lattice.concepts.slice(0);
-	// _data_links = lattice.edges.slice(0);
 	
 	this.attr_graph = JSON.parse(data.attribute_graph);
 	
