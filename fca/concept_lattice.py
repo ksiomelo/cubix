@@ -108,6 +108,7 @@ class ConceptLattice(models.Model):
                 attrvalue = "-".join(attrvalue[1:])
                 if (not (attrname in pairs)): 
                     pairs[attrname] = []
+                #if not attrvalue in pairs[attrname]:
                 pairs[attrname].append(attrvalue)
             else:
                 pairs[attr] = [] # TODO 

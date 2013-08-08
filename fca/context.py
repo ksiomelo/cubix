@@ -363,16 +363,18 @@ class Context(models.Model):
         
         cols_for_removal = []
         tattributes = [] # filter attributes that are not marked
-        for j in range(len(table[0])):
-            has_mark = False
-            for i in range(len(table)):
-                if table[i][j]:
-                    has_mark = True
-                    break
-            if not has_mark:
-                cols_for_removal.append(j)
-            else:
-                tattributes.append(self._attributes[j])
+        
+        if len(table) > 0:
+            for j in range(len(table[0])):
+                has_mark = False
+                for i in range(len(table)):
+                    if table[i][j]:
+                        has_mark = True
+                        break
+                if not has_mark:
+                    cols_for_removal.append(j)
+                else:
+                    tattributes.append(self._attributes[j])
         
         if cols_for_removal:
             table = self._remove_columns(table, cols_for_removal)
