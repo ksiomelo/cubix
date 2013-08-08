@@ -33,7 +33,7 @@
 				<select id="select-edge" name="select_edge[]" style="width: 160px">
 				</select>
 				
-				<label for="select-size"style="text-align: left;">Size:</label>
+				<label for="select-size"style="text-align: left;">Node Size:</label>
 				<select id="select-size" name="select_size[]" style="width: 160px">
 				</select>
 				
@@ -42,8 +42,13 @@
 				</select>
 				
 				
-				<label for="select-label" style="text-align: left;">Label:</label>
+				<label for="select-label" style="text-align: left;">Label type and size:</label>
 				<select id="select-label" name="select_label[]" style="width: 160px">
+				</select>
+				<select id="select-label-size" name="select_label_size[]" style="width: 160px">
+					<option value="small">Small</option>
+					<option value="regular" selected>Regular</option>
+					<option value="large">Large</option>
 				</select>
 				
 				<div>
@@ -55,10 +60,11 @@
 				</div>
 				</div>
 				
-			
+			<!-- no need
 			<div style="margin-top: 30px;">
 				<input type="checkbox" name="highlight" value="path" checked="checked" /> Highlight path
 			</div>
+			-->
 			
 		</div>
 		

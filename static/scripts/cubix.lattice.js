@@ -70,7 +70,7 @@ function loadData(data){
 	hoverbox = d3.select("#hoverbox");
 	A_rules_box = d3.select("#A_rules_box");
 	
-	labelizeFirst();
+	//labelizeFirst();
 	
 	//checkLatticeConstraints();
 	
@@ -104,6 +104,10 @@ function loadData(data){
     // Attribute graph
     if (lattice.attr_graph)
     	loadAttributeGraph(lattice.attr_graph);
+    	
+    
+    // update visualisation
+    updateVis();
 	
 }
 

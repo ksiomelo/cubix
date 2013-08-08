@@ -15,7 +15,7 @@ div.alert {
 
 
 #zoom_level {
-	border:0; color:#f6931f; font-weight:bold; width: 70px; float:left;
+	border:0; color:#f6931f; font-weight:bold; width: 40px; float:left;
 	cursor:pointer;
 }
 
@@ -313,12 +313,20 @@ text.nlabel {
   pointer-events: none;
 }
 
+text.nlarge {
+  font-size: 16px;
+}
+
+text.nsmall {
+  font-size: 10px;
+}
+
 text.highlighted {
   fill: #DD3333;
 }
 
 text.intent {
-  fill: #DD3333;
+  fill:  #003333;/*#DD3333;*/
   /*stroke:#550000;stroke-width:1px;stroke-opacity:1;*/
 }
 
@@ -326,7 +334,8 @@ text.extent {
  /* stroke: #fff;
   stroke-width: 1px;
   stroke-opacity: ,8;*/
-  fill: #000;
+  fill: #444;
+  font-style: italic;
 }
 
 

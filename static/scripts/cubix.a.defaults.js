@@ -45,6 +45,8 @@ var LABEL_MULTILABEL = "multi-label";
 var displayAttrLabel = true;
 var displayObjLabel = false;
 
+var TRUNCATE_AT = 5; // ONLY FIRST FIVE LABELS ARE DISPLAYED
+
 // colors
 var SELECTED_FILL_COLOR = "#FF0000";
 var DEFAULT_FILL_COLOR = "#aaaaff";

@@ -95,18 +95,26 @@ var dagreVis = new function() {
 	       
 	    	
 	    	 //Append text
-	  	// var upperLabelbox = vis
-		    // .selectAll("g .ulabelgroup")
-		    // .data(lattice.concepts)
-		    // .enter()
-		      // .append("svg:g") //d.pos.x, y: d.pos.y
-		        // .attr("id", function(d) { return "labelbox-" + d.id })
-			    // .attr("class", "ulabelgroup");
-// 			    
+	  	var upperLabelbox = vis
+		    .selectAll("g .ulabelgroup")
+		    .data(lattice.concepts)
+		    .enter()
+		      .append("svg:g") //d.pos.x, y: d.pos.y
+		        .attr("id", function(d) { return "labelbox-" + d.id })
+			    .attr("class", "ulabelgroup")
+			    //.each(this.labelTextElements);
+			    
 		// upperLabelbox.append('rect')
 			    // .attr("class", "labelbox")
 			    // .attr("width", function(d) { return dagreVis.config.widthLabelBox; })
 			    // .attr("height", function(d) { return 20; });
+			    
+			    
+		upperLabelbox.each(this.labelTextElements);
+			    
+
+		    	   
+	
 		// upperLabelbox.append("text") //d.pos.x, y: d.pos.y
 		        // .attr("id", function(d) { return "intent-" + d.id })
 			    // .attr("class", "intent")
@@ -136,56 +144,61 @@ var dagreVis = new function() {
 // 			    
 	
 	
-		var upperLabelbox = vis
-			    .selectAll("text .intent")
-			    .data(lattice.concepts)
-			    .enter()
-			    .append('text')
-		        .attr("id", function(d) { return "intent-" + d.id })
-			    .attr("class", "nlabel intent")
-			    .attr("x", 4) // TODO verify the bbox.width of the text to position it
-		    	.attr("y", this.getLabelPosition)//-dagreVis.config.paddingToNode)
-		    	.text(get_upper_label);
-
-		var lowerLabelbox = vis
-			    .selectAll("text .extent")
-			    .data(lattice.concepts)
-			    .enter()
-			    .append('text')
-		        .attr("id", function(d) { return "extent-" + d.id })
-			    .attr("class", "nlabel extent")
-			    .attr("x", 4) // TODO verify the bbox.width of the text to position it
-		    	.attr("y", dagreVis.config.paddingToNode)
-		    	.text(get_lower_label);
-		
-		// lowerLabelbox
-			    // .selectAll("tspan .extent")
-			    // .data(d.extent)
+		// var upperLabelbox = vis
+			    // .selectAll("text .intent")
+			    // .data(lattice.concepts)
 			    // .enter()
-			    // .append('tspan')
-			    // .attr("class", "extent")
-			    // //.attr("x", 4) // TODO verify the bbox.width of the text to position it
-		    	// //.attr("y", dagreVis.config.paddingToNode);
-		    	// .text(d);
+			    // .append('text')
+		        // .attr("id", function(d) { return "intent-" + d.id })
+			    // .attr("class", "nlabel intent")
+			    // .attr("x", 4) // TODO verify the bbox.width of the text to position it
+		    	// .attr("y", this.getLabelPosition)//-dagreVis.config.paddingToNode)
+		    	// .text(get_upper_label);
+		    	
+	
+
+		// var lowerLabelbox = vis
+			    // .selectAll("text .extent")
+			    // .data(lattice.concepts)
+			    // .enter()
+			    // .append('text')
+		        // .attr("id", function(d) { return "extent-" + d.id })
+			    // .attr("class", "nlabel extent")
+			    // .attr("x", 4) // TODO verify the bbox.width of the text to position it
+		    	// .attr("y", dagreVis.config.paddingToNode)
+		    	// .text(get_lower_label);
+		
+		
 	
 	
 	  // We need width and height for layout.
-	  dnodes.each(function(d) { //labels.each
+	  // dnodes.each(function(d) { //labels.each
+	    // var bbox = this.getBBox();
+	    // d.bbox = bbox;
+	    // d.width = getNodeSize(d);//bbox.width + 2 * nodePadding;
+	    // d.height = getNodeSize(d);//bbox.height + 2 * nodePadding;
+	  // });
+	  
+	   // We need width and height for layout.
+	  upperLabelbox.each(function(d) { //labels.each
 	    var bbox = this.getBBox();
 	    d.bbox = bbox;
-	    d.width = getNodeSize(d);//bbox.width + 2 * nodePadding;
-	    d.height = getNodeSize(d);//bbox.height + 2 * nodePadding;
+	    d.width = d.lwidth;//bbox.width + 2 * nodePadding;
+	    d.height = d.lheight;//bbox.height + 2 * nodePadding;
+	    
+	    d.nodeWidth = getNodeSize(d);//bbox.width + 2 * nodePadding;
+	    d.nodeHeight = getNodeSize(d);//bbox.height + 2 * nodePadding;
 	  });
 	
 	
 	  dagre.layout()
-	  	.nodeSep(50)
-	    .edgeSep(10)
-	    .rankSep(80)
+	  	.nodeSep(20)
+	    .edgeSep(30)
+	    .rankSep(60)
 	    .invert(true)
 	    .nodes(lattice.concepts)
 	    .edges(lattice.edges)
-	    .debugLevel(1)
+	    .debugLevel(0)
 	    .run();
 	
 	  dnodes.attr("transform", function(d) { return "translate(" + d.dagre.x + "," + d.dagre.y +")"; });
@@ -200,9 +213,9 @@ var dagreVis = new function() {
 	 	upperLabelbox.attr("transform", function(d) { return "translate(" + (d.dagre.x-dagreVis.config.widthLabelBox/2) + "," +
 	 	 														 (d.dagre.y-dagreVis.config.paddingToNode) +")"; });
 	 	 					
-	 	lowerLabelbox.attr("transform", function(d) { return "translate(" + (d.dagre.x-dagreVis.config.widthLabelBox/2) + "," +
-	 	 														 (d.dagre.y+dagreVis.config.paddingToNode) +")"; });
-	  
+	 	// lowerLabelbox.attr("transform", function(d) { return "translate(" + (d.dagre.x-dagreVis.config.widthLabelBox/2) + "," +
+	 	 														 // (d.dagre.y+dagreVis.config.paddingToNode) +")"; });
+// 	  
 	
 	  // Resize the SVG element
 	  var svg = d3.select("#chart").select("svg");
@@ -217,11 +230,14 @@ var dagreVis = new function() {
 	    // Set the right origin (based on the Dagre layout or the current position)
 	    .origin(function(d) { return d.pos ? {x: d.pos.x, y: d.pos.y} : {x: d.dagre.x, y: d.dagre.y}; })
 	    .on('dragstart', function() {
-	    	//console.log("drag started"); dragging = true;
+	    	
+	    	// hide hoverbox
+	    	hoverbox.style("opacity", 0) 
+			.style("display", "none"); 
+	    	
 	    	vis.on('mousedown.zoom', null);
 	    	vis.on('mousemove.zoom', null);
 	    	d3.event.sourceEvent.stopPropagation();
-	    	//vis.on('mousedown.zoom', null);
 	    })
 	    .on('dragend', function() {
 	    	console.log("drag ended"); dragging = false;
@@ -245,11 +261,11 @@ var dagreVis = new function() {
 	      });
 	      
 	      // TODO translate label groups if not lpos (ie. dragged)
-	      d3.select("#intent-"+d.id).attr('transform', 'translate('+ (d.dagre.x-dagreVis.config.widthLabelBox/2) +','+
+	      d3.select("#labelbox-"+d.id).attr('transform', 'translate('+ (d.dagre.x-dagreVis.config.widthLabelBox/2) +','+
 	       (d.dagre.y-dagreVis.config.paddingToNode) +')');
 	      
-	      d3.select("#extent-"+d.id).attr('transform', 'translate('+ (d.dagre.x-dagreVis.config.widthLabelBox/2) +','+
-	       (d.dagre.y+dagreVis.config.paddingToNode) +')');
+	      // d3.select("#extent-"+d.id).attr('transform', 'translate('+ (d.dagre.x-dagreVis.config.widthLabelBox/2) +','+
+	       // (d.dagre.y+dagreVis.config.paddingToNode) +')');
 	       
 	    });
 	
@@ -283,9 +299,73 @@ var dagreVis = new function() {
   
 	};
 	
-	this.getLabelPosition = function() {
-		return -Math.round(Math.random()*(50-10)) + 10;
+	this.labelTextElements = function(concept) {
+		
+			var labelHeight = 16;
+			var paddingBottom = 26;
+		
+			var maxNumIntentLabels = (concept.intentLabel.length > TRUNCATE_AT) ? TRUNCATE_AT+1 : concept.intentLabel.length;
+			
+			
+			concept.lwidth = 0;
+			concept.lheight = labelHeight*maxNumIntentLabels;
+		
+			var intents = d3.select(this).selectAll("text .intent")//.select(function(d,i) { return (i < 5) ? this : null; })
+		        .data(concept.intentLabel.slice(0,TRUNCATE_AT+1))
+		      	.enter().append("text")
+				.attr("class", "nlabel intent")
+				.attr("x", 4) // TODO verify the bbox.width of the text to position it
+			    .attr("y", function(d,i) { return -(maxNumIntentLabels-i)*labelHeight + dagreVis.config.paddingToNode;})//-dagreVis.config.paddingToNode)
+			    .text(function(d,i) { return (i == TRUNCATE_AT) ? "..." : d;})
+			    .each(function(d) { 
+			    	concept.lwidth = Math.max(concept.lwidth, this.getBBox().width);
+			     });
+			     
+			 
+		     
+		      // Extent labels
+		     if ($("input[name='label-for-obj']").is(':checked')) {
+		     	
+		     	var maxNumExtentLabels = (concept.extentLabel.length > TRUNCATE_AT) ? TRUNCATE_AT+1 : concept.extentLabel.length;
+		     
+		    
+			     var extents = d3.select(this).selectAll("text .extent")//.select(function(d,i) { return (i < 5) ? this : null; })
+			        .data(concept.extentLabel.slice(0,TRUNCATE_AT+1))
+			      	.enter().append("text")
+					.attr("class", "nlabel extent")
+					.attr("x", 4) // TODO verify the bbox.width of the text to position it
+				    .attr("y", function(d,i) { return (maxNumExtentLabels-i)*labelHeight + paddingBottom;})//-dagreVis.config.paddingToNode)
+				    .text(function(d,i) { return (i == TRUNCATE_AT) ? "..." : d;});
+				    // TODO height of the bbox doesnt take into account labels
+		     
+		     }
+		     
+		     
+		     // var lowerLabelbox = vis
+			    // .selectAll("text .extent")
+			    // .data(lattice.concepts)
+			    // .enter()
+			    // .append('text')
+		        // .attr("id", function(d) { return "extent-" + d.id })
+			    // .attr("class", "nlabel extent")
+			    // .attr("x", 4) // TODO verify the bbox.width of the text to position it
+		    	// .attr("y", dagreVis.config.paddingToNode)
+		    	// .text(get_lower_label);
+		
+				// upperLabelbox.selectAll("text .intent")
+			    // .data(lattice.concepts)
+			    // .enter()
+			    // .append('text')
+		        // .attr("id", function(d) { return "intent-" + d.id })
+			    // .attr("class", "nlabel intent")
+			    // .attr("x", 4) // TODO verify the bbox.width of the text to position it
+		    	// .attr("y", this.getLabelPosition)//-dagreVis.config.paddingToNode)
+		    	// .text(get_upper_label);		 
 	};
+	
+	// this.getLabelPosition = function() {
+		// return -Math.round(Math.random()*(50-10)) + 10;
+	// };
 	
 	this.blockScroll = function() { d3.event.preventDefault(); };
 	
@@ -299,6 +379,15 @@ var dagreVis = new function() {
 	
 
 	this.spline = function(e) {
+		
+		// TODO: HACK to draw line relative to the node size and not to the box
+		e.source.dagre.width = e.source.dagre.nodeWidth;
+		e.source.dagre.height = e.source.dagre.nodeHeight;
+		e.target.dagre.width = e.target.dagre.nodeWidth;
+		e.target.dagre.height = e.target.dagre.nodeHeight;
+		// END of HACK
+		
+		
 	    var points = e.dagre.points.slice(0);
 	    var source = dagre.util.intersectRect(e.source.dagre, points.length > 0 ? points[0] : e.source.dagre);
 	    var target = dagre.util.intersectRect(e.target.dagre, points.length > 0 ? points[points.length - 1] : e.source.dagre);

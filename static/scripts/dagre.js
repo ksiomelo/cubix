@@ -305,7 +305,7 @@ dagre.layout = function() {
     // we add edges. Also copy relevant dimension information.
     config.nodes.forEach(function(u) {
       var id = "id" in u ? u.id : "_N" + nextId++;
-      u.dagre = { id: id, width: u.width, height: u.height };
+      u.dagre = { id: id, width: u.width, height: u.height, nodeWidth: u.nodeWidth, nodeHeight: u.nodeHeight };
       g.addNode(id, u.dagre);
     });
 

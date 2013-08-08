@@ -286,6 +286,10 @@ $(function() {
 		changeLabel($(this).attr('value'));
 	});
 	
+	$( "#select-label-size" ).change(function(){
+		changeLabelSize($(this).attr('value'));
+	});
+	
 	$( "#select-edge" ).change(function(){
 		changeEdgeThickness($(this).attr('value'));
 	});
@@ -398,7 +402,7 @@ $(function() {
 		});
 		
 		$( "#zoom_level" ).val( "100%");	
-		$( "#zoom_level" ).click( function(){
+		$( "#reset-zoom" ).click( function(){
 			resetZoom();
 		});	
 	
