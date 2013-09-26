@@ -25,15 +25,22 @@ var dragging = false;
 
 var noLinks = ["sunburst", "icicle", "sankey"];
 
+var treeVisualisations = ["sunburst", "icicle", "tree", "treemap"];
+
     
 function resetZoom(){
 	scale=1;
 	//d3.event.scale = 1;
 	
 	zoomBehavior.scale(1);
-	zoomBehavior.translate([0, 0]);
 	
-	vis.transition().duration(500).attr('transform', 'translate(' + zoomBehavior.translate() + ') scale(' + zoomBehavior.scale() + ')')
+	if (currentVis == "sunburst") {
+		zoomBehavior.translate([w / 2, h / 2]);
+	}else {
+		zoomBehavior.translate([0, 0]);
+	}
+	
+	vis.transition().duration(500).attr('transform', 'translate(' + zoomBehavior.translate() + ') scale(' + zoomBehavior.scale() + ')');
 
 	// vis.attr("transform",
       // "translate(" + w/2 + ","+ h/2+")" 
@@ -90,7 +97,7 @@ function redrawCurVis() { // redraw current visualisation (used e.g. when resizi
 	else if (currentVis == 'matrix') matrixVis.run();
 	else if (currentVis == 'dagre') dagreVis.run();
     else if (currentVis == 'sunburst') sunburstVis.run();
-    else if (currentVis == 'icicle') initIcicle();
+    else if (currentVis == 'icicle') icicleVis.run();
 	else if (currentVis == 'treemap') treemap();
 	else if (currentVis == 'tree') initTree();
 	
@@ -99,8 +106,37 @@ function redrawCurVis() { // redraw current visualisation (used e.g. when resizi
 	else if (currentVis == 'gg_ar_plot') { init_gg_plot(); createRulesList(); }
 }
 
+
+// check if visualisation changed from tree to lattice or vice-versa
+// relabeling is necessary if so
+function needsRelabel(prevVis, curVis){
+	return ((isTree(prevVis) && !isTree(curVis)) ||  (!isTree(prevVis) && isTree(curVis)));
+}
+
+
+function isTree(curVis) {
+	return (treeVisualisations.indexOf(curVis) >= 0);
+}
+
 function changeVis(visType){
-	prevIndex=-1;
+  	
+  	// this fix pan shifting bug
+  	if (visType == "sunburst") {
+		zoomBehavior.translate([w / 2, h / 2]);
+	}
+  	
+  	// check labels
+  	//if (needsRelabel(currentVis, visType)) labelizeData(isTree(visType)); // re-label
+  	if(isTree(visType)) {
+  		labelizeTree();
+  	}
+  	
+  	// check if resizing possible
+  	if (visType == 'sunburst' || visType == 'icicle' || visType == 'sankey'){
+  		disableSizeSelector(true);
+  	}else disableSizeSelector(false);
+  	
+  	prevIndex=-1;
   	
   	currentVis = visType;
 
@@ -115,21 +151,8 @@ function updateVis(){
 	//redrawVis();
 	redrawCurVis();
 	//d3.select("#chart").html("");
-	
-	// if (currentVis == 'lattice')  updateFDLattice();
-	// else if (currentVis == 'sankey') sankeyVis.run();//updateSankey();
-	// else if (currentVis == 'dagre')  dagreVis.run();
-    // else if (currentVis == 'sunburst')  sunburstVis.run();
-    // else if (currentVis == 'icicle')  updateIcicle();
-	// else if (currentVis == 'treemap')  tm_updateTree();//treemap();
-	// else if (currentVis == 'tree')  updateTree();
 }
 
-// function isTree(){
-	// if (currentVis == 'sunburst' || currentVis == 'icicle' || currentVis == 'treemap' || currentVis == 'tree' )
-		// return true;
-	// else return false;
-// }
 
 function setPreferredVis(visType){
 	var thetoken = $('input[name=csrfmiddlewaretoken]').val(); // TODO move the fucking token to the header
@@ -169,8 +192,6 @@ function exportCurVis(){
 	
 	
 	
-	
-	
 	var html2 = d3.select("svg")
       .attr("version", 1.1)
       .attr("xmlns", "http://www.w3.org/2000/svg")
@@ -185,111 +206,6 @@ function exportCurVis(){
 
 
 }
-
-
-
-
-
-
-
-/*
- * Icicle
- */
-
-var rect;
-
-function initIcicle(){
-	x = d3.scale.linear().range([0, w]);
-    y = d3.scale.linear().range([0, h]);
-    
-    vis = d3.select("#chart").append("svg:svg")
-    .attr("width", w)
-    .attr("height", h);
-    
-    partition = d3.layout.partition()
-    .value(function(d) { return  1; }); // TODO d.size
-    //.value(function(d) { return  Math.round(d.support*100); }); // TODO d.size
-
-
-	updateIcicle();
-}
-
-
-function updateIcicle(){
-	
-		var json = lattice.getTree();
-       	
-       	vis.data([json]);
-       
-        partition.nodes(json);
-        
-        rect = vis.selectAll("rect")
-	      .data(partition.nodes);
-	      
- 		rect.enter().append("svg:rect")
-	     	.attr("x", function(d) { return x(d.x); })
-		      .attr("y", function(d) { return y(d.y); })
-		      .attr("width", function(d) { return x(d.dx); })
-		      .attr("height", function(d) { return y(d.dy); })
-		      .attr("fill", getNodeColor)
-		      .on("mouseover", nodeMouseOver)
-		  	  .on("mouseout", nodeMouseOut)
-		  	  .on("click", nodeClick)
-		      .on("dblclick", icclick);
-		 
-		 vis.selectAll("rect")
-	          .data(partition.nodes)   
-		      .enter().append("svg:text")
-		      	.attr("class", "intent")
-			   	.attr("x", -22)
-			   	.attr("y", "-1em")
-			   	.attr("id", function(d){ return "intent_"+d.id})
-			   	.text(d.intent.join(", "));
-	   		
-	   	 // Exit any old nodes.
-	  	rect.exit().remove();
-	
-	
-	  // Update the labels…
-	 // var iclabel = vis.selectAll("text.intent")
-	      // .data(partition.nodes, function(d) { return d.id; });
-// 	
-	  // // Enter any new labels.
-	  // iclabel.enter().append("svg:text")
-	      // .attr("class", "intent")
-		   // .attr("x", -22)
-		   // .attr("y", "-1em")
-		   // .attr("id", function(d){ return "intent_"+d.id})
-		  // .text(d.intent.join(", "));
-// 	  
-	  // // Exit any old labels.
-	  // iclabel.exit().remove();
-	
-	
-	
-	
-	// rect = vis.data([json]).selectAll("rect")
-      // .data(partition.nodes)
-    // .enter().append("svg:rect")
-      // .attr("x", function(d) { return x(d.x); })
-      // .attr("y", function(d) { return y(d.y); })
-      // .attr("width", function(d) { return x(d.dx); })
-      // .attr("height", function(d) { return y(d.dy); })
-      // .attr("fill", function(d) { return color((d.children ? d : d.parent).name); })
-      // .on("click", icclick);
-}
-
- function icclick(d) {
-    x.domain([d.x, d.x + d.dx]);
-    y.domain([d.y, 1]).range([d.y ? 20 : 0, h]);
-
-    rect.transition()
-      .duration(750)
-      .attr("x", function(d) { return x(d.x); })
-      .attr("y", function(d) { return y(d.y); })
-      .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
-      .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
-  }
 
 
 
@@ -320,7 +236,7 @@ function initTree(){
   .append("svg:g")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
     
-  root = lattice.getTree();//json;
+  root = lattice.tree;//json;
   root.x0 = h / 2;
   root.y0 = 0;
   
@@ -372,19 +288,19 @@ function updateTree(source) {
      // .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
 
   nodeEnter.append("svg:text")
-  	  .attr("class", "intent")
+  	  .attr("class", "nlabel intent")
       .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
       .attr("dy", "-1.5em")
       .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-      .text(get_upper_label)//function(d) { return d.name; })
+      .text(getUpperLabel)//function(d) { return d.name; })
       .style("fill-opacity", 1e-6);
   
   nodeEnter.append("svg:text")
-  	  .attr("class", "extent")
+  	  .attr("class", "nlabel extent")
       .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
       .attr("dy", "1.5em")
       .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-      .text(get_lower_label)//function(d) { return d.name; })
+      .text(getLowerLabel)//function(d) { return d.name; })
       .style("fill-opacity", 1e-6);
 
   // Transition nodes to their new position.

@@ -1376,7 +1376,7 @@ var createTimer = function() {
       try {
         return func.apply(null, arguments);
       } finally {
-        if (start) console.log(name + " time: " + (new Date().getTime() - start) + "ms");
+        //if (start) console.log(name + " time: " + (new Date().getTime() - start) + "ms");
       }
     }
   };

@@ -33,7 +33,7 @@
 				<select id="select-edge" name="select_edge[]" style="width: 160px">
 				</select>
 				
-				<label for="select-size"style="text-align: left;">Node Size:</label>
+				<label for="select-size"style="text-align: left;">Size:</label>
 				<select id="select-size" name="select_size[]" style="width: 160px">
 				</select>
 				
@@ -42,26 +42,22 @@
 				</select>
 				
 				
-				<label for="select-label" style="text-align: left;">Label type and size:</label>
+				<label for="select-label" style="text-align: left;">Label:</label>
 				<select id="select-label" name="select_label[]" style="width: 160px">
-				</select>
-				<select id="select-label-size" name="select_label_size[]" style="width: 160px">
-					<option value="small">Small</option>
-					<option value="regular" selected>Regular</option>
-					<option value="large">Large</option>
 				</select>
 				
 				<div>
 				<div style="float: left">
-					<input type="checkbox" name="label-for-attr" value="attr" checked="true"/> Attributes
+					<input type="checkbox" name="label-for-attr" value="attr" checked="true"/>Attributes
 				</div>
 				<div style="float: left; margin-left: 10px;">
-					<input type="checkbox" name="label-for-obj" value="obj" checked="false"/> Objects
+					<input type="checkbox" name="label-for-obj" value="obj" checked="true"/>Objects
 				</div>
 				</div>
 				
-			<div style="margin-top: 30px;">
-				<input type="checkbox" name="hoverbox-enable" value="path" checked="checked" /> Hoverbox
+			
+			<div style="margin-top: 10px;">
+				<input type="checkbox" name="highlight" value="path" checked="checked" /> Highlight path
 			</div>
 			
 		</div>
@@ -70,7 +66,7 @@
 		<div id="highlightPanel" class="toolbarPanel">
 			<h1>Filter</h1>
 			<div id="metric-filter-content">
-				(No metric computed)
+				
 			</div>
 		</div>
 		
@@ -137,9 +133,7 @@
 					<h1>Selection</h1>
 					<a href="#" id="hidePanel">&laquo; Hide Panel</a><br/>
 					<a href="#" class="clear-sel">Clear</a> |
-					<!--
 					<a href="#" class="compare" data-controls-modal="modal-from-dom" data-backdrop="true" data-keyboard="true">Compare</a> |
-					-->
 					<a href="#" class="filter-search">Filter</a>
 					<ul id="selection_list">
 					</ul>
@@ -249,7 +243,7 @@
               <a href="#" class="close"  data-dismiss="modal" aria-hidden="true">&times;</a>
               <h3>Tree-transformation</h3>
             </div>
-           <form action="/{{workspace_slug}}/fca/transform" method="GET">
+           <form action="/fca/transform" method="GET">
            <div class="modal-body">
         	
 	        	<label> Criteria: </label>
@@ -281,7 +275,7 @@
               <h3>Clustering</h3>
             </div>
             <!--
-           <form action="/{{workspace_slug}}/fca/cluster" method="GET">
+           <form action="/fca/cluster" method="GET">
            <div class="modal-body">
         	
 	        	<label> Numer of Clusters: </label>

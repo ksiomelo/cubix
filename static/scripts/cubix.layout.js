@@ -10,23 +10,17 @@ var latticeVisOpts = [
 		val: "dagre",
 		tooltip: "A layered graph diagram"
 	}, 
-	// { 
-		// name: "Force Directed graph",
-		// val: "lattice",
-		// tooltip: "A Hasse diagram with dynamic arrangement"
-	// }, 
-	
 	{ 
 		name: "Matrix",
 		val: "matrix",
 		tooltip: "matrix"
-	}, 
-	{ 
-		name: "Sankey",
-		val: "sankey",
-		tooltip: "Snakey"
-	},
-	{ 
+	}
+	// ,{ 
+		// name: "Sankey",
+		// val: "sankey",
+		// tooltip: "Snakey"
+	// }
+	,{ 
 		name: "Tree",
 		val: "tree",
 		tooltip: "A concept in a tree has only one parent and no edges crossings"
@@ -45,8 +39,7 @@ var latticeVisOpts = [
 		name: "iCicle",
 		val: "icicle",
 		tooltip: "Similar to sunburst but not radial"
-	}, 
-	
+	}
 ];
 
 // visualisations for association rules
@@ -60,7 +53,7 @@ var ARVisOpts = [
 		name: "Radial diagram",
 		val: "radiagram",
 		tooltip: "Association rules interdependence"
-	}, 
+	}
 	// { 
 		// name: "Grouped circles",
 		// val: "gg_ar_plot",
@@ -131,8 +124,9 @@ $(document).mouseup(function (e)
 });
 
 
-
-
+/**
+ * Layout initialization
+ */
 $(function() {
 	
 	/* 
@@ -172,32 +166,11 @@ $(function() {
 	 * TOOLTIPS
 	 */
 	
-	// $('option.explain').tooltip({
-		// title: 'data-tooltip',
-		// placement: "right",
-		// delay: 600
-	// });
 	$('body').tooltip({
     	selector: '[rel=tooltip]',
     	delay: { show: 300, hide: 100 }
 	});
 
-	// $('li.explain').tooltip({
-		// title: 'data-tooltip',
-		// placement: "right",
-		// delay: 800
-	// });
-	// $('span.explain').tooltip({
-		// live: true,
-		// title: 'data-tooltip',
-		// placement: "top",
-		// offset: 10,
-		// delay: 600
-	// });
-	
-	
-	
- 	
  	
  	/*
  	 * TOOLBAR
@@ -219,10 +192,8 @@ $(function() {
 	 	 $("#metricPanel").show();
 	 });
 	 
-
 	
-	
-		// Lattice / AR toggle
+	// Toggle Lattice / AR
 	$("input:radio[name='toggle']").change(function(){
 		if($(this).val() == "rules") {
 			
@@ -406,30 +377,6 @@ $(function() {
 			resetZoom();
 		});	
 	
-		// $( "#slider-layout" ).slider({
-			// value:2,
-			// min: 1,
-			// max: 2,
-			// step: 1,
-			// slide: function( event, ui ) {
-// 				
-				// var layout_txt = "";
-// 				
-				// if(ui.value == 1) {
-					// layout_txt = "Viewer";
-				// } else if(ui.value == 2) {
-					// layout_txt = "Dashboard"; // explorer
-				// } else if(ui.value == 3) {
-					// layout_txt = "Dashboard";
-				// }
-				// $( "#layout_type" ).val( layout_txt);
-// 				
-				// inflateDiv(ui.value);
-// 				
-			// }
-		// });
-		//$( "#layout_type" ).val( "Dashboard");
-		
 		
 		$( "a.collapse-dashboard" ).click(function(){
 			inflateDiv(1); // viewer
@@ -441,14 +388,6 @@ $(function() {
 			$("#expand-dashboard").hide();
 		}); 
 		
-		
-		
-		
-			
-		
-		
-		// drawing
-		//$("#control_1").multiSelect();
 		
 		// hover box
 		$("#hoverbox").hover(
@@ -528,8 +467,6 @@ $(function() {
 		 });
 		 
 		
-		
-		
 		 
 		 // link clear selection
 		 $("a.clear-sel").click(function(){
@@ -573,23 +510,13 @@ $(function() {
 			title: function() { return "Open cxt file";},
 			content: function(){
 				return $("#open-file").html();
-				// return '<div> <form enctype="multipart/form-data" method="post" action="/lattice/load_cxt/" id="load_cxt_form">'+
-	         // {% csrf_token %}  +
-	         // {{ cxt_form.as_p }} +
-	     // '<input type="submit" value="Upload" /> </form> </div>';
-				
 			}
 		});
 		
 		// Operations
-		
 		  $('a.compare').click(function(){
 		  	plotCompare();
 	     });
-	    
-        
-		
-		
 });
 
 
@@ -684,26 +611,7 @@ function searchInput(elem) {
 	};
 	
 
-	//alert(query);
-
-	// if(isBlank(query)) {// if search string is empty, invalidate previous searchs
-		// showNodes();
-		// vis.selectAll(".selected").classed("selected", false);
-		// return;
-	// }
-
 	searchConcept(query);
-	//var selections = searchFacet(query, true); // TODO passar data e nao nodes
-	//var nodes = selections[0];
-
-	// add results to the selection
-	//addOrReplaceToSelectionList(selections[0], true); // TODO passar data?
-
-	// highlight selected nodes (also in case they were hidden by previous selections)
-	//highlightNodes(selections[0]);
-
-	// hide other nodes
-	//hideNodes(selections[1]);
 }
 
 
@@ -859,7 +767,6 @@ function appendMetricFilterCallback(metric, metricHumanName, scores){
 
 
 
-
 /*
  * Utils
  */
@@ -892,13 +799,17 @@ function wrapperMetricsinTable(containerId, metric_values) {
 	for(var metricName in metric_values){
 	    content += '<tr><td>' + metrics.getHumanName(metricName) + '</td><td>' + Math.round(metric_values[metricName]*100) + '%</td></tr>';
 	}
-	content += "</table>"
+	content += "</table>";
 	
 	$("#"+containerId).append(content);
 }
 
 
 function showHoverbox(d){
+	
+	// check if the hoverbox is enabled, if not return
+	if (!$("input[name='hoverbox-enable']").prop("checked")) return;
+	
 	mouseOverHoverBox= true;
 	
 	// show hoverbox
@@ -918,8 +829,8 @@ function showHoverbox(d){
 	    $(".obj-count-concept").text(d.extent.length);
 	    
 	    
-		wrapperElementsInList($('ul.hb_attr_list'), d.intent)
-		wrapperElementsInList($('ul.hb_obj_list'), d.extent)
+		wrapperElementsInList($('ul.hb_attr_list'), d.intent);
+		wrapperElementsInList($('ul.hb_obj_list'), d.extent);
 		
 		wrapperMetricsinTable("metrics-table", metrics.getScores(d.id));
 		
@@ -989,13 +900,18 @@ function nodeClick(d){ // select node
       	exists.remove();
       } else {
       	var li = $('<li id="sel-'+d.id+'">').appendTo('#selection_list');
-      	li.html("Attributes: <span>"+d.intent.join(', ') + "</span><BR/> Objects: <span>"+d.extent.join(', ')+"</span>")
+      	li.html("Attributes: <span>"+d.intent.join(', ') + "</span><BR/> Objects: <span>"+d.extent.join(', ')+"</span>");
       }
       
       // select class
       d3.select("#node-"+d.id).classed("selected", !(exists.length));
 	
 	
+}
+
+
+function disableSizeSelector(disable) {
+	$("#select-size").prop("disabled", disable);
 }
 
 

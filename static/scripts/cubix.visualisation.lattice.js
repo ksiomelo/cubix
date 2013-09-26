@@ -107,7 +107,7 @@ function updateFDLattice() {
 		  .attr("x", -22)
 		  .attr("y", "-1em")
 		  .attr("id", function(d){ return "intent_"+d.id})
-		  .text(get_upper_label);
+		  .text(getUpperLabel);
 	  
 	  // Exit any old labels.
 	  ulabel.exit().remove();
@@ -553,14 +553,14 @@ function radialAttributeGraph(data){
         .x(function(d){return d.x;})
         .y(function(d){return d.y;})
         .interpolate("linear")([{x : d.source.x, y: d.source.y}, {x : d.target.x, y: d.target.y}]); 
-     }
+    };
     
     var belzier = function(d) {
 			    var dx = d.target.x - d.source.x,
 			        dy = d.target.y - d.source.y,
 			        dr = Math.sqrt(dx * dx + dy * dy);
 			    return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
-			  }
+			 };
 
 	for (var i=0; i < nodes.length; i++) {
 	  	var a = nodes[i];

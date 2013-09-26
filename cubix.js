@@ -42,22 +42,15 @@ var SIZE_DEFAULT = 1;
 // labels
 var LABEL_REPETITIVE = "repetitive";
 var LABEL_MULTILABEL = "multi-label";
+var displayAttrLabel = true;
+var displayObjLabel = false;
+
+var TRUNCATE_AT = 5; // ONLY FIRST FIVE LABELS ARE DISPLAYED
 
 // colors
 var SELECTED_FILL_COLOR = "#FF0000";
 var DEFAULT_FILL_COLOR = "#aaaaff";
 var DEFAULT_OPACITY = 0.3;
-
-
-function getAssociationRules() {
-	$.ajax({
-		url : "/api/v1/",
-		context : document.body
-	}).done(function() {
-		$(this).addClass("done");
-	});
-}
-
 // Module association rules visualisation 
 // (c) Copyright 2012 Alexander Mikheev. All Rights Reserved.  
 
@@ -1204,53 +1197,7 @@ function zoom(d, i) {
 
  }
 
-/*
- * LAYOUT
- */
 
-function flashAlert(msg, alertType, time) {
-	if (alertType && alertType == "error") {
-		$("div.alert-error > span").text(msg);
-		$("div.alert-error").show();
-	} else if (alertType && alertType == "info") {
-		$("div.alert-info > span").text(msg);
-		$("div.alert-info").show();
-	} else {
-		$("div.alert-block > span").text(msg);
-		$("div.alert-block").show();
-	}
-	
-	if (time){
-		setTimeout(function(){ 
-			$("div.alert").fadeOut();
-			}, time);
-	}
-}
-
-function showLoading(){
-	$("div.alert").hide();
-	$("div.alert-block > span").text("Loading...");
-	$("div.alert-block").show();
-}
-
-function hideLoading(){
-	$("div.alert").hide();
-}
-
-
-$(function() {
-	$(".dismiss-alert").click(function(){
-		$("div.alert").fadeOut('fast');
-	});
-	
-	// Dropdown menus
-	$('.dropdown-toggle').dropdown();
-	
-	
-	// new data modal
-	
-	
-});
 function Context(objs, attrs, rels, attrNames) {
 //var context = new function(){
 	
@@ -2101,23 +2048,24 @@ function changeNodeColor(type){
 	// }
 }
 
+var p=d3.scale.category10();
 function getNodeColor(d) {
 	if (color_type == 'ids') return mapColor(d.id);
 	else if (color_type == 'cluster') {
 		
-		var p=d3.scale.category10();
-		p.domain();
+		
+		//p.domain();
 		// console.log(p(0));
 		// console.log(p(1));
 		// console.log(p(2));
 		
 		var metricValue = metrics.getScore(d.id,color_type)
-		console.log(metricValue + "-" + p(metricValue));
+		//console.log(metricValue + "-" + p(metricValue));
 		
-		//return(p(metricValue+i));
+		return(p(metricValue));
 		
 		//return d3.scale.category20c()(metricValue*13);
-		return mapColor(""+metricValue*13);
+		//return mapColor(""+metricValue*13);
 	}
 	else return DEFAULT_FILL_COLOR;
 }
@@ -2161,7 +2109,7 @@ function mapColor(str) {
 /*
  * LABELS
  */
-var displayAttrLabel, displayObjLabel = true;
+
 	
 function get_upper_label(d){
 	
@@ -2191,67 +2139,76 @@ function get_lower_label(d){
 function changeLabel(type){
 	labeling_type = type;
 	
-	if (labeling_type == LABEL_REPETITIVE || labeling_type == LABEL_MULTILABEL) labelizeData();
+	//if (labeling_type == LABEL_REPETITIVE || labeling_type == LABEL_MULTILABEL) labelizeData();
 	
 	updateVis();
 }
 
-
-
-
-function labelize(){ // TODO work on data not on layout
-	alert("active");
-	var labeling_type = 2;
-
-	var top_concept =vis.select('circle[id="'+ lattice.topConcept.id +'"]');
-	var nodelist = getOutgoingNodes(top_concept);
+function changeLabelSize(type){
 	
-	// intent labels
-	for (var i=0; i < nodelist.length; i++) {
-		var cur = nodelist[i];
-		var curIntent = cur.attr("intent").split(',');
-		
-		var parentlist = getIncomingNodes(cur);
-		for (var j=0; j < parentlist.length && curIntent.length > 0; j++) {
-		  var parentIntent = parentlist[j].attr("intent").split(',');
-		  
-		     curIntent = ArraySubtract(curIntent,parentIntent);
-		};
-		
-		
-		vis.select('text[id="intent_'+cur.attr("id")+'"]').text(curIntent.join(", ")); 
-		
-		//nodelist.addAll(getOutgoingNodes(cur));
-		ArrayAddAll(getOutgoingNodes(cur), nodelist);
-	}
+	var size = 14; // default
+	size = (type == 'small') ? 10 : ((type == 'large') ? 18 : 14);
 	
-
-	// objects: bottom up
-	var bottom_concept = vis.select('circle[id="'+ lattice.bottomConcept.id +'"]');
-	nodelist = getIncomingNodes(bottom_concept);
-	
-	// extent labels
-	for (var i=0; i < nodelist.length; i++) {
-		var cur = nodelist[i];
-		var curExtent = cur.attr("extent").split(',');
-		
-		var childlist = getOutgoingNodes(cur);
-		for (var j=0; j < childlist.length && curExtent.length > 0; j++) {
-		  var childExtent = childlist[j].attr("extent").split(',');
-		  
-		     curExtent = ArraySubtract(curExtent,childExtent);
-		};
-		
-		vis.select('text[id="extent_'+cur.attr("id")+'"]').text(curExtent.join(", ")); 
-		
-		//nodelist.addAll(getIncomingNodes(cur));
-		ArrayAddAll(getIncomingNodes(cur), nodelist);
-	}
-	
+	vis.selectAll('text.nlabel').style("font-size", size);
 }
 
 
+
+
+// function labelize(){ // TODO work on data not on layout
+	// alert("active");
+	// var labeling_type = 2;
+// 
+	// var top_concept =vis.select('circle[id="'+ lattice.topConcept.id +'"]');
+	// var nodelist = getOutgoingNodes(top_concept);
+// 	
+	// // intent labels
+	// for (var i=0; i < nodelist.length; i++) {
+		// var cur = nodelist[i];
+		// var curIntent = cur.attr("intent").split(',');
+// 		
+		// var parentlist = getIncomingNodes(cur);
+		// for (var j=0; j < parentlist.length && curIntent.length > 0; j++) {
+		  // var parentIntent = parentlist[j].attr("intent").split(',');
+// 		  
+		     // curIntent = ArraySubtract(curIntent,parentIntent);
+		// };
+// 		
+// 		
+		// vis.select('text[id="intent_'+cur.attr("id")+'"]').text(curIntent.join(", ")); 
+// 		
+		// //nodelist.addAll(getOutgoingNodes(cur));
+		// ArrayAddAll(getOutgoingNodes(cur), nodelist);
+	// }
+// 	
+// 
+	// // objects: bottom up
+	// var bottom_concept = vis.select('circle[id="'+ lattice.bottomConcept.id +'"]');
+	// nodelist = getIncomingNodes(bottom_concept);
+// 	
+	// // extent labels
+	// for (var i=0; i < nodelist.length; i++) {
+		// var cur = nodelist[i];
+		// var curExtent = cur.attr("extent").split(',');
+// 		
+		// var childlist = getOutgoingNodes(cur);
+		// for (var j=0; j < childlist.length && curExtent.length > 0; j++) {
+		  // var childExtent = childlist[j].attr("extent").split(',');
+// 		  
+		     // curExtent = ArraySubtract(curExtent,childExtent);
+		// };
+// 		
+		// vis.select('text[id="extent_'+cur.attr("id")+'"]').text(curExtent.join(", ")); 
+// 		
+		// //nodelist.addAll(getIncomingNodes(cur));
+		// ArrayAddAll(getIncomingNodes(cur), nodelist);
+	// }
+// 	
+// }
+
+
 function labelizeFirst(){ 
+	console.log("labelizeFirst");
 	
 	//if (labeling_type != LABEL_MULTILABEL) return; // not multi label
 	
@@ -2313,7 +2270,7 @@ function labelizeFirst(){
 }
 
 function labelizeData(){ 
-	
+	console.log("labelize data");
 	//if (labeling_type != LABEL_MULTILABEL) return; // not multi label
 	
 	//var top_concept = vis.select('circle[id="'+ data.top_id +'"]');
@@ -2335,9 +2292,9 @@ function labelizeData(){
 		
 		var intLabel = curIntent.join(", ");
 		//vis.select('text[id="intent_'+cur.id+'"]').text(intLabel); 
-		cur.name = intLabel;
-		cur.upperLabel = intLabel;
-		
+		//cur.name = intLabel;
+		//cur.upperLabel = intLabel;
+		cur.intentLabel = curIntent;
 		
 		//nodelist.addAll(getChildrenData(cur));
 		var childrenList = ((typeof lattice.original_id != 'undefined') ? getTreeChildrenData(cur) : getChildrenData(cur));
@@ -2347,7 +2304,7 @@ function labelizeData(){
 	}
 	
 	
-	if ($("input[name='label-for-attr']").is(':checked')) {
+	// if ($("input[name='label-for-obj']").is(':checked')) {
 	
 		// extent labels
 		nodelist = getBottomMostConcepts();
@@ -2371,10 +2328,11 @@ function labelizeData(){
 				extLabel = curExtent.join("\n") + "\n("+more+" more)";
 			} else  extLabel = curExtent.join("\n");
 			
-			cur.lowerLabel = extLabel;
+			//cur.lowerLabel = extLabel;
+			cur.extentLabel = curExtent;
 			ArrayAddAll(getParentsData(cur), nodelist);
 		}
-	}
+	//}
 	//updateVis();
 	
 }
@@ -2967,7 +2925,6 @@ function loadAttributeLattices(data){
 
 var context;
 var lattice;
-//var lattice_id;
 
 var a_rules_concerned_attributes;
 var _data_a_rules_concerned_attributes;
@@ -2992,7 +2949,7 @@ function loadData(data){
 			trigger: "hover",
 			content: 'Concepts (source): '+n_concepts+' <br/> Links (source): '+n_links+
 			' <br/><br/> Concepts (tree): '+lattice.concepts.length+ ' <br/> Links (tree): '+lattice.edges.length+
-			 '<br/><br/> Reduction: '+ Math.round(reduction*100)/100+ '%',
+			 '<br/><br/> Reduction: '+ Math.round(reduction*100)/100+ '%'
 		});
 	}
 	
@@ -3028,13 +2985,13 @@ function loadData(data){
 	hoverbox = d3.select("#hoverbox");
 	A_rules_box = d3.select("#A_rules_box");
 	
-	labelizeFirst();
+	//labelizeFirst();
 	
-	checkLatticeConstraints();
+	//checkLatticeConstraints();
 	
     
-    displayAttrLabel = $("input[name='label-for-attr']").is(':checked');
-	displayObjLabel = $("input[name='label-for-attr']").is(':checked');
+    //displayAttrLabel = $("input[name='label-for-attr']").is(':checked');
+	//displayObjLabel = $("input[name='label-for-attr']").is(':checked');
     labelizeData();
 
     
@@ -3062,23 +3019,19 @@ function loadData(data){
     // Attribute graph
     if (lattice.attr_graph)
     	loadAttributeGraph(lattice.attr_graph);
+    	
+    
+    // update visualisation
+    updateVis();
 	
 }
 
 
 function Lattice(data) {
 	
-	//lattice_id = data.id;
-	// copy of initial parameters.. mainly used for reset
-	// _data_nodes = lattice.concepts.slice(0);
-	// _data_links = lattice.edges.slice(0);
-	// _data_attributes = HashClone(data.attributes); // TODO deep copy??
-	//_data_objects = data.objects.slice(0);
 	
 	this.initialConcepts = data.nodes.slice(0);
 	this.initialEdges = data.links.slice(0);
-	// _data_nodes = lattice.concepts.slice(0);
-	// _data_links = lattice.edges.slice(0);
 	
 	this.attr_graph = JSON.parse(data.attribute_graph);
 	
@@ -3441,7 +3394,7 @@ function checkLatticeConstraints(){
 		if (confirm("Labeling concepts in this lattice may be overwhelming, do you want to switch to a suitable tree visualisation?")) {
 			$('#modal-tree-transform').modal({ // option to transform tree
 					keyboard: true,
-					show: true,
+					show: true
 			});
 			return;
 		} else {
@@ -3740,7 +3693,7 @@ var latticeVisOpts = [
 		name: "iCicle",
 		val: "icicle",
 		tooltip: "Similar to sunburst but not radial"
-	}, 
+	}
 	
 ];
 
@@ -3755,7 +3708,7 @@ var ARVisOpts = [
 		name: "Radial diagram",
 		val: "radiagram",
 		tooltip: "Association rules interdependence"
-	}, 
+	} 
 	// { 
 		// name: "Grouped circles",
 		// val: "gg_ar_plot",
@@ -3784,7 +3737,7 @@ var colorOpts = [
 		name: "IDs",
 		val: "ids",
 		tooltip: "Assign colors according to node id, making easier to identify the same concept across the visualisations"
-	},
+	}
 	
 ];
 
@@ -3965,18 +3918,24 @@ $(function() {
 	
 	
 	// TOOLBAR - drawing
+	$("input[name='label-for-obj']").prop('checked', false); // default: do not display object labels 
+	
 	$("input[name='label-for-attr']").change(function(){
 		displayAttrLabel = $(this).is(':checked');
 		updateVis();
 	});
 	$("input[name='label-for-obj']").change(function(){
-		displayObjLabel = $(this).is(':checked');
+		displayObjLabel = $(this).is(':checked'); 
 		updateVis();
 	});
 	
 	
 	$( "#select-label" ).change(function(){
 		changeLabel($(this).attr('value'));
+	});
+	
+	$( "#select-label-size" ).change(function(){
+		changeLabelSize($(this).attr('value'));
 	});
 	
 	$( "#select-edge" ).change(function(){
@@ -4091,7 +4050,7 @@ $(function() {
 		});
 		
 		$( "#zoom_level" ).val( "100%");	
-		$( "#zoom_level" ).click( function(){
+		$( "#reset-zoom" ).click( function(){
 			resetZoom();
 		});	
 	
@@ -4236,6 +4195,7 @@ $(function() {
 		// row (dashboard)
 		$(".draw-chart-1a").click(function(){
 			createHorizontalBarChart("box1a-chart", $("#control_1").selectedPairsArray(), $("#control_2").selectedPairsArray());
+		 	$(".edit-box").hide();
 		 });
 		 
     	
@@ -4743,6 +4703,10 @@ function calculate(metric, p){
 		 			$("input[name='metric'][value='"+metric+"']").prop('disabled', true);
 	 			}
 	 			
+	 			if (metrics.isFirst()) {
+	 				$("#metric-filter-content").html(""); // clean "no metrics computed" message
+	 			}
+	 			
 	 			if (data.link_score) 
 	 				metrics.appendLinkMetric(data.name, data.human_name, data.scores);
 	 			else
@@ -4762,6 +4726,12 @@ var metrics = new function() { // hashmap do filter (with excluded nodes from or
     var linkMetrics = {}; // {"confidence": { "concept1" : { "concept 2": value, "concept 3 ": value} }}
     var linkListeners = [];
     
+    var empty = true; // flag to indicate if the metrics container is empty (display message in this case)
+    
+    
+    this.isFirst = function(){
+    	return empty;
+    }
     
     this.addListener = function(callback){
     	metricListeners.push(callback);
@@ -4789,6 +4759,8 @@ var metrics = new function() { // hashmap do filter (with excluded nodes from or
 		for (var i=0; i < linkListeners.length; i++) {
 		  linkListeners[i](metric,metricHumanName,scores);
 		};
+		
+		empty = false;
     }
     
     
@@ -4808,6 +4780,8 @@ var metrics = new function() { // hashmap do filter (with excluded nodes from or
 		for (var i=0; i < metricListeners.length; i++) {
 		  metricListeners[i](metric,metricHumanName,scores);
 		};
+		
+		empty = false;
 	}
 	
 	this.getCalculatedMetrics = function(){
@@ -5383,7 +5357,7 @@ function removeWhiteSpaces(str){
  *  This class contains LATTICE visualisation algorithms
  */
 
-
+var zoomBehavior = d3.behavior.zoom();
 var dagreVis = new function() {
 	
 	
@@ -5399,17 +5373,28 @@ var dagreVis = new function() {
 		
 		d3.select("#chart").html("");
 		
-	  	vis = d3.select("#chart")
-		  .append("svg:svg")
-		    .attr("width", w)
-		    .attr("height", h)
-		    .attr("viewBox", "0 0 "+w+" "+h)
-	    	.attr("preserveAspectRatio", "xMidYMid")
-		    //.attr("pointer-events", "all")
-		  .append('svg:g')
-		    //.call(d3.behavior.zoom().on("zoom", redraw));
-		    
-		//vis.append('svg:g');
+		vis = d3.select("#chart")
+		    .on("mousewheel", this.blockScroll)
+		    .on("DOMMouseScroll", this.blockScroll)
+		  .append("svg")
+		    .attr("width", "100%")
+		    .attr("height", 500)
+		    .attr("pointer-events", "all")
+		    .call(zoomBehavior.on("zoom", redraw))
+		    .append("g");
+		
+		
+	  	// vis = d3.select("#chart")
+		  // .append("svg:svg")
+		    // .attr("width", w)
+		    // .attr("height", h)
+		    // .attr("viewBox", "0 0 "+w+" "+h)
+	    	// .attr("preserveAspectRatio", "xMidYMid")
+		    // //.attr("pointer-events", "all")
+		  // .append('svg:g')
+		    // //.call(d3.behavior.zoom().on("zoom", redraw));
+// 		    
+		// //vis.append('svg:g');
 		
 		
 		/// not used:
@@ -5465,18 +5450,26 @@ var dagreVis = new function() {
 	       
 	    	
 	    	 //Append text
-	  	// var upperLabelbox = vis
-		    // .selectAll("g .ulabelgroup")
-		    // .data(lattice.concepts)
-		    // .enter()
-		      // .append("svg:g") //d.pos.x, y: d.pos.y
-		        // .attr("id", function(d) { return "labelbox-" + d.id })
-			    // .attr("class", "ulabelgroup");
-// 			    
+	  	var upperLabelbox = vis
+		    .selectAll("g .ulabelgroup")
+		    .data(lattice.concepts)
+		    .enter()
+		      .append("svg:g") //d.pos.x, y: d.pos.y
+		        .attr("id", function(d) { return "labelbox-" + d.id })
+			    .attr("class", "ulabelgroup")
+			    //.each(this.labelTextElements);
+			    
 		// upperLabelbox.append('rect')
 			    // .attr("class", "labelbox")
 			    // .attr("width", function(d) { return dagreVis.config.widthLabelBox; })
 			    // .attr("height", function(d) { return 20; });
+			    
+			    
+		upperLabelbox.each(this.labelTextElements);
+			    
+
+		    	   
+	
 		// upperLabelbox.append("text") //d.pos.x, y: d.pos.y
 		        // .attr("id", function(d) { return "intent-" + d.id })
 			    // .attr("class", "intent")
@@ -5506,56 +5499,61 @@ var dagreVis = new function() {
 // 			    
 	
 	
-		var upperLabelbox = vis
-			    .selectAll("text .intent")
-			    .data(lattice.concepts)
-			    .enter()
-			    .append('text')
-		        .attr("id", function(d) { return "intent-" + d.id })
-			    .attr("class", "intent")
-			    .attr("x", 4) // TODO verify the bbox.width of the text to position it
-		    	.attr("y", -dagreVis.config.paddingToNode)
-		    	.text(get_upper_label);
-
-		var lowerLabelbox = vis
-			    .selectAll("text .extent")
-			    .data(lattice.concepts)
-			    .enter()
-			    .append('text')
-		        .attr("id", function(d) { return "extent-" + d.id })
-			    .attr("class", "extent")
-			    .attr("x", 4) // TODO verify the bbox.width of the text to position it
-		    	.attr("y", dagreVis.config.paddingToNode)
-		    	.text(get_lower_label);
-		
-		// lowerLabelbox
-			    // .selectAll("tspan .extent")
-			    // .data(d.extent)
+		// var upperLabelbox = vis
+			    // .selectAll("text .intent")
+			    // .data(lattice.concepts)
 			    // .enter()
-			    // .append('tspan')
-			    // .attr("class", "extent")
-			    // //.attr("x", 4) // TODO verify the bbox.width of the text to position it
-		    	// //.attr("y", dagreVis.config.paddingToNode);
-		    	// .text(d);
+			    // .append('text')
+		        // .attr("id", function(d) { return "intent-" + d.id })
+			    // .attr("class", "nlabel intent")
+			    // .attr("x", 4) // TODO verify the bbox.width of the text to position it
+		    	// .attr("y", this.getLabelPosition)//-dagreVis.config.paddingToNode)
+		    	// .text(get_upper_label);
+		    	
+	
+
+		// var lowerLabelbox = vis
+			    // .selectAll("text .extent")
+			    // .data(lattice.concepts)
+			    // .enter()
+			    // .append('text')
+		        // .attr("id", function(d) { return "extent-" + d.id })
+			    // .attr("class", "nlabel extent")
+			    // .attr("x", 4) // TODO verify the bbox.width of the text to position it
+		    	// .attr("y", dagreVis.config.paddingToNode)
+		    	// .text(get_lower_label);
+		
+		
 	
 	
 	  // We need width and height for layout.
-	  dnodes.each(function(d) { //labels.each
+	  // dnodes.each(function(d) { //labels.each
+	    // var bbox = this.getBBox();
+	    // d.bbox = bbox;
+	    // d.width = getNodeSize(d);//bbox.width + 2 * nodePadding;
+	    // d.height = getNodeSize(d);//bbox.height + 2 * nodePadding;
+	  // });
+	  
+	   // We need width and height for layout.
+	  upperLabelbox.each(function(d) { //labels.each
 	    var bbox = this.getBBox();
 	    d.bbox = bbox;
-	    d.width = getNodeSize(d);//bbox.width + 2 * nodePadding;
-	    d.height = getNodeSize(d);//bbox.height + 2 * nodePadding;
+	    d.width = d.lwidth;//bbox.width + 2 * nodePadding;
+	    d.height = d.lheight;//bbox.height + 2 * nodePadding;
+	    
+	    d.nodeWidth = getNodeSize(d);//bbox.width + 2 * nodePadding;
+	    d.nodeHeight = getNodeSize(d);//bbox.height + 2 * nodePadding;
 	  });
 	
 	
 	  dagre.layout()
-	  	.nodeSep(50)
-	    .edgeSep(10)
-	    .rankSep(80)
+	  	.nodeSep(20)
+	    .edgeSep(30)
+	    .rankSep(60)
 	    .invert(true)
 	    .nodes(lattice.concepts)
 	    .edges(lattice.edges)
-	    .debugLevel(1)
+	    .debugLevel(0)
 	    .run();
 	
 	  dnodes.attr("transform", function(d) { return "translate(" + d.dagre.x + "," + d.dagre.y +")"; });
@@ -5570,9 +5568,9 @@ var dagreVis = new function() {
 	 	upperLabelbox.attr("transform", function(d) { return "translate(" + (d.dagre.x-dagreVis.config.widthLabelBox/2) + "," +
 	 	 														 (d.dagre.y-dagreVis.config.paddingToNode) +")"; });
 	 	 					
-	 	lowerLabelbox.attr("transform", function(d) { return "translate(" + (d.dagre.x-dagreVis.config.widthLabelBox/2) + "," +
-	 	 														 (d.dagre.y+dagreVis.config.paddingToNode) +")"; });
-	  
+	 	// lowerLabelbox.attr("transform", function(d) { return "translate(" + (d.dagre.x-dagreVis.config.widthLabelBox/2) + "," +
+	 	 														 // (d.dagre.y+dagreVis.config.paddingToNode) +")"; });
+// 	  
 	
 	  // Resize the SVG element
 	  var svg = d3.select("#chart").select("svg");
@@ -5587,10 +5585,14 @@ var dagreVis = new function() {
 	    // Set the right origin (based on the Dagre layout or the current position)
 	    .origin(function(d) { return d.pos ? {x: d.pos.x, y: d.pos.y} : {x: d.dagre.x, y: d.dagre.y}; })
 	    .on('dragstart', function() {
-	    	//console.log("drag started"); dragging = true;
+	    	
+	    	// hide hoverbox
+	    	hoverbox.style("opacity", 0) 
+			.style("display", "none"); 
+	    	
 	    	vis.on('mousedown.zoom', null);
 	    	vis.on('mousemove.zoom', null);
-	    	//vis.on('mousedown.zoom', null);
+	    	d3.event.sourceEvent.stopPropagation();
 	    })
 	    .on('dragend', function() {
 	    	console.log("drag ended"); dragging = false;
@@ -5614,11 +5616,11 @@ var dagreVis = new function() {
 	      });
 	      
 	      // TODO translate label groups if not lpos (ie. dragged)
-	      d3.select("#intent-"+d.id).attr('transform', 'translate('+ (d.dagre.x-dagreVis.config.widthLabelBox/2) +','+
+	      d3.select("#labelbox-"+d.id).attr('transform', 'translate('+ (d.dagre.x-dagreVis.config.widthLabelBox/2) +','+
 	       (d.dagre.y-dagreVis.config.paddingToNode) +')');
 	      
-	      d3.select("#extent-"+d.id).attr('transform', 'translate('+ (d.dagre.x-dagreVis.config.widthLabelBox/2) +','+
-	       (d.dagre.y+dagreVis.config.paddingToNode) +')');
+	      // d3.select("#extent-"+d.id).attr('transform', 'translate('+ (d.dagre.x-dagreVis.config.widthLabelBox/2) +','+
+	       // (d.dagre.y+dagreVis.config.paddingToNode) +')');
 	       
 	    });
 	
@@ -5650,8 +5652,77 @@ var dagreVis = new function() {
 	  //dedges.call(edgeDrag);
 	  upperLabelbox.call(labelDrag);
   
-	}
+	};
 	
+	this.labelTextElements = function(concept) {
+		
+			var labelHeight = 16;
+			var paddingBottom = 26;
+		
+			var maxNumIntentLabels = (concept.intentLabel.length > TRUNCATE_AT) ? TRUNCATE_AT+1 : concept.intentLabel.length;
+			
+			
+			concept.lwidth = 0;
+			concept.lheight = labelHeight*maxNumIntentLabels;
+		
+			var intents = d3.select(this).selectAll("text .intent")//.select(function(d,i) { return (i < 5) ? this : null; })
+		        .data(concept.intentLabel.slice(0,TRUNCATE_AT+1))
+		      	.enter().append("text")
+				.attr("class", "nlabel intent")
+				.attr("x", 4) // TODO verify the bbox.width of the text to position it
+			    .attr("y", function(d,i) { return -(maxNumIntentLabels-i)*labelHeight + dagreVis.config.paddingToNode;})//-dagreVis.config.paddingToNode)
+			    .text(function(d,i) { return (i == TRUNCATE_AT) ? "..." : d;})
+			    .each(function(d) { 
+			    	concept.lwidth = Math.max(concept.lwidth, this.getBBox().width);
+			     });
+			     
+			 
+		     
+		      // Extent labels
+		     if ($("input[name='label-for-obj']").is(':checked')) {
+		     	
+		     	var maxNumExtentLabels = (concept.extentLabel.length > TRUNCATE_AT) ? TRUNCATE_AT+1 : concept.extentLabel.length;
+		     
+		    
+			     var extents = d3.select(this).selectAll("text .extent")//.select(function(d,i) { return (i < 5) ? this : null; })
+			        .data(concept.extentLabel.slice(0,TRUNCATE_AT+1))
+			      	.enter().append("text")
+					.attr("class", "nlabel extent")
+					.attr("x", 4) // TODO verify the bbox.width of the text to position it
+				    .attr("y", function(d,i) { return (maxNumExtentLabels-i)*labelHeight + paddingBottom;})//-dagreVis.config.paddingToNode)
+				    .text(function(d,i) { return (i == TRUNCATE_AT) ? "..." : d;});
+				    // TODO height of the bbox doesnt take into account labels
+		     
+		     }
+		     
+		     
+		     // var lowerLabelbox = vis
+			    // .selectAll("text .extent")
+			    // .data(lattice.concepts)
+			    // .enter()
+			    // .append('text')
+		        // .attr("id", function(d) { return "extent-" + d.id })
+			    // .attr("class", "nlabel extent")
+			    // .attr("x", 4) // TODO verify the bbox.width of the text to position it
+		    	// .attr("y", dagreVis.config.paddingToNode)
+		    	// .text(get_lower_label);
+		
+				// upperLabelbox.selectAll("text .intent")
+			    // .data(lattice.concepts)
+			    // .enter()
+			    // .append('text')
+		        // .attr("id", function(d) { return "intent-" + d.id })
+			    // .attr("class", "nlabel intent")
+			    // .attr("x", 4) // TODO verify the bbox.width of the text to position it
+		    	// .attr("y", this.getLabelPosition)//-dagreVis.config.paddingToNode)
+		    	// .text(get_upper_label);		 
+	};
+	
+	// this.getLabelPosition = function() {
+		// return -Math.round(Math.random()*(50-10)) + 10;
+	// };
+	
+	this.blockScroll = function() { d3.event.preventDefault(); };
 	
 	this.move = function(){
 	    this.parentNode.appendChild(this);
@@ -5663,6 +5734,15 @@ var dagreVis = new function() {
 	
 
 	this.spline = function(e) {
+		
+		// TODO: HACK to draw line relative to the node size and not to the box
+		e.source.dagre.width = e.source.dagre.nodeWidth;
+		e.source.dagre.height = e.source.dagre.nodeHeight;
+		e.target.dagre.width = e.target.dagre.nodeWidth;
+		e.target.dagre.height = e.target.dagre.nodeHeight;
+		// END of HACK
+		
+		
 	    var points = e.dagre.points.slice(0);
 	    var source = dagre.util.intersectRect(e.source.dagre, points.length > 0 ? points[0] : e.source.dagre);
 	    var target = dagre.util.intersectRect(e.target.dagre, points.length > 0 ? points[points.length - 1] : e.source.dagre);
@@ -5785,35 +5865,44 @@ var h = DEFAULT_HEIGHT;
 var trans=[0,0];
 var scale=1;
 
+
 var force;
 var vis;
 
 var dragging = false;
 
 var noLinks = ["sunburst", "icicle", "sankey"];
+
     
 function resetZoom(){
 	scale=1;
 	//d3.event.scale = 1;
 	
-	d3.behavior.zoom()
-    .scale(1);
+	zoomBehavior.scale(1);
+	zoomBehavior.translate([0, 0]);
+	
+	vis.transition().duration(500).attr('transform', 'translate(' + zoomBehavior.translate() + ') scale(' + zoomBehavior.scale() + ')')
 
-	vis.attr("transform",
-      "translate(" + w/2 + ","+ h/2+")"
-      + " scale(" + scale + ")");
+	// vis.attr("transform",
+      // "translate(" + w/2 + ","+ h/2+")" 
+      // + " scale(" + 1 + ")");
+      
+      
+   // vis.attr("transform",
+      // "scale(" + 1 + ")");
       
    $( "#zoom_level" ).val("100%");
+   
 }
 
 function zoomInOut(value){
 	
 	var scale = Math.round((value/100)*100)/100;
 	
-	d3.behavior.zoom()
+	zoomBehavior.zoom()
     .scale(1);
 
-	
+	// TODO only radial vis?
        vis.attr("transform",
       "translate(" + w/2 + ","+ h/2+")"
       + " scale(" + scale + ")");
@@ -5826,6 +5915,7 @@ function zoomInOut(value){
 function redraw() {
 	//if (dragging) return;
 	
+	
   trans=d3.event.translate;
   scale=d3.event.scale;
   
@@ -5834,6 +5924,8 @@ function redraw() {
   vis.attr("transform",
       "translate(" + trans + ")"
       + " scale(" + scale + ")");
+      
+      
 }
 
 
@@ -7056,7 +7148,7 @@ function loadAttributeGraph(data) {
 }
 
 
-
+var color20=d3.scale.category20();
 
 function radialAttributeGraph(data){
 	var width = DEFAULT_ATTR_GRAPH_WIDTH,
@@ -7126,7 +7218,7 @@ function radialAttributeGraph(data){
 	    	.attr("x2", function(d){ return d.target.x; })
 	    	.attr("y2", function(d){ return d.target.y; })
 		    .style("stroke",function(d,i){
-		    	return "#000000";
+		    	return "#888";
 	    		});
 	    	 
 	  var circle = svg.selectAll("g.node")
@@ -7147,7 +7239,7 @@ function radialAttributeGraph(data){
 	    .style("pointer-events","none")
 	    .attr("text-anchor", function(d){return d.x>0 ? "start": "end";})
       	.text(function(d){return d.name;})
-      	.style("stroke",function(d){return "#000000";}) //color_set(d.family-1);})
+      	.style("fill",function(d){return color20(d.name);}) //color_set(d.family-1);})
       	.attr("transform",function(d){return "translate("+d.x+","+d.y+")rotate("+Math.atan(d.y/d.x)*180/Math.PI+")";});
 
 		
@@ -7198,34 +7290,26 @@ function changeAttributeGraphLayout(type){
 }
 
 
+
+
+//var color20=d3.scale.category20c();
 var radarChart = new function(){
 	
 	var width = 500, height = 400;
 	
-	var series, 
-    hours,
-    minVal,
-    maxVal,
-    vizPadding = {
-        top: 10,
-        right: 0,
-        bottom: 15,
-        left: 0
-    },
-    radius,
-    radiusLength,
-    ruleColor = "#CCC";
-	
-	
 	this.init = function(){
-		// loadData();
-		// buildBase();
-		// setScales();
-		// addAxes();
-		// draw();
-	}
+	};
+	
+	this.clear = function(){
+		$("#polar-chart").html("");
+	};
 	
 	this.updateSeries = function(concepts) {
+		
+		if (concepts.length == 0) {
+			radarChart.clear();
+			return;
+		}
 		
 		var getSeries = function getSeries(concept){ // TODO cache this info in the data
 			var serie = [];
@@ -7240,7 +7324,7 @@ var radarChart = new function(){
 			  		}
 			 	}
 			 	
-			 	serie.push(sum);
+			 	serie.push({ axis : subcontext.attributes[j], value : sum });
 			};
 			
 			return serie;
@@ -7253,221 +7337,27 @@ var radarChart = new function(){
 			series.push(getSeries(concepts[i]));
 		};
 		
-		hours = context.attributes;
-		
-		mergedArr = [];
-		for (var i=0; i < series.length; i++) {
-		  mergedArr = mergedArr.concat(series[i]);
-		};
-	
-	    minVal = d3.min(mergedArr);
-	    maxVal = d3.max(mergedArr);
-	    //give 25% of range as buffer to top
-	    maxVal = maxVal + ((maxVal - minVal) * 0.25);
-	    minVal = 0;
+		// hours = context.attributes;
+// 		
+		// mergedArr = [];
+		// for (var i=0; i < series.length; i++) {
+		  // mergedArr = mergedArr.concat(series[i]);
+		// };
+// 	
+	    // minVal = d3.min(mergedArr);
+	    // maxVal = d3.max(mergedArr);
+	    // //give 25% of range as buffer to top
+	    // maxVal = maxVal + ((maxVal - minVal) * 0.25);
+	    // minVal = 0;
 	
 	    //to complete the radial lines
 	    for (i = 0; i < series.length; i += 1) {
 	        series[i].push(series[i][0]);
 	    }
 		
-		
-		buildBase();
-		setScales();
-		addAxes();
-		draw();
-		
+		RadarChart.draw("#polar-chart", series, {w : width, h: height});
 		
 	}
-	
-	var loadData = function(){
-	    var randomFromTo = function randomFromTo(from, to){
-	       return Math.floor(Math.random() * (to - from + 1) + from);
-	    };
-	
-	    series = [
-	      [],
-	      []
-	    ];
-	
-	    hours = [];
-	
-	    for (i = 0; i < 24; i += 1) {
-	        series[0][i] = randomFromTo(0,20);
-	        series[1][i] = randomFromTo(5,15);
-	        hours[i] = i; //in case we want to do different formatting
-	    }
-	
-	    mergedArr = series[0].concat(series[1]);
-	
-	    minVal = d3.min(mergedArr);
-	    maxVal = d3.max(mergedArr);
-	    //give 25% of range as buffer to top
-	    maxVal = maxVal + ((maxVal - minVal) * 0.25);
-	    minVal = 0;
-	
-	    //to complete the radial lines
-	    for (i = 0; i < series.length; i += 1) {
-	        series[i].push(series[i][0]);
-	    }
-	};
-
-	var buildBase = function(){
-		
-		$("#polar-chart").html("");
-		
-	    var viz = d3.select("#polar-chart")
-	        .append('svg:svg')
-	        .attr('width', width)
-	        .attr('height', height)
-	        .attr('class', 'vizSvg');
-	
-	    viz.append("svg:rect")
-	        .attr('id', 'axis-separator')
-	        .attr('x', 0)
-	        .attr('y', 0)
-	        .attr('height', 0)
-	        .attr('width', 0)
-	        .attr('height', 0);
-	    
-	    vizBody = viz.append("svg:g")
-	        .attr('id', 'body');
-	};
-
-	setScales = function () {
-	  var heightCircleConstraint,
-	      widthCircleConstraint,
-	      circleConstraint,
-	      centerXPos,
-	      centerYPos;
-	
-	  //need a circle so find constraining dimension
-	  heightCircleConstraint = height - vizPadding.top - vizPadding.bottom;
-	  widthCircleConstraint = width - vizPadding.left - vizPadding.right;
-	  circleConstraint = d3.min([
-	      heightCircleConstraint, widthCircleConstraint]);
-	
-	  radius = d3.scale.linear().domain([minVal, maxVal])
-	      .range([0, (circleConstraint / 2)]);
-	  radiusLength = radius(maxVal);
-	
-	  //attach everything to the group that is centered around middle
-	  centerXPos = widthCircleConstraint / 2 + vizPadding.left;
-	  centerYPos = heightCircleConstraint / 2 + vizPadding.top;
-	
-	  vizBody.attr("transform",
-	      "translate(" + centerXPos + ", " + centerYPos + ")");
-	};
-
-	addAxes = function () {
-	  var radialTicks = radius.ticks(5),
-	      i,
-	      circleAxes,
-	      lineAxes;
-	
-	  vizBody.selectAll('.circle-ticks').remove();
-	  vizBody.selectAll('.line-ticks').remove();
-	
-	  circleAxes = vizBody.selectAll('.circle-ticks')
-	      .data(radialTicks)
-	      .enter().append('svg:g')
-	      .attr("class", "circle-ticks");
-	
-	  circleAxes.append("svg:circle")
-	      .attr("r", function (d, i) {
-	          return radius(d);
-	      })
-	      .attr("class", "circle")
-	      .style("stroke", ruleColor)
-	      .style("fill", "none");
-	
-	  circleAxes.append("svg:text")
-	      .attr("text-anchor", "middle")
-	      .attr("dy", function (d) {
-	          return -1 * radius(d);
-	      })
-	      .text(String);
-	
-	  lineAxes = vizBody.selectAll('.line-ticks')
-	      .data(hours)
-	      .enter().append('svg:g')
-	      .attr("transform", function (d, i) {
-	          return "rotate(" + ((i / hours.length * 360) - 90) +
-	              ")translate(" + radius(maxVal) + ")";
-	      })
-	      .attr("class", "line-ticks");
-	
-	  lineAxes.append('svg:line')
-	      .attr("x2", -1 * radius(maxVal))
-	      .style("stroke", ruleColor)
-	      .style("fill", "none");
-	
-	  lineAxes.append('svg:text')
-	      .text(String)
-	      .attr("text-anchor", "middle")
-	      .attr("transform", function (d, i) {
-	          return (i / hours.length * 360) < 180 ? null : "rotate(180)";
-	      });
-	};
-
-	var draw = function () {
-	  var groups,
-	      lines,
-	      linesToUpdate;
-	
-	  highlightedDotSize = 4;
-	
-	  groups = vizBody.selectAll('.series')
-	      .data(series);
-	  groups.enter().append("svg:g")
-	      .attr('class', 'series')
-	      .style('fill', function (d, i) { return mapColor(context.attributes[i]); })
-	      .style('stroke', function (d, i) { return mapColor(context.attributes[i]); });
-	  groups.exit().remove();
-	
-	  lines = groups.append('svg:path')
-	      .attr("class", "line")
-	      .attr("d", d3.svg.line.radial()
-	          .radius(function (d) {
-	              return 0;
-	          })
-	          .angle(function (d, i) {
-	              if (i === 24) {
-	                  i = 0;
-	              } //close the line
-	              return (i / 24) * 2 * Math.PI;
-	          }))
-	      .style("stroke-width", 3)
-	      .style("fill", "none");
-	
-	  groups.selectAll(".curr-point")
-	      .data(function (d) {
-	          return [d[0]];
-	      })
-	      .enter().append("svg:circle")
-	      .attr("class", "curr-point")
-	      .attr("r", 0);
-	
-	  groups.selectAll(".clicked-point")
-	      .data(function (d) {
-	          return [d[0]];
-	      })
-	      .enter().append("svg:circle")
-	      .attr('r', 0)
-	      .attr("class", "clicked-point");
-	
-	  lines.attr("d", d3.svg.line.radial()
-	      .radius(function (d) {
-	          return radius(d);
-	      })
-	      .angle(function (d, i) {
-	          if (i === 24) {
-	              i = 0;
-	          } //close the line
-	          return (i / 24) * 2 * Math.PI;
-	      }));
-	};
-	
 	
 }
 
@@ -7481,7 +7371,7 @@ var matrixVis = new function() {
 	
 	
 	this.config = {
-		margin : {top: 80, right: 0, bottom: 10, left: 80},
+		margin : {top: 80, right: 0, bottom: 10, left: 100},
 		width : 60,
 		height : 12
 	};
@@ -7493,6 +7383,8 @@ var matrixVis = new function() {
 		    
 	var m; 
 	var n;
+	
+	this.matrix = [];
 
 	this.run = function(){
 		
@@ -7511,7 +7403,7 @@ var matrixVis = new function() {
 		  
 
 		//d3.json("miserables.json", function(miserables) {
-		  var matrix = []; //,
+		 // var matrix = []; //,
 		  
 		      // nodes = miserables.nodes,
 		      // n = nodes.length;
@@ -7520,12 +7412,12 @@ var matrixVis = new function() {
 		  context.objects.forEach(function(attr, i) {
 		    //node.index = i;
 		    //node.count = 0;
-		    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
+		    matrixVis.matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
 		  });
 		
 		  for (var i=0; i < context.rel.length; i++) {
 		  	for (var j=0; j < context.rel[i].length; j++) {
-				matrix[i][j].z = (context.rel[i][j]) ? 1 : 0;
+				matrixVis.matrix[i][j].z = (context.rel[i][j]) ? 1 : 0;
 			 };
 		  };
 		  
@@ -7537,41 +7429,22 @@ var matrixVis = new function() {
 				   var idxi = context.attributes.indexOf(concept.intent[i]);
 				   var idxe = context.objects.indexOf(concept.extent[j]);
 				   
-				   if (typeof matrix[i][j].concepts == "undefined") matrix[i][j].concepts = [];
-				   matrix[i][j].concepts.push(concept);
+				   if (typeof matrixVis.matrix[idxe][idxi].concepts == "undefined") matrixVis.matrix[idxe][idxi].concepts = [];
+				   matrixVis.matrix[idxe][idxi].concepts.push(concept);
 				   
 				 };
 				 
 			  };
 		  });
 		  
-		  // // Convert links to matrix; count character occurrences.
-		  // miserables.links.forEach(function(link) {
-		    // matrix[link.source][link.target].z += link.value;
-		    // matrix[link.target][link.source].z += link.value;
-		    // matrix[link.source][link.source].z += link.value;
-		    // matrix[link.target][link.target].z += link.value;
-		    // nodes[link.source].count += link.value;
-		    // nodes[link.target].count += link.value;
-		  // });
-		
-		  // Precompute the orders.
-		  // var orders = {
-		    // name: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
-		    // count: d3.range(n).sort(function(a, b) { return nodes[b].count - nodes[a].count; }),
-		    // group: d3.range(n).sort(function(a, b) { return nodes[b].group - nodes[a].group; })
-		  // };
-		
-		  // The default sort order.
-		  //x.domain(orders.name);
-		
 		  vis.append("rect")
 		      .attr("class", "background")
+		      .style("fill", "#FFFFFF")
 		      .attr("width", w)
 		      .attr("height", h);
 		
 		  var row = vis.selectAll(".row")
-		      .data(matrix)
+		      .data(matrixVis.matrix)
 		    .enter().append("g")
 		      .attr("class", "row")
 		      .attr("transform", function(d, i) { return "translate(0," + i*(h/m) + ")"; })
@@ -7588,7 +7461,7 @@ var matrixVis = new function() {
 		      .text(function(d, i) { return context.objects[i]; });
 		
 		  var column = vis.selectAll(".column")
-		      .data(matrix[0])
+		      .data(matrixVis.matrix[0])
 		    .enter().append("g")
 		      .attr("class", "column")
 		      .attr("transform", function(d, i) { return "translate(" + (w/n)*i + ")rotate(-90)"; });
@@ -7606,19 +7479,11 @@ var matrixVis = new function() {
 	
 		
 	  this.row = function(row) {
-	    var cell = d3.select(this).selectAll(".cell")
+	    var cell = d3.select(this).selectAll("g.cell")
 	        .data(row)//.filter(function(d) { return (d.z == 1); }))
+	      .attr("class", "cell")
 	      .enter().append("g")
 	   
-	   // cell.append("rect")
-	        // .attr("class", "cell")
-	        // .attr("x", function(d) { return (w/n)*(d.x); }) // TODO x(d.x)
-	        // .attr("width", (w/n))
-	        // .attr("height", (h/m))
-	        // .style("fill-opacity", function(d) { return .2; })
-	        // .style("fill", function(d){ return "#0000FF"; })//function(d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
-	        // .on("mouseover", this.mouseover)
-	        // .on("mouseout", this.mouseout);
 	      .each(function(d){
 	      	
 	        if (typeof d.concepts == "undefined") return;
@@ -7626,14 +7491,26 @@ var matrixVis = new function() {
 				// d.concepts[idx]
 			 
 		      	d3.select(this).append("rect")
-		        .attr("class", "cell")
+		        //.attr("class", "concept_cell")
+		        .attr("class", function(d){ return "ccel-"+d.concepts[idx].id;})
 		        .attr("x", function(d) { return (w/n)*(d.x); }) // TODO x(d.x)
-		        .attr("width", (w/n))
-		        .attr("height", (h/m))
-		        .style("fill-opacity", function(d) { return .2; })
-		        .style("fill", function(d){ return mapColor(d.concepts[idx].id); })//function(d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
-		        .on("mouseover", this.mouseover)
-		        .on("mouseout", this.mouseout);
+		        .attr("width", (w/n) - idx*20)
+		        .attr("height", (h/m) - idx*20)
+		        //.style("fill-opacity", function(d) { return .4; })
+		        .style("fill", function(d){ return p(d.concepts[idx].id); })//function(d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
+		        .on("click", function(d){ 
+		        	matrixVis.ordercolumns(d3.select(this).attr("class").split("-")[1]); 
+		        	})
+		        .on("mouseover", function(d){ 
+		        	var ccels = d3.selectAll("rect."+d3.select(this).attr("class"));
+		        	ccels.style("stroke-width", 2);
+		        	ccels.style("stroke", "#FF0000"); 
+		        	})
+		        .on("mouseout", function(d){ 
+		        	//d3.select(this).style("stroke-width", 2);
+		        	var ccels = d3.selectAll("rect."+d3.select(this).attr("class"));
+		        	ccels.style("stroke", null); 
+		        	});
 	        
 	         };
 	      });
@@ -7641,15 +7518,75 @@ var matrixVis = new function() {
 	   
 	    
 	  }
+	  
+	  
+	  var hasConcept = function(d, conceptId) {
+	  	if (typeof d.concepts != 'undefined') { 
+		  	for (var i = 0; i < d.concepts.length; i++) {
+		  		if (d.concepts[i].id == conceptId) return true;
+		  	}
+	  	}
+	  	return false;
+	  };
+	  
+	  this.ordercolumns = function(conceptId){
+	  	//var x = d3.scale.ordinal().rangeBands([0, width]);
+	  	var n = lattice.concepts.length;
+	  	var objCount = context.objects.length;
+	  	var attrCount = context.attributes.length;
+	  	
+	  	
+	  	
+	  	x.domain(d3.range(attrCount).sort(function(a, b) { 
+	  		
+	  		for (var i=0; i< objCount; i++) {
+	  			var hc1 = hasConcept(matrixVis.matrix[i][a], conceptId);
+	  			var hc2 = hasConcept(matrixVis.matrix[i][b], conceptId);
+	  			
+	  			if  (hc1 && hc2) return 0;
+	  		}
+	  		
+	  		return 1; 
+	  	}));
+	  	
+	  	y.domain(d3.range(objCount).sort(function(a, b) { 
+	  		
+	  		for (var j=0; j< attrCount; j++) {
+	  			var hc1 = hasConcept(matrixVis.matrix[a][j], conceptId);
+	  			var hc2 = hasConcept(matrixVis.matrix[b][j], conceptId);
+	  			
+	  			if  (hc1 && hc2) return 0;
+	  		}
+	  		
+	  		return 1; 
+	  	}));
+	  		
+	  
+	    var t = vis.transition().duration(2500);
+	
+	    t.selectAll(".row")
+	        .delay(function(d, i) { return y(i) * 4; })
+	        .attr("transform", function(d, i) { return "translate(0," + y(i) + ")"; })
+	      .selectAll(".cell")
+	        .delay(function(d) { return y(d.x) * 4; })
+	        .attr("x", function(d) { return y(d.x); });
+	
+	
+	    // t.selectAll(".column")
+	        // .delay(function(d, i) { return x(i) * 4; }) 
+	        // .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
+	 
+	  };
 	
 	  this.mouseover = function(p) {
-	    d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
-	    d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
-	  }
+	  		d3.select(p).style("stroke-width", 2);
+	    //d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
+	    //d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
+	  };
 	
 	  this.mouseout = function() {
 	    d3.selectAll("text").classed("active", false);
-	  }
+	  };
 	
 	  // d3.select("#order").on("change", function() {
 	    // clearTimeout(timeout);

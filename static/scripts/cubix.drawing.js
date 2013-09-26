@@ -92,11 +92,8 @@ function getNodeColor(d) {
 		
 		
 		//p.domain();
-		// console.log(p(0));
-		// console.log(p(1));
-		// console.log(p(2));
 		
-		var metricValue = metrics.getScore(d.id,color_type)
+		var metricValue = metrics.getScore(d.id,color_type);
 		//console.log(metricValue + "-" + p(metricValue));
 		
 		return(p(metricValue));
@@ -147,36 +144,34 @@ function mapColor(str) {
  * LABELS
  */
 
-	
-function get_upper_label(d){
+// Returns an ARRAY of strings containing the labels for this node according to the labeling strategy
+function getUpperLabel(d){
 	
 	if (!displayAttrLabel) return '';
 	
 	if (labeling_type == LABEL_REPETITIVE) return d.intent; // repetitive
-	else if (labeling_type == LABEL_MULTILABEL) return d.upperLabel; // multilabel
-	else return d.upperLabel;
+	else if (labeling_type == LABEL_MULTILABEL) return d.intentLabel; // multilabel
+	else return d.intentLabel;
 }
-function get_lower_label(d){
+function getLowerLabel(d){
 	
 	if (!displayObjLabel) return '';
 	
 	if (labeling_type == LABEL_REPETITIVE) return d.extent;
-	else if (labeling_type == LABEL_MULTILABEL) return d.lowerLabel; // multilabel
+	else if (labeling_type == LABEL_MULTILABEL) return d.extentLabel; // multilabel
 	else {  // metric
 		
-		var metricValue = metrics.getScore(d.id,labeling_type)
+		var metricValue = metrics.getScore(d.id,labeling_type);
 		
 		if (labeling_type == "esupport") // slightly different label for support
-			return Math.round(100*metricValue) + "% (" + Math.round(context.objects.length*metricValue) + ")" ;
+			return [Math.round(100*metricValue) + "% (" + Math.round(context.objects.length*metricValue) + ")"] ;
 		else
-			return Math.round(100*metricValue) + "%";
+			return [Math.round(100*metricValue) + "%"];
 	}
 }
 
 function changeLabel(type){
 	labeling_type = type;
-	
-	//if (labeling_type == LABEL_REPETITIVE || labeling_type == LABEL_MULTILABEL) labelizeData();
 	
 	updateVis();
 }
@@ -191,124 +186,8 @@ function changeLabelSize(type){
 
 
 
-
-// function labelize(){ // TODO work on data not on layout
-	// alert("active");
-	// var labeling_type = 2;
-// 
-	// var top_concept =vis.select('circle[id="'+ lattice.topConcept.id +'"]');
-	// var nodelist = getOutgoingNodes(top_concept);
-// 	
-	// // intent labels
-	// for (var i=0; i < nodelist.length; i++) {
-		// var cur = nodelist[i];
-		// var curIntent = cur.attr("intent").split(',');
-// 		
-		// var parentlist = getIncomingNodes(cur);
-		// for (var j=0; j < parentlist.length && curIntent.length > 0; j++) {
-		  // var parentIntent = parentlist[j].attr("intent").split(',');
-// 		  
-		     // curIntent = ArraySubtract(curIntent,parentIntent);
-		// };
-// 		
-// 		
-		// vis.select('text[id="intent_'+cur.attr("id")+'"]').text(curIntent.join(", ")); 
-// 		
-		// //nodelist.addAll(getOutgoingNodes(cur));
-		// ArrayAddAll(getOutgoingNodes(cur), nodelist);
-	// }
-// 	
-// 
-	// // objects: bottom up
-	// var bottom_concept = vis.select('circle[id="'+ lattice.bottomConcept.id +'"]');
-	// nodelist = getIncomingNodes(bottom_concept);
-// 	
-	// // extent labels
-	// for (var i=0; i < nodelist.length; i++) {
-		// var cur = nodelist[i];
-		// var curExtent = cur.attr("extent").split(',');
-// 		
-		// var childlist = getOutgoingNodes(cur);
-		// for (var j=0; j < childlist.length && curExtent.length > 0; j++) {
-		  // var childExtent = childlist[j].attr("extent").split(',');
-// 		  
-		     // curExtent = ArraySubtract(curExtent,childExtent);
-		// };
-// 		
-		// vis.select('text[id="extent_'+cur.attr("id")+'"]').text(curExtent.join(", ")); 
-// 		
-		// //nodelist.addAll(getIncomingNodes(cur));
-		// ArrayAddAll(getIncomingNodes(cur), nodelist);
-	// }
-// 	
-// }
-
-
-function labelizeFirst(){ 
-	console.log("labelizeFirst");
-	
-	//if (labeling_type != LABEL_MULTILABEL) return; // not multi label
-	
-	//var top_concept = vis.select('circle[id="'+ data.top_id +'"]');
-	var nodelist = getTopMostConcepts();
-	
-	// intent labels
-	for (var i=0; i < nodelist.length; i++) {
-		var cur = nodelist[i];
-		
-		var parentlist =  getParentsData(cur);
-		
-		var curIntent = cur.intent;
-		
-		for (var j=0; j < parentlist.length && curIntent.length > 0; j++) {
-		  	var parentIntent = parentlist[j].intent;
-		  
-		     curIntent = ArraySubtract(curIntent,parentIntent);
-		};
-		
-		var intLabel = curIntent.join(", ");
-		//vis.select('text[id="intent_'+cur.id+'"]').text(intLabel); 
-		cur.name = intLabel;
-		cur.upperLabel = intLabel;
-		
-		
-		//nodelist.addAll(getChildrenData(cur));
-		var childrenList = getChildrenData(cur);
-		
-		ArrayAddAll(childrenList, nodelist);
-		
-	}
-	
-	
-	// extent labels
-	nodelist = getBottomMostConcepts();
-	
-	for (var i=0; i < nodelist.length; i++) {
-		var cur = nodelist[i];
-		
-		var childrenList = getChildrenData(cur);
-		
-		var curExtent = cur.extent;
-		
-		for (var j=0; j < childrenList.length && curExtent.length > 0; j++) {
-		  var childExtent = childrenList[j].extent;
-		  
-		     curExtent = ArraySubtract(curExtent,childExtent);
-		};
-		
-		var extLabel = curExtent.join(", ");
-	//	vis.select('text[id="extent_'+cur.id+'"]').text(extLabel); 
-		cur.lowerLabel = extLabel;
-		//nodelist.addAll(getParentsData(cur));
-		ArrayAddAll(getParentsData(cur), nodelist);
-	}
-	
-	
-}
-
+// Algorithm to assign multi-labels to lattice and tree
 function labelizeData(){ 
-	console.log("labelize data");
-	//if (labeling_type != LABEL_MULTILABEL) return; // not multi label
 	
 	//var top_concept = vis.select('circle[id="'+ data.top_id +'"]');
 	var nodelist = getTopMostConcepts();
@@ -317,7 +196,7 @@ function labelizeData(){
 	for (var i=0; i < nodelist.length; i++) {
 		var cur = nodelist[i];
 		
-		var parentlist = ((typeof lattice.original_id != 'undefined') ? getTreeParentsData(cur) : getParentsData(cur));
+		var parentlist = /*(treeVis) ? getTreeParentData(cur) :*/ getParentsData(cur);
 		
 		var curIntent = cur.intent;
 		
@@ -340,8 +219,6 @@ function labelizeData(){
 		
 	}
 	
-	
-	// if ($("input[name='label-for-obj']").is(':checked')) {
 	
 		// extent labels
 		nodelist = getBottomMostConcepts();
@@ -369,7 +246,50 @@ function labelizeData(){
 			cur.extentLabel = curExtent;
 			ArrayAddAll(getParentsData(cur), nodelist);
 		}
-	//}
-	//updateVis();
 	
+}
+
+// function labelizeTree(){
+// 		
+// 	
+		// //var parent = null;
+		// lattice.tree.intentLabel = lattice.tree.intent; // set root intent
+// 		
+		// var queue = [lattice.tree];
+		// for (var i=0; i < queue.length; i++) {
+		  // var current = queue[i];
+// 		  
+		  // for (var j=0; j < current.children.length; j++) {
+			// var child = current.children[j];
+			// child.intentLabel = ArraySubtract(child.intent,current.intent);
+		  // };
+// 		  
+		  // queue.concat(current.children);
+		// };
+// }
+
+
+function labelizeTree(){
+	
+		lattice.tree = lattice.getTree();
+		
+		 var partition = d3.layout.partition()
+	    .value(function(d) { return 1; });
+	    partition.nodes(lattice.tree);
+	
+		//var parent = null;
+		lattice.tree.intentLabel = lattice.tree.intent; // set root intent
+		
+		var queue = lattice.tree.children;
+		for (var i=0; i < queue.length; i++) {
+		  var current = queue[i];
+		  
+		  if (current.parent != null && typeof current.parent != 'undefined') current.intentLabel = ArraySubtract(current.intent,current.parent.intent);
+		  else current.intentLabel = current.intent;
+		  
+		  queue = queue.concat(current.children);
+		};
+		
+		
+		
 }

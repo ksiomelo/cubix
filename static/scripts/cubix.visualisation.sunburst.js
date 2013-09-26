@@ -1,21 +1,11 @@
-
-
-
-
 /*
  * Sunburst
  */
-
 
 var sunburstVis = new function() {
 	
 	
 	this.config = {
-		// displayLabels : true,
-		// nodePadding : 10,
-		// widthLabelBox : 60,
-		// paddingToNode : 30
-	
 	};
 
 	var partition;
@@ -44,12 +34,25 @@ var sunburstVis = new function() {
 	    y = d3.scale.sqrt().range([0, r]);
 	    color = mapColor;//d3.scale.category20c();
 		
-		
-		vis = d3.select("#chart").append("svg:svg")
-		    .attr("width", w)
-		    .attr("height", h)
-		  .append("svg:g")
+		// uncomment to disable pan & zoom
+		// vis = d3.select("#chart").append("svg:svg")
+		    // .attr("width", w)
+		    // .attr("height", h)
+		  // .append("svg:g")
+		    // .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")");
+		    
+		vis = d3.select("#chart")
+		    .on("mousewheel", dagreVis.blockScroll)
+		    .on("DOMMouseScroll", dagreVis.blockScroll)
+		  .append("svg")
+		    .attr("width", "100%")
+		    .attr("height", 500)
+		    .attr("pointer-events", "all")
+		    .call(zoomBehavior.on("zoom", redraw))
+		    .append("g")
 		    .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")");
+		    
+		    
 		    
 		 partition = d3.layout.partition()
 	     .sort(null)
@@ -57,7 +60,7 @@ var sunburstVis = new function() {
 	     .value(function(d) { return 1; });
 		    
 
-        var json = lattice.getTree();// lattice.concepts[0]; //  no need to transform :)
+        var json = lattice.tree;// lattice.concepts[0]; //  no need to transform :)
         
        	vis.data([json]);
        
@@ -79,39 +82,45 @@ var sunburstVis = new function() {
 	   	 // Exit any old nodes.
 	  		path.exit().remove();
 	 
+	 // start
 	  		
-	  sbLabel = vis.selectAll("text").data(sbnodes);
-	  var textEnter = sbLabel.enter().append("svg:text")
-	      .style("opacity", 1)
-	      .style("fill", "#000")
-	      .attr("text-anchor", function(d) {
-	        return x(d.x + d.dx / 2) > Math.PI ? "end" : "start";
-	      })
-	      .attr("dy", ".2em")
-	      .attr("transform", function(d) {
-	        var multiline = (get_upper_label(d) || "").split(",").length > 1,
-	            angle = x(d.x + d.dx / 2) * 180 / Math.PI - 90,
-	            rotate = angle + (multiline ? -.5 : 0);
-	        return "rotate(" + rotate + ")translate(" + (y(d.y) + p) + ","+(x(d.x))+")rotate(" + (angle > 90 ? -180 : 0) + ")";
-	      })
+	  sbLabel = vis.selectAll("g .ulabelgroup").data(sbnodes);
+	  var textEnter = sbLabel.enter().append("svg:g")
+	  	  .attr("id", function(d) { return "labelbox-" + d.id; })
+		  .attr("class", "ulabelgroup")
 	      .on("click", nodeClick)
 	      .on("dblclick", sunburstVis.sbclick);
-	  textEnter.append("svg:tspan")
-	      .attr("x", 0)
-	      .text(function(d) { 
-	      	if (d.dx * 360 > MIN_ANGLE_FOR_LABELS)
-	      	 return get_upper_label(d);
-	      	else return '';
-	      });
-	  // textEnter.append("svg:tspan") // lower labels
-	      // .attr("x", 0)
-	      // .attr("dy", "1em")
-	      // .text(function(d) { return get_lower_label(d) });		
-		  
+	 
+	 textEnter.each(dagreVis.labelTextElements);  // use DagreVis function to append text boxes for each label in each concept   
+	 
+	  // We need width and height for each label box.
+	  textEnter.each(function(d) { //labels.each
+	    var bbox = this.getBBox();
+	    d.bbox = bbox;
+	    d.width = d.lwidth;//bbox.width + 2 * nodePadding;
+	    d.height = d.lheight;//bbox.height + 2 * nodePadding;
+	  });
+	 
+	 bitsign = -1;
+	 
+	 // rotate axis for the labels (+ chose non-overlapping position)
+	 textEnter.attr("text-anchor", function(d) {
+	        return x(d.x + d.dx / 2) > Math.PI ? "end" : "start";
+	      })
+	 // .attr("x", function(d) { return -50; })
+	 // .attr("y", function(d) { return -50; })
+	 .attr("dy", ".2em")
+	 .attr("transform", function(d) {
+	        var multiline = getUpperLabel(d).length > 1,
+	            angle = x(d.x + d.dx / 2) * 180 / Math.PI - 90,
+	            rotate = angle + (multiline ? -.5 : 0);
+	            // new_y = (d.parent != null) ? bitsign*(d.parent.width + p) : p;
+	            // bitsign = -1*bitsign;
+	        return "rotate(" + rotate + ")translate(" + (y(d.y) + p) + ","+(x(d.x))+")rotate(" + (angle > 90 ? -180 : 0) + ")";
+	     });
+	 
 		
-	}
-	
-	
+	};
 	
 	
 	this.sbclick = function(d) {
@@ -142,14 +151,8 @@ var sunburstVis = new function() {
 	      .each("end", function(e) {
 	        d3.select(this).style("visibility", isParentOf(d, e) ? null : "hidden");
 	      });
-	  }
+	 };
 	
-	
-	// function click(d) {
-	    // path.transition()
-	      // .duration(750)
-	      // .attrTween("d", arcTween(d));
-	  // }
 	
 	// Interpolate the scales!
 	this.arcTween = function(d) {
@@ -161,6 +164,6 @@ var sunburstVis = new function() {
 	        ? function(t) { return arc(d); }
 	        : function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
 	  };
-	}
+	};
 
-}
+};

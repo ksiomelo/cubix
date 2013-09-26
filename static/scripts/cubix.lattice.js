@@ -105,9 +105,14 @@ function loadData(data){
     if (lattice.attr_graph)
     	loadAttributeGraph(lattice.attr_graph);
     	
+    	
+   
+   lattice.tree = lattice.getTree(); // refactor Design
     
     // update visualisation
     updateVis();
+    
+    
 	
 }
 
@@ -121,12 +126,13 @@ function Lattice(data) {
 	this.attr_graph = JSON.parse(data.attribute_graph);
 	
 	this.concepts = data.nodes;
-	this.edges = data.links
+	this.edges = data.links;
 	
 	this.id = data.id;
 	
 	this.original_id = data.original_id;
 	
+	this.tree = null;	
 	
 	this.getConcept = function(tid){
 		for (var i=0; i < this.concepts.length; i++) {
@@ -159,12 +165,12 @@ function Lattice(data) {
 	 
 	 this.conceptsCount = function(){
 	 	return concepts.length;
-	 }
+	 };
 	 
 	 this.resetLattice = function(){
 	 	concepts = initialConcepts.slice(0);
 	 	edges = initialEdges.slice(0);
-	 }
+	 };
 	 
 	 /*
 	  * Concept operations // TODO ordem invertida!
@@ -175,7 +181,7 @@ function Lattice(data) {
 		   ret.push(this.concepts[n.children_ids[i]]);
 		 };
 	 	return ret;
-	 }
+	 };
 	 this.getSucessors = function(n){ // get predecessors for a node
 	 	var ret = new Array();
 	 	for (var i=0; i < n.parents_ids.length; i++) {
@@ -186,7 +192,7 @@ function Lattice(data) {
 		   		ret.push(this.concepts[tid]);
 		 };
 	 	return ret;
-	 }
+	 };
 	 
 	 this.getSuccessorsEdges = function(n){ // get edges for that node
 	 	var ret = new Array();
@@ -195,7 +201,7 @@ function Lattice(data) {
 		   		ret.push(this.edges[i]);
 		 };
 	 	return ret;
-	 }
+	 };
 	 this.getPredecessorsEdges = function(n){ // get edges for that node
 	 	var ret = new Array();
 	 	for (var i=0; i < this.edges.length; i++) {
@@ -239,7 +245,7 @@ function Lattice(data) {
 		return false;
 	 };
 	 
-	 this.readdConcept = function(concept){
+	 this.readConcept = function(concept){
 	 	var curCpt = lattice.getConceptById(concept.id);
 	 	if (typeof curCpt == 'undefined') {
 	 		lattice.concepts.push(concept);
@@ -274,8 +280,8 @@ function Lattice(data) {
 			treeNode.id = node.id;
 			treeNode.name = node.intent.join(", ");
 			//node.name;
-			treeNode.lowerLabel = node.lowerLabel;
-			treeNode.upperLabel = node.upperLabel;
+			treeNode.intentLabel = node.intentLabel;
+			treeNode.extentLabel = node.extentLabel;
 			treeNode.support = node.support;
 			treeNode.intent = node.intent;
 			treeNode.extent = node.extent;
@@ -283,18 +289,19 @@ function Lattice(data) {
 			//treeNode.children_ids = node.children_ids;
 			//treeNode.title = node.name;
 			treeNode.children = [];
+			treeNode.parent = null;
 			
 			if (lattice.treeCache.indexOf(treeNode)<0)
 					lattice.treeCache.push(treeNode); // cache
 			
 			return treeNode;
-		}
+		};
 	
 		function recurse(node) {
 			if(node.children_ids.length == 0)
 				return null;
 			
-			var treeNode = copyNode(node)
+			var treeNode = copyNode(node);
 	
 			var children = getChildrenData(node);
 			//getChildrenDataNodes(node.children_ids)
@@ -304,22 +311,24 @@ function Lattice(data) {
 				if(children[i].children_ids.length > 0) {
 					var chNode = recurse(children[i]);
 				} else { 
-					var chNode = copyNode(children[i])
+					var chNode = copyNode(children[i]);
 				}
 				chNode.depth = treeNode.depth + 1; // update depths for tree
 				//chNode.id = node.id + "-" + chNode.id; // current node id = node_id-parent_id to avoid duplicates
 				treeNode.children.push(chNode);
+				treeNode.parent = node;
 				
 			};
 	
 			return treeNode;
 
-		}
+		};
 	
 		var topNode = recurse(top);
 		return topNode;
-
-	}
+	};
+	
+	
 	 
 	 /*
 	  * Layout methods
@@ -365,100 +374,8 @@ function Lattice(data) {
         }
         //block.assignTopSortNumberToElement(one, currNo);
         block[this.concepts.indexOf(this.bottomConcept)] = this.bottomConcept.depth;
-    }
+   };
 }
-
-
-
-
-
-
-/*
- * Ends lattice layout drawing
- */
-
-// 
-// 
-// function filterNodes(query){
-// 
-    // // remove links that are connected to descendants
-    // link.filter(function(d) {
-      // for (d = d.source; d; d = d.parent) {
-        // if (d === p) return true;
-      // }
-    // }).remove();
-// 
-    // // remove all descendants
-    // node.filter(function(d) {
-      // while (d = d.parent) {
-        // if (d === p) return true;
-      // }
-    // }).remove();
-// }
-// 
-// 
-// 
-// // clear 'hidden' styles (used e.g. for clear previous selections)
-// function showNodes() {
-	// vis.selectAll(".opaque").classed("opaque", false);
-// }
-// 
-// 
-// function hideNodes(nodelist){
-// 	
-	// //var inverseNodes = ArraySubtract(vis.selectAll("circle"), nodelist);
-// 	
-	// for (var i=0; i < nodelist.length; i++) {
-		// var anode = nodelist[i];
-		// //anode.style("opacity", DEFAULT_OPACITY);
-		// //anode.style("fill", DEFAULT_FILL_COLOR);
-		// anode.classed("selected", false);
-		// anode.classed("opaque", true);
-// 		
-// 		
-		// getIncomingEdges(anode, function(){
-			// //d3.select(this).style("opacity", DEFAULT_OPACITY);
-			// var thisInEdge = d3.select(this);
-			// thisInEdge.classed("selected",false);
-			// thisInEdge.classed("opaque",true);
-// 			
-		// });
-		// getOutgoingEdges(anode, function(){
-			// //d3.select(this).style("opacity", DEFAULT_OPACITY);
-			// //d3.select(this).classed("hidden");
-			// var thisOutEdge = d3.select(this);
-			// thisOutEdge.classed("opaque",false);
-			// thisOutEdge.classed("selected",true);
-		// });
-	// }
-// }
-// 
-// function highlightNodes(nodelist, color) {
-	// for (var i=0; i < nodelist.length; i++) {
-	  // var anode = nodelist[i];
-		// //anode.style("opacity", 1); // TODO preferir trocar classes css
-		// //anode.style("fill", SELECTED_FILL_COLOR);
-		// anode.classed("selected", true);
-		// anode.classed("opaque", false);
-// 		
-// 		
-		 // getIncomingEdges(anode, function(){
-			 // //d3.select(this).style("opacity", 1);
-			// var thisInEdge = d3.select(this);
-			// thisInEdge.classed("opaque",false);
-			// thisInEdge.classed("selected",true);
-		 // });
-		 // getOutgoingEdges(anode, function(){
-			// // d3.select(this).style("opacity", 1);
-			// var thisOutEdge = d3.select(this);
-			// thisOutEdge.classed("opaque",false);
-			// thisOutEdge.classed("selected",true);
-		 // });
-	// };
-// }
-
-
-
 
 
 
@@ -659,21 +576,40 @@ function getOutgoingNodes(n){
 }
 ///
 
-// TODO
-function getTreeParentsData(nd){
-	
-		for (var i=0; i < lattice.treeCache.length; i++) {
-			var children = lattice.treeCache[i].children;
-			
-			if (children == null) continue;
-		  	
-		  	for (var j=0; j < children.length; j++) {
-		  		if (children[j].id == nd.id) return [lattice.treeCache[i]] 
-		  	}
-		  	
-		};
-		return [];
-}
+// // TODO 
+// function getTreeParentData(nd){
+// 	
+		// var parent = null;
+// 		
+		// var queue = [nd];
+		// for (var i=0; i < queue.length; i++) {
+		  // var current = queue[i];
+		  // if (parent != null) current.intentLabel = ArraySubtract(current.intent,parent.intent);
+		  // else current.intentLabel = current.intent;
+		// };
+// 		
+		// // var parent = [];
+		// // for (var i=0; i < lattice.tree.length; i++) {
+		  // // if(nd.parents_ids.indexOf(lattice.concepts[i].id) >= 0){
+		  	// // parents.push(lattice.concepts[i]);
+		  	// // break;
+		  // // }
+		// // };
+		// // return parents;
+// 	
+	// // TODO uncomment if using tree transformation
+		// // for (var i=0; i < lattice.treeCache.length; i++) {
+			// // var children = lattice.treeCache[i].children;
+// // 			
+			// // if (children == null) continue;
+// // 		  	
+		  	// // for (var j=0; j < children.length; j++) {
+		  		// // if (children[j].id == nd.id) return [lattice.treeCache[i]] 
+		  	// // }
+// // 		  	
+		// // };
+		// // return [];
+// }
 
 function getParentsData(nd){
 		var parents = [];

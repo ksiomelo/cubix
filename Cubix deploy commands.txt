@@ -1,0 +1,117 @@
+New transaction: [C=TRUE, D=TRUE]
+New transaction: [A=TRUE, B=TRUE]
+New transaction: [A=TRUE, B=TRUE, C=TRUE]
+New transaction: [A=TRUE, B=TRUE, C=TRUE, D=TRUE, E=TRUE, F=TRUE, G=TRUE]
+New transaction: [A=TRUE, C=TRUE, D=TRUE]
+New transaction: [E=TRUE, F=TRUE]
+New transaction: [E=TRUE, G=TRUE]
+Frequent itemsets: 
+A : 4 Type:CLOSED
+A B : 3 Type:CLOSED
+A B C : 2 Type:CLOSED
+A C : 3 Type:CLOSED
+A C D : 2 Type:CLOSED
+A D : 2 Type:UNPROMISING_GATEWAY
+B : 3 Type:UNPROMISING_GATEWAY
+C : 4 Type:CLOSED
+C D : 3 Type:CLOSED
+D : 3 Type:UNPROMISING_GATEWAY
+E : 3 Type:CLOSED
+E F : 2 Type:CLOSED
+E G : 2 Type:CLOSED
+F : 2 Type:UNPROMISING_GATEWAY
+G : 2 Type:UNPROMISING_GATEWAY
+
+
+
+
+
+
+
+
+====
+parallelism = 1:
+["a","c","e","a,b","a,c","c,d","e,f","e,g","a,b,c","a,c,d","a,b,c,d,e,f,g"] OK
+
+window size = 4 p = 2
+["a",
+"c",
+"e",
+"f", unpromising
+"g", unpromising
+"a,b",
+"a,c",
+"a,d", unpromising
+"c,d",
+"a,b,c",
+"a,b,c,d,e,f,g"]
+
+missing: a,c,d  - e,f  -  e,g
+
+
+["a","c","e","a,b","a,c","c,d","e,f","e,g","a,b,c","a,c,d","a,b,c,d,e,f,g"] OK
+
+========================================================================
+
+correct: ["c","a,b","c,d","a,b,c","e,f,g","a,b,c,d,e,f,g"]
+	 ["c","a,b","c,d","a,b,c","a,b,c,d,e,f,g"]
+=====
+
+INPUT: 	"c,d","a,b","a,b,c","a,b,c,d,e,f,g","a,c,d","e,f","e,g" 
+OUPUT: 
+
+t1 = ["a","c","e","a,b","a,c","c,d","e,f","e,g","a,b,c","a,c,d","a,b,c,d,e,f,g"] correct
+
+
+========================================================================
+
+lein deploy-storm --start --name mycluster --release 0.8.1
+
+
+INFO  provision - TAG:     zookeeper-mycluster
+INFO  provision - PUBLIC:  23.23.5.152
+INFO  provision - PRIVATE: 10.35.62.232
+DEBUG compute - >> listing node details matching(ALWAYS_TRUE)
+DEBUG compute - << list(5)
+INFO  provision - TAG:     nimbus-mycluster
+INFO  provision - PUBLIC:  54.242.211.134
+INFO  provision - PRIVATE: 10.83.135.177
+DEBUG compute - >> listing node details matching(ALWAYS_TRUE)
+DEBUG compute - << list(5)
+INFO  provision - TAG:     supervisor-mycluster
+INFO  provision - PUBLIC:  23.22.8.29, 107.21.80.102
+INFO  provision - PRIVATE: 10.82.209.228, 10.204.239.209
+
+CENTOS 
+i-4830a626
+
+
+// database
+ssh -v -i /Users/cassiomelo/centos.pem ec2-user@ec2-50-17-109-169.compute-1.amazonaws.com
+// nimbus
+ssh -v storm@ec2-54-242-211-134.compute-1.amazonaws.com
+
+//supervisor (spout)
+ssh -v storm@ec2-23-22-8-29.compute-1.amazonaws.com
+
+// supervisor (cluster)
+ssh -v storm@ec2-107-21-80-102.compute-1.amazonaws.com
+
+
+===
+sudo rm target/*.jar
+sudo mvn assembly:assembly
+cp target/rt-itemsets-0.5-jar-with-dependencies.jar target/rt-itemsets.jar
+
+#/Users/cassiomelo/code/storm-0.8.1
+./storm jar /Users/cassiomelo/Documents/workspace_big_data/rt-itemsets/target/rt-itemsets.jar storm.moment.MomentTopology MomentTopology
+
+
+./storm kill MomentTopology
+---
+
+UI: http://54.242.211.134:8080/
+
+--- stop:
+
+lein deploy-storm --stop --name mycluster

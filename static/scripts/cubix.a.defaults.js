@@ -17,7 +17,7 @@ var MAXIMIZED_WIDTH = 800;
 var DEFAULT_ATTR_GRAPH_WIDTH = 500;
 var DEFAULT_ATTR_GRAPH_HEIGHT = 600;
 
-// sunburst label strategy
+// sunburst label strategy (hide labels in arcs with less or equal this angle)
 var MIN_ANGLE_FOR_LABELS = 6; // 10
 
 

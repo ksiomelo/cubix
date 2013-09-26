@@ -89,7 +89,7 @@ var sankeyVis = new function() {
 	    d3.select(this).attr("transform", "translate(" + d.x + "," + (d.y = Math.max(0, Math.min(h - d.dy, d3.event.y))) + ")");
 	    sankey.relayout();
 	    link.attr("d", skpath);
-  	}
+  };
   	
   	
   	/*

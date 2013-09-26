@@ -207,6 +207,16 @@ path.sb {
   stroke: #fff;
   fill-rule: evenodd;
 }
+
+/*
+ * icicle
+ */
+rect.sb {
+  stroke: #fff;
+  stroke-width: 2px;
+}
+
+
 /*
  * treemap
  */

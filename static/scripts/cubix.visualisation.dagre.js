@@ -88,7 +88,7 @@ var dagreVis = new function() {
 		      .attr("x", function(d) { return -10; })
 				.attr("y", function(d) { return -10; })
 				.attr("r", getNodeSize)
-		      .attr("id", function(d) { return "node-" + d.id })
+		      .attr("id", function(d) { return "node-" + d.id; })
 		      .on("click", this.nodeClick)
 			  .on("mouseover", this.nodeMouseOver)
 		      .on("mouseout", this.nodeMouseOut);
@@ -100,84 +100,14 @@ var dagreVis = new function() {
 		    .data(lattice.concepts)
 		    .enter()
 		      .append("svg:g") //d.pos.x, y: d.pos.y
-		        .attr("id", function(d) { return "labelbox-" + d.id })
-			    .attr("class", "ulabelgroup")
+		        .attr("id", function(d) { return "labelbox-" + d.id; })
+			    .attr("class", "ulabelgroup");
 			    //.each(this.labelTextElements);
 			    
-		// upperLabelbox.append('rect')
-			    // .attr("class", "labelbox")
-			    // .attr("width", function(d) { return dagreVis.config.widthLabelBox; })
-			    // .attr("height", function(d) { return 20; });
 			    
 			    
 		upperLabelbox.each(this.labelTextElements);
 			    
-
-		    	   
-	
-		// upperLabelbox.append("text") //d.pos.x, y: d.pos.y
-		        // .attr("id", function(d) { return "intent-" + d.id })
-			    // .attr("class", "intent")
-			    // .attr("x", 4) // TODO verify the bbox.width of the text to position it
-		    	// .attr("y", -dagreVis.config.paddingToNode)
-		    	// .text(get_upper_label);
-		    	
-		    	
-		// var lowerLabelbox = vis
-		    // .selectAll("g .llabelgroup")
-		    // .data(lattice.concepts)
-		    // .enter()
-		      // .append("svg:g") //d.pos.x, y: d.pos.y
-		        // .attr("id", function(d) { return "labelbox-" + d.id })
-			    // .attr("class", "llabelgroup");
-// 			    
-		// lowerLabelbox.append('rect')
-			    // .attr("class", "labelbox")
-			    // .attr("width", function(d) { return dagreVis.config.widthLabelBox; })
-			    // .attr("height", function(d) { return 20; });
-		// lowerLabelbox.append("text") //d.pos.x, y: d.pos.y
-		        // .attr("id", function(d) { return "extent-" + d.id })
-			    // .attr("class", "intent")
-			    // .attr("x", 4) // TODO verify the bbox.width of the text to position it
-		    	// .attr("y", dagreVis.config.paddingToNode)
-		    	// .text(get_lower_label);
-// 			    
-	
-	
-		// var upperLabelbox = vis
-			    // .selectAll("text .intent")
-			    // .data(lattice.concepts)
-			    // .enter()
-			    // .append('text')
-		        // .attr("id", function(d) { return "intent-" + d.id })
-			    // .attr("class", "nlabel intent")
-			    // .attr("x", 4) // TODO verify the bbox.width of the text to position it
-		    	// .attr("y", this.getLabelPosition)//-dagreVis.config.paddingToNode)
-		    	// .text(get_upper_label);
-		    	
-	
-
-		// var lowerLabelbox = vis
-			    // .selectAll("text .extent")
-			    // .data(lattice.concepts)
-			    // .enter()
-			    // .append('text')
-		        // .attr("id", function(d) { return "extent-" + d.id })
-			    // .attr("class", "nlabel extent")
-			    // .attr("x", 4) // TODO verify the bbox.width of the text to position it
-		    	// .attr("y", dagreVis.config.paddingToNode)
-		    	// .text(get_lower_label);
-		
-		
-	
-	
-	  // We need width and height for layout.
-	  // dnodes.each(function(d) { //labels.each
-	    // var bbox = this.getBBox();
-	    // d.bbox = bbox;
-	    // d.width = getNodeSize(d);//bbox.width + 2 * nodePadding;
-	    // d.height = getNodeSize(d);//bbox.height + 2 * nodePadding;
-	  // });
 	  
 	   // We need width and height for layout.
 	  upperLabelbox.each(function(d) { //labels.each
@@ -198,7 +128,7 @@ var dagreVis = new function() {
 	    .invert(true)
 	    .nodes(lattice.concepts)
 	    .edges(lattice.edges)
-	    .debugLevel(0)
+	    //.debugLevel(0)
 	    .run();
 	
 	  dnodes.attr("transform", function(d) { return "translate(" + d.dagre.x + "," + d.dagre.y +")"; });
@@ -299,19 +229,20 @@ var dagreVis = new function() {
   
 	};
 	
+	// assign labels to the nodes elements
 	this.labelTextElements = function(concept) {
 		
 			var labelHeight = 16;
 			var paddingBottom = 26;
 		
-			var maxNumIntentLabels = (concept.intentLabel.length > TRUNCATE_AT) ? TRUNCATE_AT+1 : concept.intentLabel.length;
+			var maxNumIntentLabels = (getUpperLabel(concept).length > TRUNCATE_AT) ? TRUNCATE_AT+1 : getUpperLabel(concept).length;
 			
 			
 			concept.lwidth = 0;
 			concept.lheight = labelHeight*maxNumIntentLabels;
 		
 			var intents = d3.select(this).selectAll("text .intent")//.select(function(d,i) { return (i < 5) ? this : null; })
-		        .data(concept.intentLabel.slice(0,TRUNCATE_AT+1))
+		        .data(getUpperLabel(concept).slice(0,TRUNCATE_AT+1))
 		      	.enter().append("text")
 				.attr("class", "nlabel intent")
 				.attr("x", 4) // TODO verify the bbox.width of the text to position it
@@ -326,11 +257,10 @@ var dagreVis = new function() {
 		      // Extent labels
 		     if ($("input[name='label-for-obj']").is(':checked')) {
 		     	
-		     	var maxNumExtentLabels = (concept.extentLabel.length > TRUNCATE_AT) ? TRUNCATE_AT+1 : concept.extentLabel.length;
-		     
+		     	var maxNumExtentLabels = (getLowerLabel(concept).length > TRUNCATE_AT) ? TRUNCATE_AT+1 : getLowerLabel(concept).length;
 		    
 			     var extents = d3.select(this).selectAll("text .extent")//.select(function(d,i) { return (i < 5) ? this : null; })
-			        .data(concept.extentLabel.slice(0,TRUNCATE_AT+1))
+			        .data(getLowerLabel(concept).slice(0,TRUNCATE_AT+1))
 			      	.enter().append("text")
 					.attr("class", "nlabel extent")
 					.attr("x", 4) // TODO verify the bbox.width of the text to position it
@@ -360,7 +290,7 @@ var dagreVis = new function() {
 			    // .attr("class", "nlabel intent")
 			    // .attr("x", 4) // TODO verify the bbox.width of the text to position it
 		    	// .attr("y", this.getLabelPosition)//-dagreVis.config.paddingToNode)
-		    	// .text(get_upper_label);		 
+		    	// .text(getUpperLabel);		 
 	};
 	
 	// this.getLabelPosition = function() {
@@ -401,7 +331,7 @@ var dagreVis = new function() {
 	      .y(function(d) { return d.y; })
 	      .interpolate("linear")
 	      (pts);//(points);
-  	}
+  };
   
 	 // Translates all points in the edge using `dx` and `dy`.
 	this.translateEdge = function(e, dx, dy) {
@@ -409,7 +339,7 @@ var dagreVis = new function() {
 	      p.x = Math.max(0, Math.min(800, p.x + dx));
 	      p.y = Math.max(0, Math.min(600, p.y + dy));
 	    });
-	}
+	};
 	
 	
 	
@@ -442,7 +372,7 @@ var dagreVis = new function() {
 			});
 		}
 		
-	}
+	};
 	
 	this.nodeMouseOut = function(d){
 		
@@ -459,7 +389,7 @@ var dagreVis = new function() {
 		
 		d3.selectAll("path.dedge.highlighted").classed("highlighted", false);
 	
-	}
+	};
 	
 	
 	this.nodeClick = function(d){ // select node	
@@ -480,12 +410,12 @@ var dagreVis = new function() {
 // 			
 		// });
 		
-	}
+	};
 
 
 
 
-}
+};
 
 
 

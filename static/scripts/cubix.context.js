@@ -121,15 +121,17 @@ function Context(objs, attrs, rels, attrNames) {
 			} else { 
 			
 				rels[i] = new Array();
-				for (var k=0; k < this.rel[j].length; k++) {
-					   // select only the attributes having relation with the object
-						if (this.rel[j][k]) {
-							var attrIdx = attrs.indexOf(this.attributes[k]);
-							if (attrIdx < 0)
-								attrs.push(this.attributes[k]);
-							attrIdx = attrs.indexOf(this.attributes[k]);
-							rels[i][attrIdx] = true;
-						}
+				if (typeof this.rel[j] != 'undefined') {
+					for (var k=0; k < this.rel[j].length; k++) {
+						   // select only the attributes having relation with the object
+							if (this.rel[j][k]) {
+								var attrIdx = attrs.indexOf(this.attributes[k]);
+								if (attrIdx < 0)
+									attrs.push(this.attributes[k]);
+								attrIdx = attrs.indexOf(this.attributes[k]);
+								rels[i][attrIdx] = true;
+							}
+					}
 				}
 			}
 		}
@@ -138,7 +140,7 @@ function Context(objs, attrs, rels, attrNames) {
 		
 		return new Context(objs, attrs,rels, attrs);
 		
-	}
+	};
 
 	 
     
