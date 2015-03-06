@@ -103,7 +103,7 @@ class ConceptLattice(models.Model):
         # select attributes-values pairs
         for attr in self._context._attributes:
             attrvalue = attr.split('-')
-            if (len(attrvalue) > 1):
+            if (len(attrvalue) == 2):
                 attrname = attrvalue[0]
                 attrvalue = "-".join(attrvalue[1:])
                 if (not (attrname in pairs)): 

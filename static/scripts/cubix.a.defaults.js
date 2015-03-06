@@ -21,6 +21,9 @@ var DEFAULT_ATTR_GRAPH_HEIGHT = 600;
 var MIN_ANGLE_FOR_LABELS = 6; // 10
 
 
+// flag for filtering in the context of visual
+var FILTER_CONTEXT = true;
+
 // lattice
 var MAX_ENTITY_SIZE = 35; // max numer of attributes or objects
 

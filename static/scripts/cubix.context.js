@@ -1,5 +1,5 @@
 
-function Context(objs, attrs, rels, attrNames) {
+function Context(objs, attrs, rels, attrNames, filtered_attributes) {
 //var context = new function(){
 	
 	this.initialAttributeNames = HashClone(attrNames); 
@@ -9,6 +9,8 @@ function Context(objs, attrs, rels, attrNames) {
 	this.attributes = attrs;
 	this.objects = objs;
 	this.rel = rels;//new Array(); //rel[row][column] 
+	
+	this.filtered_attributes = filtered_attributes;
 	
 	var upArrow = null;
 	
@@ -46,7 +48,7 @@ function Context(objs, attrs, rels, attrNames) {
 	 	var set2 = this.getObjectsHavingOrNot(attrName2);
 	 	
 	 	return ArrayIntersect(set1,set2);
-	 }
+	 };
 	 
 	 // Verifies if a boolean attribute is positive or not
 	// e.g. "mammal", "mammal-yes"  -> true
@@ -61,7 +63,7 @@ function Context(objs, attrs, rels, attrNames) {
 			if (rawAttr2.length > 0 && rawAttr2[0] != attr1 && rawAttr2[1] == "no") return true;
 		}
 		return false;
-	}
+	};
 	
 	// e.g. "mammal-no" will return a list of all animals non mammals
 	// e.g. "mammal-yes" or "mammal" will return a list of mammals
@@ -95,13 +97,24 @@ function Context(objs, attrs, rels, attrNames) {
 		
 		return ret;
 		
-	}
+	};
 	this.getObjectIndex = function (obj) {
 		for (var j=0; j < this.objects.length; j++) {
 				if (this.objects[j] == obj) return j;
 		}
 		return -1;
-	}
+	};
+	
+	this.getCountForAttribute = function (attrName) {
+		var attrIdx = this.attributes.indexOf(attrName);
+		if (attrIdx < 0) return 0;
+		
+		var sum = 0;
+		for (var j=0; j < this.rel.length; j++) {
+				if (this.rel[j][attrIdx]) sum += 1;
+		}
+		return sum;
+	};
 	
 	this.getSubcontextForExtent = function (objsList, includeEmptyAttributes) {
 		

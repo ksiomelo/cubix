@@ -170,7 +170,7 @@ var filter = new function() { // hashmap do filter (with excluded nodes from ori
     };
     
     
-}
+};
 
 //function updateFilte
 
@@ -265,23 +265,39 @@ function keepLinks(){
 	
 	lattice.edges = lattice.initialEdges.filter(function(d) { 
 		//return (lattice.concepts.indexOf(d.source) < 0 || lattice.concepts.indexOf(d.target) < 0)
-		return (lattice.concepts.indexOf(d.source) >= 0 && lattice.concepts.indexOf(d.target) >= 0)
+		return (lattice.concepts.indexOf(d.source) >= 0 && lattice.concepts.indexOf(d.target) >= 0);
 	});
 }
 
+/**
+ * AJAX function for filtering an attribute by re-adding/removing it from the context
+ */
+function filterAttributeAJAX(attrName, attrValue){
+	
+	var thetoken = $('input[name=csrfmiddlewaretoken]').val();
+	var arlink = "/api/v1/context/filter";
+	
+	var params = { context_id: lattice.context_id, lattice_id: lattice.id, attr_name: attrName, attr_value: attrValue, csrfmiddlewaretoken:  thetoken};
+	
+	// loading img
+	
+	
+	$.getJSON(arlink, params, function(data) {
+	 		
+	 		// reload visualisation, dashboard, filters, etc
+	 		loadData(data, true);
+	 			
+	});
+	
+}
 
 
-function clickFilterValue(){ //boolean atributes
-  //alert(this.series.name + '|'+this.name +'|'+ this.y +'|'+ this.sliced+' | was last selected');
-    
-    var svalue = this.name;
-    var sname = this.series.name;
-    
-    if (!this.sliced) { // this operation removes the filter given by sname and svalue
-    	
-    	removeFilter(sname,svalue);
-    	
-    } else {
+/*
+ * function for filtering an attribute visually, i.e., 
+ * does not change the context, only concerned concepts are hidden
+ */
+function filterAttributeLocal(sname, svalue) {
+	
     
     	var removed = [];
 	    // iterate over original data nodes
@@ -316,19 +332,68 @@ function clickFilterValue(){ //boolean atributes
 	    keepLinks();
 	    
 	    filter.addFilter("attribute",sname, svalue, removed );
-	    
-	    $("#"+sname +'-'+svalue).remove();
-		$('<span id="'+ sname +'-'+svalue+'"> | '+sname+': '+svalue+' <a href="#" class="remove-filter"><img src="'+STATIC_URL+'/images/remove.gif"></a></span>').appendTo("#showFiltersPanel");
-		
+	   
+	   	addFilterToFilterbar(sname, svalue);
+	   
+	   
 		labelizeData();
 	    //updateLattice();
 	    updateVis();
+}
+
+function addFilterToFilterbar(sname, svalue){
+	 
+	    $("#"+sname +'-'+svalue).remove();
+		$('<span id="'+ sname +'-'+svalue+'"> | '+sname+': '+svalue+' <a href="#" class="remove-filter"><img src="'+STATIC_URL+'/images/remove.gif"></a></span>').appendTo("#showFiltersPanel");
+		
+}
+
+
+function clickFilterValue(){ //boolean atributes
+  //alert(this.series.name + '|'+this.name +'|'+ this.y +'|'+ this.sliced+' | was last selected');
+    
+    var svalue = this.name;
+    var sname = this.series.name;
+    
+    if (!this.sliced) { // this operation removes the filter given by sname and svalue
+    	
+    	removeFilter(sname,svalue);
+    	
+    } else {
+    	
+    	if (FILTER_CONTEXT) {
+    		filterAttributeAJAX(sname, svalue);
+    	}
+    	else { 
+    		filterAttributeLocal(sname, svalue);
+    	}
+    	
     }
 }
 
 
-
+/*
+ *  Load filters in the filter bar
+ */
 function loadFilters(){
+	
+	
+	// clear previous filters
+	if (FILTER_CONTEXT)
+		$("#filters_container").html("");
+		
+		
+	// add filters to filter bar
+	if (context.filtered_attributes.length > 0) {
+		for (var i=0; i < context.filtered_attributes.length; i++) {
+			
+			var attr = context.filtered_attributes[i].split("-");
+			//if ()
+		  
+		  	addFilterToFilterbar(attr[0], attr[1]);
+		};
+	}
+	
 	var rawAttrs = getKeys(context.attributeNames);
 	
 	for (var i=0; i < rawAttrs.length; i++) {

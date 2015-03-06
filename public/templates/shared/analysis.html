@@ -106,6 +106,9 @@
 				<input type="checkbox"  name="metric" value="similarity"style="margin-right: 10px" />
 				<span rel="tooltip" data-trigger="hover" data-placement="right" data-title="It means how similar two concepts are based on their properties and objects in common">Similarity</span>
 			</div>
+			
+			<div id="customMetrics"></div>
+			
 			<h1>Transformation</h1>
 			<div style="margin-top: 10px;">
 				<a class="btn btn-mini btn-primary tree-transform" href="#modal-tree-transform" data-toggle="modal" data-backdrop="true" data-keyboard="true">Tree-transform</a>
@@ -305,6 +308,89 @@
             	<a href="#" class="btn primary clustering-ok"  data-dismiss="modal">OK</a>
             </div>
      </div>
+     
+     
+      <div id="modal-extensions" class="modal hide fade" style="width: 640px">
+            <div class="modal-header">
+              <a href="#" class="close"  data-dismiss="modal" aria-hidden="true">&times;</a>
+              <h3>Extensions</h3>
+            </div>
+           <form action="/{{workspace_slug}}/fca/transform" method="GET">
+           <div class="modal-body">
+        	
+        	<form class="form-search">
+			  <input type="text" class="input-medium search-query">
+			  <button type="submit" class="btn">Search</button>
+			</form>
+        	
+	        	
+	        	<table class="table table-hover" style="margin-top: 20px;">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Author</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="checkbox" name="extension" value="anomaly-detection"></td>
+                  <td>Anomaly Detection</td>
+                  <td>Adds new metrics and charts specific for anomaly detection.</td>
+                  <td>cassiomelo</td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox" name="extension" value="enhanded-analytics"></td>
+                  <td>Enhanced Analytics</td>
+                  <td>Multi-purpose charts.</td>
+                  <td>cassiomelo</td>
+                </tr>
+              </tbody>
+            </table>
+          	
+        	</div>
+            <div class="modal-footer">
+            
+	
+              <a href="#"  class="btn btn-primary new-extension-btn" style="float: left;" >New Extension...</a>
+              <a href="#" class="btn secondary" data-dismiss="modal" >Cancel</a>
+              <a href="#" class="btn btn-primary get-extension-apply">Apply</a>
+              
+            </div>
+            </form>
+     </div>
+     
+     
+     <div id="modal-new-extension" class="modal hide fade" style="width: 640px">
+            <div class="modal-header">
+              <a href="#" class="close"  data-dismiss="modal" aria-hidden="true">&times;</a>
+              <h3>New Extension</h3>
+            </div>
+           <form action="/{{workspace_slug}}/fca/transform" method="GET">
+           <div class="modal-body">
+           		<div style="float: left;">
+	           		<label>Title</label>
+	        		<input type="text" class="input-large">
+	        		
+	        		<label>Description</label>
+	        		<input type="text" class="input-large">
+        		</div>
+        		<div style="float: left; margin-left: 30px;">
+	        		<label>Code (Javascript only):</label>
+		        	<textarea id="extension-code" style="width: 300px; height: 350px;">;(function(){&#10;&#10;// your code here&#10;&#10;})();</textarea>
+				</div>
+	        	
+        	</div>
+            <div class="modal-footer">
+            
+              <a href="#" class="btn secondary" data-dismiss="modal" >Cancel</a>
+              <a href="#" class="btn btn-primary new-extension-submit">OK</a>
+              
+            </div>
+            </form>
+     </div>
+     
 
 <script type="text/javascript" src="{{STATIC_URL}}scripts/cubix.dashboard.onload.js"></script>
 

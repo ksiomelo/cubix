@@ -1,5 +1,5 @@
 from django.db import models
-from djangotoolbox.fields import ListField, EmbeddedModelField
+from djangotoolbox.fields import ListField, EmbeddedModelField, DictField
 # -*- coding: utf-8 -*-
 """
 Holds class for context
@@ -95,6 +95,9 @@ class Context(models.Model):
     _table = ListField()
     _objects = ListField()
     _attributes = ListField()
+    _filtered_attributes = ListField()
+    _filtered_objects = ListField()
+    _filtered_rows = DictField() #object, [false,true, etc]
     
 #    def __init__(self, cross_table=[], objects=[], attributes=[]):
 #        """Create a context from cross table and list of objects, list
@@ -115,6 +118,49 @@ class Context(models.Model):
 #        _table = cross_table
 #        _objects = objects
 #        _attributes = attributes
+        
+        
+        
+    def filter_attribute(self, attribute, value):
+        attr_index = self._attributes.index(attribute)
+        
+        if (attr_index < 0): # attr not found
+            return
+
+        negation = (value == "no")
+        to_remove = []
+        
+        self._filtered_attributes.append(attribute+"-"+value)
+        
+        # filter objects
+        for i in range(len(self._objects)):
+            if self._table[i][attr_index] ^ negation:
+                to_remove.append(i)
+                
+                self._filtered_objects.append(self._objects[i])
+                self._filtered_rows[self._objects[i]] = self._table[i]#map(str, self._table[i]) #",".join(self._table[i])
+        
+        self._table = [row for idx, row in enumerate(self._table) if not idx in to_remove]
+        self._objects = [obj for idx, obj in enumerate(self._objects) if not idx in to_remove]
+        
+        #print(str(self._table))
+        
+        #self._filtered_attributes.append(attribute)
+        
+        
+        
+        
+        
+        
+    def delete_attribute(self, attr_index, negation=False):
+        for i in range(len(self._objects)):
+            del self._table[i][attr_index]
+        del self._attributes[attr_index]    
+        
+        
+        
+        
+        
         
     def __deepcopy__(self, memo):
         return Context(_table=copy.deepcopy(self._table, memo),
@@ -268,11 +314,6 @@ class Context(models.Model):
     def delete_object_by_name(self, obj_name):
         self.delete_object(self._objects.index(obj_name))
     
-    def delete_attribute(self, attr_index):
-        for i in range(len(self._objects)):
-            del self._table[i][attr_index]
-        del self._attributes[attr_index]
-        
     def delete_attribute_by_name(self, attr_name):
         self.delete_attribute(self._attributes.index(attr_name))
         

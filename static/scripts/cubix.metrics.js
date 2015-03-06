@@ -80,15 +80,15 @@ var metrics = new function() { // hashmap do filter (with excluded nodes from or
     
     this.isFirst = function(){
     	return empty;
-    }
+    };
     
     this.addListener = function(callback){
     	metricListeners.push(callback);
-    }
+    };
     
     this.addLinkListener = function(callback){
     	linkListeners.push(callback);
-    }
+    };
     
     this.appendLinkMetric = function(metric, metricHumanName, scores){ // to provide direct access to the concepts
     	
@@ -110,7 +110,7 @@ var metrics = new function() { // hashmap do filter (with excluded nodes from or
 		};
 		
 		empty = false;
-    }
+    };
     
     
 	this.appendMetricValues = function(metric, metricHumanName, scores){ // to provide direct access to the concepts
@@ -131,7 +131,7 @@ var metrics = new function() { // hashmap do filter (with excluded nodes from or
 		};
 		
 		empty = false;
-	}
+	};
 	
 	this.getCalculatedMetrics = function(){
 		var mNames = [];
@@ -142,11 +142,11 @@ var metrics = new function() { // hashmap do filter (with excluded nodes from or
 		}
 		
 		return mNames;
-	}
+	};
 	
 	this.getScore = function(conceptId, metricName){ // 'intent' , true (ira calcular a partir dos nos que estao la e nao no contexto)
 		return metricTable[conceptId][metricName];
-	}
+	};
 	
 	this.getScores = function(conceptId) {
 		var ret = {};
@@ -156,16 +156,16 @@ var metrics = new function() { // hashmap do filter (with excluded nodes from or
 		  ret[metricName] = this.getScore(conceptId, metricName);
 		};
 		return ret;
-	}
+	};
 	
 	
 	this.getLinkScore = function(conceptId1, conceptId2, metric) {
 		return linkMetrics[metric]["scores"][conceptId1][conceptId2];
-	}
+	};
 	
 	this.getHumanName=function(metricName) {
 		return metricDict[metricName];
-	}
+	};
 }
 
 

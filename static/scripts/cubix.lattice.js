@@ -14,9 +14,9 @@ var lattice;
 var a_rules_concerned_attributes;
 var _data_a_rules_concerned_attributes;
 
-function loadData(data){
+function loadData(data, reload){
 	
-	context = new Context(data.context.objects, data.context.attributes, data.context.rel, data.attributes) //TODO refactor
+	context = new Context(data.context.objects, data.context.attributes, data.context.rel, data.attributes, data.context.filtered_attributes); //TODO refactor
 	lattice = new Lattice(data);
 	
 	a_rules_concerned_attributes=clone(data.attributes);
@@ -38,37 +38,44 @@ function loadData(data){
 		});
 	}
 	
-	// load autosuggest for attributes
-	$("input.search").tokenInput(getAttributeValuesPairs(),{
-              propertyToSearch: "name",
-              preventDuplicates: false,
-              hintText:"Type an attribute name",
-              theme: "facebook",
-              onAdd: searchInput,
-              onDelete: searchInput
-              });
-    
-    // load clustering slider
-    $( "#slider-clustering" ).slider({
-			min: 1,
-			max: lattice.concepts.length,
-			value: [ lattice.concepts.length ],
-			slide: function( event, ui ) {
-				$( "#n_clusters" ).val( ui.value);
-				
-			}
-		});
-	$( "#n_clusters" ).val( lattice.concepts.length);
+	if (!reload) {
+		// load autosuggest for attributes
+		$("input.search").tokenInput(getAttributeValuesPairs(),{
+	              propertyToSearch: "name",
+	              preventDuplicates: false,
+	              hintText:"Type an attribute name",
+	              theme: "facebook",
+	              onAdd: searchInput,
+	              onDelete: searchInput
+	              });
+	    
+	    // load clustering slider
+	    $( "#slider-clustering" ).slider({
+				min: 1,
+				max: lattice.concepts.length,
+				value: [ lattice.concepts.length ],
+				slide: function( event, ui ) {
+					$( "#n_clusters" ).val( ui.value);
+					
+				}
+			});
+		$( "#n_clusters" ).val( lattice.concepts.length);
+		
+		
+		if (typeof lattice.original_id != "undefined") { 
+			$("#tree-opts").show(); 
+			$("a.undo-link").show();
+		}
+		
+		
+		hoverbox = d3.select("#hoverbox");
+		A_rules_box = d3.select("#A_rules_box");
+		
+		// load extensions
+		loadExtensions();
 	
 	
-	if (typeof lattice.original_id != "undefined") { 
-		$("#tree-opts").show(); 
-		$("a.undo-link").show();
-	}
-	
-	
-	hoverbox = d3.select("#hoverbox");
-	A_rules_box = d3.select("#A_rules_box");
+	} // end of !reload block
 	
 	//labelizeFirst();
 	
@@ -117,6 +124,16 @@ function loadData(data){
 }
 
 
+// function reloadData(data){
+// 	
+	// context = new Context(data.context.objects, data.context.attributes, data.context.rel, data.attributes, data.context.filtered_attributes);
+	// lattice = new Lattice(data);
+// 	
+// }
+
+
+
+
 function Lattice(data) {
 	
 	
@@ -129,6 +146,8 @@ function Lattice(data) {
 	this.edges = data.links;
 	
 	this.id = data.id;
+	
+	this.context_id = data.context_id;
 	
 	this.original_id = data.original_id;
 	

@@ -44,6 +44,30 @@ def get_context(request):
     context = Context.objects.get(id=context_id)
     return HttpResponse(simplejson.dumps(context), mimetype="application/json")
 
+
+def filter_attribute(request):
+    context_id = request.GET.get('context_id')
+    lattice_id = request.GET.get('lattice_id')
+    attr_name = request.GET.get('attr_name')
+    attr_value = request.GET.get('attr_value')
+    context = Context.objects.get(id=context_id)
+    
+    
+#     if (attr_value not in ["yes", "no"]):
+#         attr_name = attr_name + "-" +  attr_value
+    
+    context.filter_attribute(attr_name, attr_value)
+    context.save()
+    
+    # calculate lattice
+    cl = ConceptLattice.objects.get(id=lattice_id)
+    cl._context= context
+    cl.compute_lattice()
+    cl.save()
+    return HttpResponse(FCAUtils.lattice_to_json_depth2(cl), mimetype="application/json")
+
+
+
 ## CONCEPTS
 @login_required
 def get_number_concepts(request):

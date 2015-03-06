@@ -5,6 +5,8 @@ import StringIO
 import fca
 from service.casa import Casa
 
+IDENTIFIER = "-"
+
 def read_cxt_from_string(data):
     """Read context from path, which is .cxt file
 
@@ -136,7 +138,7 @@ def read_cxt(path):
 
     """
     
-    truncate_at = 80
+    truncate_at = 8000#80
     
     
     input_file = open(path, "r")
@@ -155,12 +157,49 @@ def read_cxt(path):
             objects.append(objString)
         
     attributes = [input_file.readline().strip() for i in xrange(number_of_attributes)]
-
+    
     table = []
     for i in xrange(number_of_objects):
         line = map(lambda c: c=="X", input_file.readline().strip())
         if i < truncate_at:
             table.append(line)
+    
+    
+    # scale attributes
+#     scaled_attributes = []
+#     scaled_table = []
+#     bool_attrs_idx = []
+#     
+#     for idx, attr in enumerate(attributes):
+#         attr_ar = attr.split(IDENTIFIER)
+#         
+#         if len(attr_ar) == 1: # no attribute value. e.g. mammal
+#             bool_attrs_idx.append(idx)
+#             
+#             scaled_attributes.append(attr + IDENTIFIER + "yes")
+#             scaled_attributes.append(attr + IDENTIFIER + "no")
+#             
+#         else:
+#             scaled_attributes.append(attr)
+#         
+#     scaled_row = []
+#     for i, row in enumerate(table):
+#         for j, col in enumerate(row):
+#             if j in bool_attrs_idx:
+#                 scaled_row.append(col) # yes comes first
+#                 scaled_row.append(not col)
+#             else:
+#                 scaled_row.append(col)
+#         
+#         scaled_table.append(scaled_row)
+#         scaled_row = []
+#     
+#     
+#     attributes = scaled_attributes
+#     table = scaled_table
+#     
+    
+    # end
 
     input_file.close()
 

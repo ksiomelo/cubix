@@ -36,7 +36,7 @@ function multiSelectOptionsForAttributes(multiSelectControlId){
 	  
 	  	for (var i=0; i< value.length; i++) {
 	  		
-	  		$("<option label='"+value[i][0]+"' value='"+key+SEPARATOR+value[i][0]+"'>"+value[i][0]+"</option>").appendTo(optGrp)
+	  		$("<option label='"+value[i][0]+"' value='"+key+SEPARATOR+value[i][0]+"'>"+value[i][0]+"</option>").appendTo(optGrp);
 	  			//.attr("value", item.name).text(item.valueName));
 	  	}
 	     

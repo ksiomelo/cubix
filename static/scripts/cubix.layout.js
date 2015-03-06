@@ -680,14 +680,14 @@ function updateEntityList(){
       var attrNames = getAttributeValuesPairs(); // TODO this is returning an object[] instead of string[]
       for (var i=0; i < attrNames.length; i++) {
         var li = $('<li>').appendTo('#attr_list');
-      	li.html("<span><input type='checkbox' name='attr' value='"+ attrNames[i].name +"'> "+ attrNames[i].name + "</span>")
+      	li.html("<span><input type='checkbox' name='attr' value='"+ attrNames[i].name +"'> "+ attrNames[i].name + "</span>");
       };
       
       // Update objects names
       var objsNames = context.objects;
       for (var i=0; i < objsNames.length; i++) {
         var li = $('<li>').appendTo('#obj_list');
-      	li.html("<span><input type='checkbox' name='obj' value='"+ objsNames[i] +"'> "+ objsNames[i] + "</span>")
+      	li.html("<span><input type='checkbox' name='obj' value='"+ objsNames[i] +"'> "+ objsNames[i] + "</span>");
       };
       
       // update counters
@@ -867,11 +867,17 @@ function nodeMouseOver(d){
 	// Dashboard
 	updateDistributionChart(d);
 	
+	// bind events from API
+	cubixAPI.dispatchEvents("mouseover",d);// should come last
+	
 }
 
 function nodeMouseOut(d){
 	
 	hideHoverbox();
+	
+	cubixAPI.dispatchEvents("mouseout",d); // should come last
+	
 	
 }
 
@@ -879,6 +885,8 @@ function nodeMouseOut(d){
 
 var selection = [];
 function nodeClick(d){ // select node	
+	
+
 	
 	clearSearch(); // if I made a click node to add/remove selection, the search is no longer valid
 	
@@ -906,6 +914,8 @@ function nodeClick(d){ // select node
       // select class
       d3.select("#node-"+d.id).classed("selected", !(exists.length));
 	
+	
+	  cubixAPI.dispatchEvents("mouseclick", d);// should come last
 	
 }
 

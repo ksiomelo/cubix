@@ -479,7 +479,10 @@ class FCAUtils(object):
         # LATTICE PROPERTIES
         to_json["id"] = lattice.id
         
-        cxtobj = dict({"objects": cxt._objects, "attributes" : cxt._attributes, "rel" : cxt._table})
+        
+        to_json["context_id"] = cxt.id
+        
+        cxtobj = dict({"objects": cxt._objects, "attributes" : cxt._attributes, "rel" : cxt._table, "filtered_attributes" : cxt._filtered_attributes})
         
         to_json["context"] = cxtobj
         

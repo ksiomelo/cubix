@@ -70,8 +70,8 @@
     border-left: 1px solid #DDDDDD;
     border-bottom: 1px solid #DDDDDD;
     border-right: 1px solid #DDDDDD;
-    padding: 0 5px;
-    color: #DDD;
+    padding: 10px 10px;
+    color: #333;
     -moz-border-radius-bottomleft: 2px;
     -moz-border-radius-bottomright: 2px;
     -webkit-border-bottom-left-radius: 2px;
